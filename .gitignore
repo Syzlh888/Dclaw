@@ -50,6 +50,13 @@ __pycache__/
 .venv/
 venv/
 
+# CodeBuddy (local dev context, not for repo)
+.codebuddy/
+
+# Playwright artifacts
+full-snap.yaml
+page-ok.png
+
 # Large archives
 *.7z
 *.zip
