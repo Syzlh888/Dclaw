@@ -1,0 +1,127 @@
+classDiagram
+    direction TB
+
+    class TreeNode {
+        +string id
+        +string name
+        +TreeNodeType type
+        +CheckState checkState
+        +boolean expanded
+        +string parentId
+        +string[] childrenIds
+        +string? dbConnectionId
+    }
+
+    class TreeNodeType {
+        <<enumeration>>
+        Platform
+        PreDbType
+        District
+        Hospital
+    }
+
+    class CheckState {
+        <<enumeration>>
+        Unchecked
+        Checked
+        Indeterminate
+    }
+
+    class DbConnection {
+        +string id
+        +string name
+        +DbDriver driver
+        +string host
+        +number port
+        +string username
+        +string password
+        +string database
+        +ConnectionStatus status
+    }
+
+    class DbDriver {
+        <<enumeration>>
+        MySQL
+        PostgreSQL
+    }
+
+    class ConnectionStatus {
+        <<enumeration>>
+        Online
+        Offline
+        Error
+    }
+
+    class ExecutionTask {
+        +string id
+        +string sql
+        +string dbConnectionId
+        +string hospitalName
+        +string preDbTypeName
+        +ExecutionStatus status
+        +number startTime
+        +number? endTime
+        +number? duration
+        +string? errorMessage
+        +QueryResult? result
+        +number retryCount
+    }
+
+    class ExecutionStatus {
+        <<enumeration>>
+        Pending
+        Running
+        Success
+        Failed
+        Timeout
+    }
+
+    class ExecutionConfig {
+        +number concurrency
+        +number timeoutMs
+        +boolean continueOnError
+        +number maxRetries
+        +boolean readOnlyMode
+    }
+
+    class QueryResult {
+        +string dbConnectionId
+        +string sourceLabel
+        +string[] columns
+        +ResultRow[] rows
+        +number totalRows
+    }
+
+    class ResultRow {
+        +string sourceDbLabel
+        +Record~string,CellValue~ values
+    }
+
+    class CellValue {
+        +any value
+        +DiffType diffType
+    }
+
+    class DiffType {
+        <<enumeration>>
+        Same
+        Different
+        Missing
+    }
+
+    TreeNode --> TreeNodeType : type
+    TreeNode --> CheckState : checkState
+    TreeNode "1" --> "*" TreeNode : children
+    Hospital|> TreeNode : 仅 L4 层
+    Hospital --> DbConnection : dbConnectionId
+
+    DbConnection --> DbDriver : driver
+    DbConnection --> ConnectionStatus : status
+
+    ExecutionTask --> ExecutionStatus : status
+    ExecutionTask --> DbConnection : dbConnectionId
+    ExecutionTask --> QueryResult : result
+
+    QueryResult --> ResultRow : rows
+    ResultRow --> CellValue : values
+    CellValue --> DiffType : diffType

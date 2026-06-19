@@ -1,0 +1,350 @@
+- generic [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - img [ref=e6]
+        - heading "DClaw 数据钳" [level=6] [ref=e8]
+      - generic [ref=e9]:
+        - generic "缩小" [ref=e10]:
+          - button [ref=e11] [cursor=pointer]:
+            - img [ref=e12]
+        - generic [ref=e14]: 100%
+        - generic "放大" [ref=e15]:
+          - button [ref=e16] [cursor=pointer]:
+            - img [ref=e17]
+      - button "驱动管理" [ref=e20] [cursor=pointer]:
+        - img [ref=e22]
+        - text: 驱动管理
+      - button "连接管理" [ref=e24] [cursor=pointer]:
+        - img [ref=e26]
+        - text: 连接管理
+      - button "备份管理" [ref=e28] [cursor=pointer]:
+        - img [ref=e30]
+        - text: 备份管理
+      - button "服务器资源" [ref=e32] [cursor=pointer]:
+        - img [ref=e34]
+        - text: 服务器资源
+      - button "资产汇总" [ref=e36] [cursor=pointer]:
+        - img [ref=e38]
+        - text: 资产汇总
+      - button "切换暗色模式" [ref=e40] [cursor=pointer]:
+        - img [ref=e41]
+      - button "操作指南" [ref=e43] [cursor=pointer]:
+        - img [ref=e44]
+    - generic [ref=e46]:
+      - generic [ref=e47]:
+        - tablist [ref=e50]:
+          - tab "数据库" [selected] [ref=e51] [cursor=pointer]:
+            - img [ref=e52]
+            - text: 数据库
+          - tab "分组" [ref=e54] [cursor=pointer]:
+            - img [ref=e55]
+            - text: 分组
+        - generic [ref=e60]:
+          - img [ref=e62]
+          - textbox "搜索数据库..." [ref=e64]
+          - group
+        - generic [ref=e66]:
+          - generic [ref=e157] [cursor=pointer]:
+            - img [ref=e159]
+            - generic [ref=e161]:
+              - checkbox [ref=e162]
+              - img [ref=e163]
+            - img [ref=e166]
+            - paragraph [ref=e169]: 临沂市卫健委
+            - generic [ref=e170]: (0/50)
+            - img [ref=e172]
+            - generic [ref=e174]:
+              - button "新增" [ref=e175]:
+                - img [ref=e176]
+              - button "修改" [ref=e178]:
+                - img [ref=e179]
+              - button "删除" [ref=e181]:
+                - img [ref=e182]
+          - generic [ref=e184] [cursor=pointer]:
+            - img [ref=e186]
+            - generic [ref=e188]:
+              - checkbox [ref=e189]
+              - img [ref=e190]
+            - img [ref=e193]
+            - paragraph [ref=e196]: 电子病历前置库
+            - generic [ref=e197]: (0/50)
+            - img [ref=e199]
+            - generic [ref=e201]:
+              - button "新增" [ref=e202]:
+                - img [ref=e203]
+              - button "修改" [ref=e205]:
+                - img [ref=e206]
+              - button "删除" [ref=e208]:
+                - img [ref=e209]
+          - generic [ref=e211] [cursor=pointer]:
+            - img [ref=e213]
+            - generic [ref=e215]:
+              - checkbox [ref=e216]
+              - img [ref=e217]
+            - img [ref=e220]
+            - paragraph [ref=e223]: 市直
+            - generic [ref=e224]: (0/11)
+            - img [ref=e226]
+            - generic [ref=e228]:
+              - button "新增" [ref=e229]:
+                - img [ref=e230]
+              - button "修改" [ref=e232]:
+                - img [ref=e233]
+              - button "删除" [ref=e235]:
+                - img [ref=e236]
+          - generic [ref=e238] [cursor=pointer]:
+            - img [ref=e240]
+            - generic [ref=e242]:
+              - checkbox [ref=e243]
+              - img [ref=e244]
+            - img [ref=e247]
+            - paragraph [ref=e250]: 沂水县
+            - generic [ref=e251]: (0/4)
+            - img [ref=e253]
+            - generic [ref=e255]:
+              - button "新增" [ref=e256]:
+                - img [ref=e257]
+              - button "修改" [ref=e259]:
+                - img [ref=e260]
+              - button "删除" [ref=e262]:
+                - img [ref=e263]
+          - generic [ref=e265] [cursor=pointer]:
+            - img [ref=e267]
+            - generic [ref=e269]:
+              - checkbox [ref=e270]
+              - img [ref=e271]
+            - img [ref=e274]
+            - paragraph [ref=e277]: 河东区
+            - generic [ref=e278]: (0/2)
+            - img [ref=e280]
+            - generic [ref=e282]:
+              - button "新增" [ref=e283]:
+                - img [ref=e284]
+              - button "修改" [ref=e286]:
+                - img [ref=e287]
+              - button "删除" [ref=e289]:
+                - img [ref=e290]
+          - generic [ref=e292] [cursor=pointer]:
+            - img [ref=e294]
+            - generic [ref=e296]:
+              - checkbox [ref=e297]
+              - img [ref=e298]
+            - img [ref=e301]
+            - paragraph [ref=e304]: 兰山区
+            - generic [ref=e305]: (0/5)
+            - img [ref=e307]
+            - generic [ref=e309]:
+              - button "新增" [ref=e310]:
+                - img [ref=e311]
+              - button "修改" [ref=e313]:
+                - img [ref=e314]
+              - button "删除" [ref=e316]:
+                - img [ref=e317]
+          - generic [ref=e319] [cursor=pointer]:
+            - img [ref=e321]
+            - generic [ref=e323]:
+              - checkbox [ref=e324]
+              - img [ref=e325]
+            - img [ref=e328]
+            - paragraph [ref=e331]: 郯城县
+            - generic [ref=e332]: (0/4)
+            - img [ref=e334]
+            - generic [ref=e336]:
+              - button "新增" [ref=e337]:
+                - img [ref=e338]
+              - button "修改" [ref=e340]:
+                - img [ref=e341]
+              - button "删除" [ref=e343]:
+                - img [ref=e344]
+          - generic [ref=e346] [cursor=pointer]:
+            - img [ref=e348]
+            - generic [ref=e350]:
+              - checkbox [ref=e351]
+              - img [ref=e352]
+            - img [ref=e355]
+            - paragraph [ref=e358]: 临沭县
+            - generic [ref=e359]: (0/4)
+            - img [ref=e361]
+            - generic [ref=e363]:
+              - button "新增" [ref=e364]:
+                - img [ref=e365]
+              - button "修改" [ref=e367]:
+                - img [ref=e368]
+              - button "删除" [ref=e370]:
+                - img [ref=e371]
+          - generic [ref=e373] [cursor=pointer]:
+            - img [ref=e375]
+            - generic [ref=e377]:
+              - checkbox [ref=e378]
+              - img [ref=e379]
+            - img [ref=e382]
+            - paragraph [ref=e385]: 兰陵县
+            - generic [ref=e386]: (0/3)
+            - img [ref=e388]
+            - generic [ref=e390]:
+              - button "新增" [ref=e391]:
+                - img [ref=e392]
+              - button "修改" [ref=e394]:
+                - img [ref=e395]
+              - button "删除" [ref=e397]:
+                - img [ref=e398]
+          - generic [ref=e400] [cursor=pointer]:
+            - img [ref=e402]
+            - generic [ref=e404]:
+              - checkbox [ref=e405]
+              - img [ref=e406]
+            - img [ref=e409]
+            - paragraph [ref=e412]: 费县
+            - generic [ref=e413]: (0/4)
+            - img [ref=e415]
+            - generic [ref=e417]:
+              - button "新增" [ref=e418]:
+                - img [ref=e419]
+              - button "修改" [ref=e421]:
+                - img [ref=e422]
+              - button "删除" [ref=e424]:
+                - img [ref=e425]
+          - generic [ref=e427] [cursor=pointer]:
+            - img [ref=e429]
+            - generic [ref=e431]:
+              - checkbox [ref=e432]
+              - img [ref=e433]
+            - img [ref=e436]
+            - paragraph [ref=e439]: 沂南县
+            - generic [ref=e440]: (0/3)
+            - img [ref=e442]
+            - generic [ref=e444]:
+              - button "新增" [ref=e445]:
+                - img [ref=e446]
+              - button "修改" [ref=e448]:
+                - img [ref=e449]
+              - button "删除" [ref=e451]:
+                - img [ref=e452]
+          - generic [ref=e454] [cursor=pointer]:
+            - img [ref=e456]
+            - generic [ref=e458]:
+              - checkbox [ref=e459]
+              - img [ref=e460]
+            - img [ref=e463]
+            - paragraph [ref=e466]: 蒙阴县
+            - generic [ref=e467]: (0/3)
+            - img [ref=e469]
+            - generic [ref=e471]:
+              - button "新增" [ref=e472]:
+                - img [ref=e473]
+              - button "修改" [ref=e475]:
+                - img [ref=e476]
+              - button "删除" [ref=e478]:
+                - img [ref=e479]
+          - generic [ref=e481] [cursor=pointer]:
+            - img [ref=e483]
+            - generic [ref=e485]:
+              - checkbox [ref=e486]
+              - img [ref=e487]
+            - img [ref=e490]
+            - paragraph [ref=e493]: 莒南县
+            - generic [ref=e494]: (0/3)
+            - img [ref=e496]
+            - generic [ref=e498]:
+              - button "新增" [ref=e499]:
+                - img [ref=e500]
+              - button "修改" [ref=e502]:
+                - img [ref=e503]
+              - button "删除" [ref=e505]:
+                - img [ref=e506]
+          - generic [ref=e508] [cursor=pointer]:
+            - img [ref=e510]
+            - generic [ref=e512]:
+              - checkbox [ref=e513]
+              - img [ref=e514]
+            - img [ref=e517]
+            - paragraph [ref=e520]: 平邑县
+            - generic [ref=e521]: (0/4)
+            - img [ref=e523]
+            - generic [ref=e525]:
+              - button "新增" [ref=e526]:
+                - img [ref=e527]
+              - button "修改" [ref=e529]:
+                - img [ref=e530]
+              - button "删除" [ref=e532]:
+                - img [ref=e533]
+          - button "添加项目" [ref=e536] [cursor=pointer]:
+            - img [ref=e538]
+            - text: 添加项目
+      - generic [ref=e74]:
+        - generic [ref=e75]:
+          - generic [ref=e76]:
+            - generic [ref=e77]:
+              - generic [ref=e79] [cursor=pointer]: SQL 1
+              - button [ref=e80] [cursor=pointer]:
+                - img [ref=e81]
+            - generic [ref=e83]:
+              - button "执行 (Ctrl+Enter)" [disabled]:
+                - generic:
+                  - img
+                - text: 执行 (Ctrl+Enter)
+              - button "停止" [disabled]:
+                - generic:
+                  - img
+                - text: 停止
+              - button "打开脚本" [ref=e84] [cursor=pointer]:
+                - img [ref=e86]
+                - text: 打开脚本
+              - button "保存脚本" [disabled]:
+                - generic:
+                  - img
+                - text: 保存脚本
+              - button "格式化" [disabled]
+              - button "模板" [ref=e88] [cursor=pointer]:
+                - img [ref=e90]
+                - text: 模板
+              - generic [ref=e92] [cursor=pointer]:
+                - checkbox "只读模式" [checked] [ref=e95]
+                - generic [ref=e98]: 只读模式
+              - generic [ref=e99]:
+                - combobox [ref=e100] [cursor=pointer]:
+                  - paragraph [ref=e103]: 暗色
+                - textbox: vs-dark
+                - img
+                - group
+              - generic [ref=e104]:
+                - button "缩小字体" [ref=e105] [cursor=pointer]:
+                  - img [ref=e106]
+                - generic [ref=e108]: "14"
+                - button "放大字体" [ref=e109] [cursor=pointer]:
+                  - img [ref=e110]
+              - generic [ref=e113]: "已选: 0库"
+          - code [ref=e542]:
+            - generic [ref=e543]:
+              - textbox "Editor content" [active] [ref=e544]
+              - textbox [ref=e545]
+              - generic [ref=e550]: "1"
+        - generic [ref=e118]:
+          - tablist [ref=e122]:
+            - tab "执行状态" [selected] [ref=e123] [cursor=pointer]: 执行状态
+            - tab "查询结果" [ref=e124] [cursor=pointer]: 查询结果
+            - tab "执行历史" [ref=e125] [cursor=pointer]: 执行历史
+          - generic [ref=e128]:
+            - generic [ref=e130]:
+              - generic [ref=e132]: "总计: 0"
+              - generic [ref=e133]:
+                - img [ref=e134]
+                - generic [ref=e136]: "成功: 0"
+              - generic [ref=e137]:
+                - img [ref=e138]
+                - generic [ref=e140]: "失败: 0"
+              - generic [ref=e141]:
+                - img [ref=e142]
+                - generic [ref=e144]: "执行中: 0"
+              - generic [ref=e145]:
+                - img [ref=e146]
+                - generic [ref=e148]: "等待: 0"
+              - generic [ref=e149]:
+                - img [ref=e150]
+                - generic [ref=e152]: "超时: 0"
+            - generic [ref=e154]: 执行 SQL 后在此查看状态
+    - generic [ref=e156]: 已连接 50/50 库 · 选中 0 库
+  - generic [ref=e558]:
+    - alert
+    - alert

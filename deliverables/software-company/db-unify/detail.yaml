@@ -1,0 +1,121 @@
+- generic [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - img [ref=e6]
+        - heading "DClaw 数据钳" [level=6] [ref=e8]
+      - generic [ref=e9]:
+        - generic "缩小" [ref=e10]:
+          - button [ref=e11] [cursor=pointer]:
+            - img [ref=e12]
+        - generic [ref=e14]: 100%
+        - generic "放大" [ref=e15]:
+          - button [ref=e16] [cursor=pointer]:
+            - img [ref=e17]
+      - button "驱动管理" [ref=e20] [cursor=pointer]:
+        - img [ref=e22]
+        - text: 驱动管理
+      - button "连接管理" [ref=e24] [cursor=pointer]:
+        - img [ref=e26]
+        - text: 连接管理
+      - button "备份管理" [ref=e28] [cursor=pointer]:
+        - img [ref=e30]
+        - text: 备份管理
+      - button "SQL编辑器" [ref=e553] [cursor=pointer]:
+        - img [ref=e554]
+        - text: SQL编辑器
+      - button "资产汇总" [ref=e36] [cursor=pointer]:
+        - img [ref=e38]
+        - text: 资产汇总
+      - button "切换暗色模式" [ref=e40] [cursor=pointer]:
+        - img [ref=e41]
+      - button "操作指南" [ref=e43] [cursor=pointer]:
+        - img [ref=e44]
+    - generic [ref=e557]:
+      - generic [ref=e558]:
+        - button "返回编辑器" [ref=e559] [cursor=pointer]:
+          - img [ref=e561]
+          - text: 返回编辑器
+        - heading "服务器资源管理" [level=6] [ref=e563]
+        - button "系统设置" [ref=e564] [cursor=pointer]: 系统设置
+      - generic [ref=e565]:
+        - generic [ref=e566]:
+          - generic [ref=e569]:
+            - img [ref=e570]
+            - textbox "搜索名称/IP/OS..." [ref=e572]
+            - group
+          - generic [ref=e573]:
+            - button "新建" [ref=e574] [cursor=pointer]:
+              - img [ref=e576]
+              - text: 新建
+            - button "导入" [ref=e578] [cursor=pointer]:
+              - img [ref=e580]
+              - text: 导入
+            - link "模板" [ref=e582] [cursor=pointer]:
+              - /url: /api/servers/template/download.xlsx
+              - img [ref=e584]
+              - text: 模板
+          - list [ref=e587]:
+            - button "局域 · 192.168.11.86 互联网 · 60.213.20.108 Centos 7.9" [active] [ref=e588] [cursor=pointer]:
+              - generic [ref=e589]:
+                - generic [ref=e591]:
+                  - img [ref=e592]
+                  - paragraph
+                - generic [ref=e595]:
+                  - generic [ref=e596]: 局域 · 192.168.11.86
+                  - generic [ref=e597]: 互联网 · 60.213.20.108
+                  - generic [ref=e600]: Centos 7.9
+        - generic [ref=e601]:
+          - generic [ref=e603]:
+            - generic [ref=e604]:
+              - generic [ref=e605]:
+                - heading [level=6]
+                - generic [ref=e607]: Centos 7.9
+              - generic [ref=e608]:
+                - button "查看密码" [ref=e609] [cursor=pointer]:
+                  - img [ref=e610]
+                - button "密码历史" [ref=e612] [cursor=pointer]:
+                  - img [ref=e613]
+                - button "编辑" [ref=e615] [cursor=pointer]:
+                  - img [ref=e617]
+                  - text: 编辑
+                - button "删除" [ref=e619] [cursor=pointer]:
+                  - img [ref=e621]
+                  - text: 删除
+            - generic [ref=e623]:
+              - generic [ref=e624]:
+                - generic [ref=e625]: IP 1 (局域)
+                - paragraph [ref=e626]: 192.168.11.86
+              - generic [ref=e627]:
+                - generic [ref=e628]: IP 2 (互联网)
+                - paragraph [ref=e629]: 60.213.20.108
+              - generic [ref=e630]:
+                - generic [ref=e631]: 用户
+                - paragraph [ref=e632]: root
+              - generic [ref=e633]:
+                - generic [ref=e634]: CPU
+                - paragraph [ref=e635]: 16 核
+              - generic [ref=e636]:
+                - generic [ref=e637]: 内存
+                - paragraph [ref=e638]: 32 GB
+              - generic [ref=e639]:
+                - generic [ref=e640]: 系统盘
+                - paragraph [ref=e641]: 100 GB
+              - generic [ref=e642]:
+                - generic [ref=e643]: 数据盘
+                - paragraph [ref=e644]: 1024 GB
+          - tablist [ref=e647]:
+            - tab "数据库 (0)" [selected] [ref=e648] [cursor=pointer]: 数据库 (0)
+            - tab "应用 (0)" [ref=e649] [cursor=pointer]: 应用 (0)
+            - tab "端口 (0)" [ref=e650] [cursor=pointer]: 端口 (0)
+            - tab "关联连接 (0)" [ref=e651] [cursor=pointer]: 关联连接 (0)
+          - generic [ref=e654]:
+            - generic [ref=e655]:
+              - heading "数据库实例 (0)" [level=6] [ref=e656]
+              - button "新增" [ref=e657] [cursor=pointer]:
+                - img [ref=e659]
+                - text: 新增
+            - paragraph [ref=e661]: 暂无数据库实例
+  - generic [ref=e552]:
+    - alert
+    - alert

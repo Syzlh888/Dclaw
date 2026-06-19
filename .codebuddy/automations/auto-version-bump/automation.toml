@@ -1,0 +1,13 @@
+name = "自动版本号叠加"
+scheduleType = "recurring"
+rrule = "FREQ=DAILY;BYHOUR=23;BYMINUTE=0"
+status = "ACTIVE"
+cwds = ["d:/Work Space/DClaw/deliverables/software-company/db-unify"]
+prompt = """检查 d:/Work Space/DClaw/deliverables/software-company/db-unify 项目是否有代码改动。判断标准：
+1. 运行 `git status --porcelain` 检查是否有未提交的变更（包括 src/、server/、electron/ 目录下的文件）
+2. 或运行 `git log --since="24 hours ago" --oneline` 检查过去24小时是否有新提交
+3. 如果有任何改动，执行以下操作：
+   a. 运行 `npm version patch --no-git-tag-version` 递增版本号
+   b. 将新版本号记录到 CHANGELOG.md 顶部（格式：## [x.x.x] - YYYY-MM-DD，加上简要改动说明）
+4. 如果无任何改动，不做任何操作，直接报告"无改动，版本号不变"
+"""

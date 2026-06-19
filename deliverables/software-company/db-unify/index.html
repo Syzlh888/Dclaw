@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DClaw 数据钳</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <!-- 全局错误捕获：防止 JS 崩溃导致白屏（延迟执行，优先让 React ErrorBoundary 处理） -->
+    <script>
+      window.__dcErrors = [];
+      window.__dcErrorTimer = null;
+      window.addEventListener('error', function(e) {
+        var msg = e.message || String(e.error);
+        if (msg.indexOf('Minified React error') >= 0) {
+          msg = msg + ' (hydration/render mismatch)';
+        }
+        window.__dcErrors.push(msg);
+        console.error('[DClaw]', msg, e.filename, e.lineno, e.error);
+        // 延迟 300ms 检查，让 React ErrorBoundary 有机会先捕获并显示友好提示
+        clearTimeout(window.__dcErrorTimer);
+        window.__dcErrorTimer = setTimeout(function() {
+          var el = document.getElementById('root');
+          // 只有当 root 内容为空或只有错误信息时才接管（说明 ErrorBoundary 未捕获）
+          var text = el ? el.textContent.trim() : '';
+          if (!text || text.indexOf('组件渲染出错') >= 0 || text.indexOf('页面加载') >= 0) return;
+          if (el && text.length < 50) {
+            el.innerHTML = '<div style="font-family:sans-serif;padding:40px;color:#c00;">'
+              + '<h2>页面加载错误</h2><pre style="background:#fff3f3;padding:12px;border-radius:6px;white-space:pre-wrap;font-size:13px;">'
+              + window.__dcErrors.slice(-5).join('\n\n')
+              + '</pre><p style="color:#666;font-size:14px;margin-top:16px;">请按 F12 查看完整日志</p></div>';
+          }
+        }, 300);
+      });
+      window.addEventListener('unhandledrejection', function(e) {
+        var msg = (e.reason && e.reason.message) || String(e.reason);
+        window.__dcErrors.push('[Promise] ' + msg);
+        console.error('[DClaw Promise]', msg, e.reason);
+      });
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

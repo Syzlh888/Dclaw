@@ -1,0 +1,10 @@
+node_modules/
+dist/
+data/
+logs/
+*.log
+.env
+.DS_Store
+coverage/
+release/
+keys/private.pem

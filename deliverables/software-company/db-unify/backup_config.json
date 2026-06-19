@@ -1,0 +1,6 @@
+{
+  "autoBackupEnabled": false,
+  "backupIntervalHours": 24,
+  "backupPath": "",
+  "maxBackupCount": 10
+}

@@ -1,0 +1,53 @@
+appId: com.dclaw.db-unify
+productName: DClaw
+copyright: Copyright © 2026 DClaw
+
+# Electron 下载镜像（国内加速）
+electronDownload:
+  mirror: https://npmmirror.com/mirrors/electron/
+
+# electron-builder 二进制工具镜像（国内加速，NSIS等）
+# 通过环境变量 ELECTRON_BUILDER_BINARIES_MIRROR 设置
+# 打包命令: $env:ELECTRON_BUILDER_BINARIES_MIRROR="https://npmmirror.com/mirrors/electron-builder-binaries/"; npm run build:electron
+
+# 禁用 asar，直接使用目录结构（避免 asar 只读 + 模块导入兼容性问题）
+asar: false
+
+# 输出目录
+directories:
+  output: release
+  buildResources: build
+
+# 打包文件
+files:
+  - dist/**/*
+  - electron/**/*
+  - server/**/*
+  - .env
+  - package.json
+  - node_modules/**/*
+
+# Windows 配置
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  artifactName: ${productName}-Setup-${version}.${ext}
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: DClaw 数据钳
+  uninstallDisplayName: DClaw 数据钳
+
+# Windows 免安装版
+portable:
+  artifactName: ${productName}-Portable-${version}.${ext}
+
+# 额外资源
+extraResources:
+  - from: server
+    to: server

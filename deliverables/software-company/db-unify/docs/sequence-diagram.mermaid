@@ -1,0 +1,71 @@
+sequenceDiagram
+    actor User
+    participant App as App.tsx
+    participant Tree as DatabaseTree
+    participant TreeStore as treeStore
+    participant Editor as SqlEditor
+    participant EditorStore as editorStore
+    participant Executor as MockExecutor
+    participant ExecStore as executionStore
+    participant Result as ResultTabs
+    participant ResultStore as resultStore
+
+    %% 初始化
+    User->>App: 打开应用
+    App->>TreeStore: loadMockTree()
+    TreeStore-->>Tree: 渲染四层树结构
+    App->>EditorStore: 初始化编辑器状态
+
+    %% 勾选数据库
+    User->>Tree: 点击节点勾选框
+    Tree->>TreeStore: toggleCheck(nodeId)
+    TreeStore->>TreeStore: 向下广播 + 向上冒泡
+    TreeStore-->>Tree: 重渲染勾选状态
+    TreeStore-->>App: onSelectionChange(selectedDbIds)
+
+    %% 编写 SQL
+    User->>Editor: 输入 SQL
+    Editor->>EditorStore: setSql(value)
+    User->>Editor: Ctrl+Enter
+    Editor->>EditorStore: getSql()
+    EditorStore-->>Editor: 返回 SQL
+
+    %% 只读模式检测
+    alt 只读模式 + 非 SELECT
+        Editor->>User: 弹出警告，拒绝执行
+    else 自由模式 或 SELECT 语句
+        Editor->>ExecStore: startExecution(sql, selectedDbIds)
+
+        %% 执行流程
+        ExecStore->>Executor: executeBatch(sql, dbConnections, config)
+        loop 每个数据库（并发控制）
+            Executor->>ExecStore: updateTask(taskId, Running)
+            Executor->>Executor: 模拟延迟 (500-3000ms)
+            alt 执行成功
+                Executor->>ExecStore: updateTask(taskId, Success, result)
+            else 连接失败
+                Executor->>ExecStore: updateTask(taskId, Failed, error)
+            else 执行超时
+                Executor->>ExecStore: updateTask(taskId, Timeout)
+            end
+        end
+        Executor->>ExecStore: batchComplete()
+    end
+
+    %% 查看结果
+    ExecStore-->>Result: 全部完成，切换到结果视图
+    User->>Result: 选择"聚合视图"
+    Result->>ResultStore: getAggregatedResult()
+    ResultStore->>ResultStore: aggregate(allResults)
+    ResultStore-->>Result: 渲染合并表格
+
+    User->>Result: 选择"对比视图"
+    Result->>ResultStore: getCompareResult(selectedSources)
+    ResultStore->>ResultStore: compare(selectedResults)
+    ResultStore-->>Result: 渲染对比矩阵+差异高亮
+
+    %% 搜索过滤
+    User->>Tree: 输入搜索关键词
+    Tree->>TreeStore: searchTree(keyword)
+    TreeStore->>TreeStore: 标记可见性 + 展开匹配路径
+    TreeStore-->>Tree: 仅显示匹配节点

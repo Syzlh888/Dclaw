@@ -1,0 +1,71 @@
+- generic [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - img [ref=e6]
+        - heading "DClaw 数据钳" [level=6] [ref=e8]
+      - generic [ref=e9]:
+        - generic "缩小" [ref=e10]:
+          - button [ref=e11] [cursor=pointer]:
+            - img [ref=e12]
+        - generic [ref=e14]: 100%
+        - generic "放大" [ref=e15]:
+          - button [ref=e16] [cursor=pointer]:
+            - img [ref=e17]
+      - button "驱动管理" [ref=e20] [cursor=pointer]:
+        - img [ref=e22]
+        - text: 驱动管理
+      - button "连接管理" [ref=e24] [cursor=pointer]:
+        - img [ref=e26]
+        - text: 连接管理
+      - button "备份管理" [ref=e28] [cursor=pointer]:
+        - img [ref=e30]
+        - text: 备份管理
+      - button "SQL编辑器" [active] [ref=e158] [cursor=pointer]:
+        - img [ref=e159]
+        - text: SQL编辑器
+      - button "资产汇总" [ref=e36] [cursor=pointer]:
+        - img [ref=e38]
+        - text: 资产汇总
+      - button "切换暗色模式" [ref=e40] [cursor=pointer]:
+        - img [ref=e41]
+      - button "操作指南" [ref=e43] [cursor=pointer]:
+        - img [ref=e44]
+    - generic [ref=e162]:
+      - generic [ref=e163]:
+        - button "返回编辑器" [ref=e164] [cursor=pointer]:
+          - img [ref=e166]
+          - text: 返回编辑器
+        - heading "服务器资源管理" [level=6] [ref=e168]
+        - button "系统设置" [ref=e169] [cursor=pointer]: 系统设置
+      - generic [ref=e170]:
+        - generic [ref=e171]:
+          - generic [ref=e174]:
+            - img [ref=e175]
+            - textbox "搜索名称/IP/OS..." [ref=e177]
+            - group
+          - generic [ref=e178]:
+            - button "新建" [ref=e179] [cursor=pointer]:
+              - img [ref=e181]
+              - text: 新建
+            - button "导入" [ref=e183] [cursor=pointer]:
+              - img [ref=e185]
+              - text: 导入
+            - link "模板" [ref=e187] [cursor=pointer]:
+              - /url: /api/servers/template/download.xlsx
+              - img [ref=e189]
+              - text: 模板
+          - list [ref=e192]:
+            - button "局域 · 192.168.11.86 互联网 · 60.213.20.108 Centos 7.9" [ref=e193] [cursor=pointer]:
+              - generic [ref=e194]:
+                - generic [ref=e196]:
+                  - img [ref=e197]
+                  - paragraph
+                - generic [ref=e200]:
+                  - generic [ref=e201]: 局域 · 192.168.11.86
+                  - generic [ref=e202]: 互联网 · 60.213.20.108
+                  - generic [ref=e205]: Centos 7.9
+        - paragraph [ref=e207]: 请选择一台服务器查看详情
+  - generic [ref=e208]:
+    - alert
+    - alert
