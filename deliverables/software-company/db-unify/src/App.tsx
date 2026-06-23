@@ -15,6 +15,7 @@ import ResizableHandle from './components/layout/ResizableHandle';
 import ShortcutsDialog from './components/layout/ShortcutsDialog';
 import LoginPage from './components/auth/LoginPage';
 import ActivationPage from './components/auth/ActivationPage';
+import ComprehensiveQueryView from './components/server-resource/ComprehensiveQueryView';
 import { useTreeStore } from './stores/treeStore';
 import { useConnectionStore } from './stores/connectionStore';
 import { useEditorStore } from './stores/editorStore';
@@ -90,12 +91,11 @@ const App: React.FC = () => {
 
   const [bottomTab, setBottomTab] = useState(0);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
-  const [mainView, setMainView] = useState<'sql-editor' | 'server-resource' | 'asset-summary'>('sql-editor');  // Electron 激活状态（null=检测中，true/false 兼容旧逻辑）
+  const [mainView, setMainView] = useState<'sql-editor' | 'server-resource' | 'asset-summary' | 'comprehensive-query'>('sql-editor');  // Electron 激活状态（null=检测中，true/false 兼容旧逻辑）
   // 开发环境直接激活
   const [electronActivated, setElectronActivated] = useState<boolean | null>(isDev ? true : null);
   // 完整授权状态（含试用信息）
   const [licenseStatus, setLicenseStatus] = useState<LicenseStatus | null>(null);
-
   const isElectron = !isDev && typeof window !== 'undefined' && (
     !!(window as any).electronAPI ||
     navigator.userAgent.toLowerCase().includes('electron')
@@ -282,6 +282,12 @@ const App: React.FC = () => {
             <Box sx={{ flex: 1, overflow: 'hidden' }}>
               <ErrorBoundary key="srv" name="服务器资源">
                 <ServerResourceView />
+              </ErrorBoundary>
+            </Box>
+          ) : mainView === 'comprehensive-query' ? (
+            <Box sx={{ flex: 1, overflow: 'hidden' }}>
+              <ErrorBoundary key="query" name="综合查询">
+                <ComprehensiveQueryView onBack={() => setMainView('server-resource')} />
               </ErrorBoundary>
             </Box>
           ) : mainView === 'asset-summary' ? (

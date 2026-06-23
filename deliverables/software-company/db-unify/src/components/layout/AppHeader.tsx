@@ -14,6 +14,7 @@ import LanIcon from '@mui/icons-material/Lan';
 import SettingsInputComponentIcon from '@mui/icons-material/SettingsInputComponent';
 import LockIcon from '@mui/icons-material/Lock';
 import SettingsIcon from '@mui/icons-material/Settings';
+import AnalyticsIcon from '@mui/icons-material/Analytics';
 import { useThemeMode } from '../../contexts/ThemeModeContext';
 import { useAuthStore } from '../../stores/authStore';
 import { useDriverStore } from '../../stores/driverStore';
@@ -26,9 +27,11 @@ import AccessManagementDialog from '../server-resource/AccessManagementDialog';
 
 const SCALE_STEPS = [0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.35, 1.5];
 
+type NavigableView = 'sql-editor' | 'server-resource' | 'asset-summary' | 'comprehensive-query';
+
 interface Props {
   mainView?: string;
-  onNavigate?: (view: 'sql-editor' | 'server-resource' | 'asset-summary') => void;
+  onNavigate?: (view: NavigableView) => void;
 }
 
 const AppHeader: React.FC<Props> = ({ mainView, onNavigate }) => {
@@ -62,6 +65,7 @@ const AppHeader: React.FC<Props> = ({ mainView, onNavigate }) => {
   const isSqlEditor = mainView === 'sql-editor';
   const isServerResource = mainView === 'server-resource';
   const isAssetSummary = mainView === 'asset-summary';
+  const isComprehensiveQuery = mainView === 'comprehensive-query';
 
   return (
     <Box
@@ -88,7 +92,15 @@ const AppHeader: React.FC<Props> = ({ mainView, onNavigate }) => {
       {mainView !== undefined && (
         <Button
           size="small"
-          onClick={() => onNavigate?.(isSqlEditor ? 'server-resource' : 'sql-editor')}
+          onClick={() => {
+            if (isComprehensiveQuery || isAssetSummary) {
+              onNavigate?.('server-resource');
+            } else if (isServerResource) {
+              onNavigate?.('sql-editor');
+            } else {
+              onNavigate?.('server-resource');
+            }
+          }}
           sx={{
             textTransform: 'none',
             fontSize: '0.8rem',
@@ -104,7 +116,7 @@ const AppHeader: React.FC<Props> = ({ mainView, onNavigate }) => {
         >
           <CodeIcon sx={{ fontSize: 16, mr: 0.5 }} />
           <Typography component="span" sx={{ fontSize: 'inherit', fontWeight: 500 }}>
-            {isSqlEditor ? '服务器资源管理' : 'SQL编辑器'}
+            {isSqlEditor ? '服务器资源管理' : isComprehensiveQuery || isAssetSummary ? '服务器资源管理' : 'SQL编辑器'}
           </Typography>
         </Button>
       )}
@@ -187,6 +199,29 @@ const AppHeader: React.FC<Props> = ({ mainView, onNavigate }) => {
         </>
       )}
 
+      {/* 服务器资源 & 综合查询视图：综合查询按钮 */}
+      {(isServerResource || isComprehensiveQuery) && (
+        <Button
+          size="small"
+          startIcon={<AnalyticsIcon />}
+          onClick={() => onNavigate?.('comprehensive-query')}
+          variant={isComprehensiveQuery ? 'contained' : 'outlined'}
+          sx={{
+            color: isComprehensiveQuery ? 'primary.main' : 'white',
+            borderColor: 'rgba(255,255,255,0.4)',
+            textTransform: 'none',
+            mr: 0.5,
+            bgcolor: isComprehensiveQuery ? 'white' : 'transparent',
+            '&:hover': {
+              borderColor: 'white',
+              bgcolor: isComprehensiveQuery ? '#f0f0f0' : 'rgba(255,255,255,0.1)',
+            },
+          }}
+        >
+          综合查询
+        </Button>
+      )}
+
       {/* 服务器资源视图：访问管理 + 二次密码 */}
       {isServerResource && (
         <>
@@ -224,7 +259,7 @@ const AppHeader: React.FC<Props> = ({ mainView, onNavigate }) => {
       )}
 
       {/* 资产汇总 - 非服务器资源视图显示 */}
-      {mainView !== undefined && !isServerResource && (
+      {mainView !== undefined && !isServerResource && !isComprehensiveQuery && (
         <Button
           size="small"
           startIcon={<AssessmentIcon />}

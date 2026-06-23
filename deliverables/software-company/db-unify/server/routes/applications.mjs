@@ -3,7 +3,7 @@
  */
 import { Router } from 'express';
 import { nanoid } from 'nanoid';
-import { getAll, getById, insert, update, remove } from '../database.mjs';
+import { getAll, getById, insert, update, remove, query } from '../database.mjs';
 
 const router = Router();
 
@@ -43,6 +43,15 @@ router.put('/:id', (req, res) => {
 router.delete('/:id', (req, res) => {
   const existing = getById('applications', req.params.id);
   if (!existing) return res.status(404).json({ error: '应用不存在' });
+  // 检查是否被服务器引用
+  const serversUsing = query('servers', s => s.application_id === req.params.id);
+  if (serversUsing.length > 0) {
+    return res.status(409).json({
+      error: `无法删除，还有 ${serversUsing.length} 台服务器引用此应用`,
+      details: serversUsing.slice(0, 5).map(s => s.name),
+      count: serversUsing.length,
+    });
+  }
   remove('applications', req.params.id);
   res.json({ success: true });
 });

@@ -98,4 +98,24 @@ router.put('/server-location-dict', (req, res) => {
   res.json({ success: true });
 });
 
+// ===== 字典引用检查 =====
+router.post('/check-dict-usage', (req, res) => {
+  const { type, name } = req.body;
+  if (!type || !name) return res.status(400).json({ error: '缺少 type 或 name 参数' });
+  const servers = getAll('servers');
+  let usingServers = [];
+  if (type === 'os') {
+    usingServers = servers.filter(s => s.os === name);
+  } else if (type === 'serverLocation') {
+    usingServers = servers.filter(s => s.server_location === name);
+  } else {
+    return res.status(400).json({ error: '无效的 type 参数' });
+  }
+  res.json({
+    inUse: usingServers.length > 0,
+    count: usingServers.length,
+    serverNames: usingServers.slice(0, 5).map(s => s.name),
+  });
+});
+
 export default router;

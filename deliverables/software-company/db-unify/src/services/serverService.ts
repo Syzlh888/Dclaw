@@ -65,10 +65,10 @@ export async function decryptServerPasswords(id: string, verifyPassword: string)
   return res.json();
 }
 
-export async function importServers(servers: any[]) {
+export async function importServers(payload: { servers: any[]; dbInstances?: any[]; appInstances?: any[]; apiInstances?: any[]; midInstances?: any[] }) {
   const res = await apiFetch(`${BASE}/import`, {
     method: 'POST',
-    body: JSON.stringify({ servers }),
+    body: JSON.stringify(payload),
   });
   return res.json();
 }
@@ -302,6 +302,14 @@ export async function fetchServerLocationDict() {
 export async function saveServerLocationDict(list: { name: string; shortName: string }[]) {
   const res = await apiFetch('/api/system/server-location-dict', {
     method: 'PUT', body: JSON.stringify({ list }),
+  });
+  return res.json();
+}
+
+// Check dict item usage
+export async function checkDictUsage(type: 'os' | 'serverLocation', name: string) {
+  const res = await apiFetch('/api/system/check-dict-usage', {
+    method: 'POST', body: JSON.stringify({ type, name }),
   });
   return res.json();
 }

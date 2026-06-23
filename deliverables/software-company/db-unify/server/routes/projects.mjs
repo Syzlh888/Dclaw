@@ -3,7 +3,7 @@
  */
 import { Router } from 'express';
 import { nanoid } from 'nanoid';
-import { getAll, getById, insert, update, remove } from '../database.mjs';
+import { getAll, getById, insert, update, remove, query } from '../database.mjs';
 
 const router = Router();
 
@@ -38,6 +38,23 @@ router.put('/:id', (req, res) => {
 router.delete('/:id', (req, res) => {
   const existing = getById('projects', req.params.id);
   if (!existing) return res.status(404).json({ error: '项目不存在' });
+  // 检查是否被服务器引用
+  const serversUsing = query('servers', s => s.project_id === req.params.id);
+  if (serversUsing.length > 0) {
+    return res.status(409).json({
+      error: `无法删除，还有 ${serversUsing.length} 台服务器引用此项目`,
+      details: serversUsing.slice(0, 5).map(s => s.name),
+      count: serversUsing.length,
+    });
+  }
+  // 检查是否有关联工程
+  const childEngineerings = query('engineerings', e => e.project_id === req.params.id);
+  if (childEngineerings.length > 0) {
+    return res.status(409).json({
+      error: `无法删除，该项目下还有 ${childEngineerings.length} 个工程，请先删除工程`,
+      count: childEngineerings.length,
+    });
+  }
   remove('projects', req.params.id);
   res.json({ success: true });
 });

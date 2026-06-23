@@ -2,11 +2,15 @@
  * 服务器资源管理 API
  * 含服务器 CRUD、子资源内联 CRUD、密码解密、批量导入、密码历史
  */
+import { createRequire } from 'module';
 import { Router } from 'express';
 import { nanoid } from 'nanoid';
 import bcrypt from 'bcryptjs';
 import { getAll, getById, insert, update, remove, query, removeWhere } from '../database.mjs';
 import { encryptPassword, decryptPassword } from '../crypto.mjs';
+
+const require = createRequire(import.meta.url);
+const XLSX = require('xlsx');
 
 const router = Router();
 
@@ -61,6 +65,9 @@ function sanitizeDbInst(d) {
       r.credentials = creds.map(c => ({ username: c.username, notes: c.notes || '', schema: c.schema || '', region: c.region || '', connectionName: c.connectionName || '', password: c.password_encrypted ? '******' : maskPassword(c.password) }));
     } catch { r.credentials = []; }
   }
+  // 集群字段转换为 camelCase
+  r.isCluster = r.is_cluster === 1;
+  r.clusterIps = r.cluster_ips || '';
   return r;
 }
 
@@ -135,12 +142,7 @@ function recordPasswordHistory(serverId, fieldName, changedBy, encryptedPassword
 // ========= 模板下载 =========
 
 router.get('/template/download', (_req, res) => {
-  // 使用 xlsx 生成模板（此处返回提示，实际使用时需集成 xlsx 生成逻辑）
-  const templateUrl = '/api/servers/template/download';
-  res.json({
-    message: '模板下载功能需在 server 启动后通过 /api/servers/template/download.xlsx 访问',
-    note: '请在前端调用此接口时添加 .xlsx 后缀，或自行使用 xlsx 包生成模板',
-  });
+  res.redirect('/api/servers/template/download.xlsx');
 });
 
 // ========= 资产汇总 =========
@@ -176,24 +178,173 @@ router.get('/summary', (_req, res) => {
   });
 });
 
+// ========= 辅助：构建 Sheet =========
+
+function buildSheet(headers, exampleRow, comments) {
+  const ws = XLSX.utils.aoa_to_sheet([headers, exampleRow]);
+  ws['!cols'] = headers.map(() => ({ wch: 18 }));
+  if (comments) {
+    // 在行首添加注释标识（以 # 开头的行为注释，导入时自动跳过）
+    const commentRows = comments.map(c => ['# ' + c]);
+    const data = [...commentRows, headers, exampleRow];
+    const ws2 = XLSX.utils.aoa_to_sheet(data);
+    ws2['!cols'] = headers.map(() => ({ wch: 18 }));
+    return ws2;
+  }
+  return ws;
+}
+
 // ========= 模板下载 (xlsx) =========
 
 router.get('/template/download.xlsx', (_req, res) => {
   try {
-    // 动态加载 xlsx 包
-    const XLSX = require('xlsx');
     const wb = XLSX.utils.book_new();
 
-    const headers = ['服务器名称', '内网IP', '外网IP', '公网IP', '跨网访问IP', '操作系统', 'CPU核数', '内存(GB)', '系统盘(GB)', '数据盘(GB)', '存储类型', '带宽(Mbps)', '服务器位置', '服务器类型', '用户名', '密码', '堡垒机地址', '堡垒机端口', '堡垒机用户名', '堡垒机密码', 'VPN信息', 'MAC地址', '部署内容', '标签', '备注', '所属项目', '所属工程', '所属应用'];
-    const ws = XLSX.utils.aoa_to_sheet([headers]);
-    ws['!cols'] = headers.map(() => ({ wch: 15 }));
-    XLSX.utils.book_append_sheet(wb, ws, '服务器资源');
+    // ── Sheet 1: 服务器资源 ──
+    const srvHeaders = [
+      '服务器名称', '服务器类型', '操作系统', 'MAC地址',
+      '内网IP', '外网IP', '公网IP', '跨网访问IP', '带宽(Mbps)',
+      'CPU核数', '内存(GB)', '系统盘(GB)', '数据盘(GB)', '存储类型',
+      '用户名', '密码',
+      '堡垒机地址', '堡垒机端口', '堡垒机用户名', '堡垒机密码', 'VPN信息',
+      '所属项目', '所属工程', '所属应用',
+      '部署内容', '服务器位置', '标签', '备注',
+    ];
+    const srvExample = [
+      '示例服务器01', '应用服务器', 'CentOS 7.9', '00:1A:2B:3C:4D:5E',
+      '192.168.1.100', '10.0.0.100', '1.2.3.4', '172.16.0.1', 100,
+      8, 32, 100, 500, 'SSD',
+      'admin', '',
+      '192.168.1.254', 22, 'ops', '', '',
+      '示例项目', '示例工程', '示例应用',
+      'Nginx,Java应用', '北京-朝阳-A机房', '生产环境,核心业务', '示例备注',
+    ];
+    XLSX.utils.book_append_sheet(wb, buildSheet(srvHeaders, srvExample), '服务器资源');
+
+    // ── Sheet 2: 数据库实例 ──
+    const dbHeaders = [
+      '服务器名称', '数据库类型', '版本', '数据库名', '端口', '用户名', '密码', '内网IP', '外网IP', '是否集群', '集群其他IP', '备注',
+    ];
+    const dbExample = [
+      '示例服务器01', 'MySQL', '8.0.33', 'his_db', 3306, 'root', '', '192.168.1.100', '', '是', '10.0.0.2, 10.0.0.3', '核心业务库',
+    ];
+    const dbComments = [
+      '服务器名称：关联"服务器资源"Sheet中的服务器名称，必填',
+      '数据库类型：如 MySQL / PostgreSQL / Oracle / SQLServer / Redis / MongoDB',
+      '数据库名：数据库实例名称，必填',
+      '端口：数据库端口号，必填',
+      '密码：导入后自动加密存储',
+      '是否集群：填写"是"或"否"，默认为否',
+      '集群其他IP：如果是否集群为是，填写集群其他节点IP，多个用英文逗号分隔',
+    ];
+    XLSX.utils.book_append_sheet(wb, buildSheet(dbHeaders, dbExample, dbComments), '数据库实例');
+
+    // ── Sheet 3: 应用实例 ──
+    const appHeaders = [
+      '服务器名称', '应用名称', '端口', 'URL', '联系人', '联系电话', '用户名', '密码', '备注',
+    ];
+    const appExample = [
+      '示例服务器01', 'HIS门诊系统', 8080, 'http://192.168.1.100:8080/his', '张三', '13800138000', 'admin', '', '门诊业务系统',
+    ];
+    const appComments = [
+      '服务器名称：关联"服务器资源"Sheet中的服务器名称，必填',
+      '应用名称：必填',
+      'URL：应用访问地址，必填',
+      '密码：导入后自动加密存储',
+    ];
+    XLSX.utils.book_append_sheet(wb, buildSheet(appHeaders, appExample, appComments), '应用实例');
+
+    // ── Sheet 4: API实例 ──
+    const apiHeaders = [
+      '服务器名称', 'API地址', '端口', '所属应用', '是否加密', '加密方式', '请求示例', '响应示例', '备注',
+    ];
+    const apiExample = [
+      '示例服务器01', '/api/v1/patients', 8080, 'HIS门诊系统', '是', 'AES256', '', '', '患者信息查询接口',
+    ];
+    const apiComments = [
+      '服务器名称：关联"服务器资源"Sheet中的服务器名称，必填',
+      'API地址：接口路径，必填',
+      '所属应用：应用名称，必填',
+      '是否加密：填写"是"或"否"',
+    ];
+    XLSX.utils.book_append_sheet(wb, buildSheet(apiHeaders, apiExample, apiComments), 'API实例');
+
+    // ── Sheet 5: 中间件实例 ──
+    const midHeaders = [
+      '服务器名称', '名称', '端口', '类型', '版本', 'URL', '服务应用', '用户名', '密码', '备注',
+    ];
+    const midExample = [
+      '示例服务器01', 'Nginx-01', 80, 'Nginx', '1.24.0', 'http://192.168.1.100:80', 'HIS门诊系统', 'admin', '', '反向代理',
+    ];
+    const midComments = [
+      '服务器名称：关联"服务器资源"Sheet中的服务器名称，必填',
+      '名称和类型：必填',
+      '密码：导入后自动加密存储',
+    ];
+    XLSX.utils.book_append_sheet(wb, buildSheet(midHeaders, midExample, midComments), '中间件实例');
+
+    // ── 填写说明 Sheet ──
+    const notesData = [
+      ['Sheet名称', '字段名', '是否必填', '填写说明'],
+      ['服务器资源', '服务器名称', '是', '服务器唯一标识（其他Sheet通过此名称关联）'],
+      ['服务器资源', '内网IP', '是', '局域网 IP 地址'],
+      ['服务器资源', '服务器类型', '否', '如：应用服务器、数据库服务器、中间件服务器等'],
+      ['服务器资源', '操作系统', '否', '如：CentOS 7.9、Windows Server 2019、Ubuntu 22.04'],
+      ['服务器资源', 'MAC地址', '否', '物理地址，格式 XX:XX:XX:XX:XX:XX'],
+      ['服务器资源', '外网IP', '否', '政务外网 IP'],
+      ['服务器资源', '公网IP', '否', '互联网公网 IP'],
+      ['服务器资源', '跨网访问IP', '否', '跨网段访问 IP'],
+      ['服务器资源', '带宽(Mbps)', '否', '纯数字'],
+      ['服务器资源', 'CPU核数', '否', '纯数字，如 8'],
+      ['服务器资源', '内存(GB)', '否', '纯数字，如 32'],
+      ['服务器资源', '系统盘(GB)', '否', '纯数字，如 100'],
+      ['服务器资源', '数据盘(GB)', '否', '纯数字，如 500'],
+      ['服务器资源', '存储类型', '否', '如 SSD / HDD / NVMe'],
+      ['服务器资源', '用户名', '否', 'SSH 或远程桌面用户名'],
+      ['服务器资源', '密码', '否', '导入后自动加密存储'],
+      ['服务器资源', '堡垒机地址', '否', '堡垒机 IP 或域名'],
+      ['服务器资源', '堡垒机端口', '否', '纯数字，如 22'],
+      ['服务器资源', '所属项目', '否', '项目名称'],
+      ['服务器资源', '所属工程', '否', '工程名称'],
+      ['服务器资源', '所属应用', '否', '应用名称'],
+      ['服务器资源', '部署内容', '否', '服务器上部署的服务/应用'],
+      ['服务器资源', '服务器位置', '否', '物理位置，如：北京-朝阳-A机房'],
+      ['服务器资源', '标签', '否', '多个标签用英文逗号分隔'],
+      ['服务器资源', '备注', '否', '补充说明'],
+      ['', '', '', ''],
+      ['数据库实例', '服务器名称', '是', '关联到服务器资源Sheet中的服务器名称'],
+      ['数据库实例', '数据库类型', '是', 'MySQL / PostgreSQL / Oracle / SQLServer / Redis / MongoDB 等'],
+      ['数据库实例', '数据库名', '是', '数据库实例名'],
+      ['数据库实例', '端口', '是', '数据库端口号'],
+      ['数据库实例', '是否集群', '否', '填写"是"或"否"，默认为否'],
+      ['数据库实例', '集群其他IP', '否', '集群其他节点IP，多个用英文逗号分隔'],
+      ['', '', '', ''],
+      ['应用实例', '服务器名称', '是', '关联到服务器资源Sheet中的服务器名称'],
+      ['应用实例', '应用名称', '是', '应用系统名称'],
+      ['应用实例', 'URL', '是', '应用访问地址'],
+      ['', '', '', ''],
+      ['API实例', '服务器名称', '是', '关联到服务器资源Sheet中的服务器名称'],
+      ['API实例', 'API地址', '是', '接口路径'],
+      ['API实例', '所属应用', '是', '应用名称'],
+      ['API实例', '是否加密', '否', '填写"是"或"否"'],
+      ['', '', '', ''],
+      ['中间件实例', '服务器名称', '是', '关联到服务器资源Sheet中的服务器名称'],
+      ['中间件实例', '名称', '是', '中间件实例名称'],
+      ['中间件实例', '类型', '是', '如 Nginx / Tomcat / Redis / RabbitMQ / Kafka 等'],
+    ];
+    const wsNotes = XLSX.utils.aoa_to_sheet(notesData);
+    wsNotes['!cols'] = [{ wch: 14 }, { wch: 14 }, { wch: 10 }, { wch: 50 }];
+    XLSX.utils.book_append_sheet(wb, wsNotes, '填写说明');
 
     const buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', 'attachment; filename="服务器资源导入模板.xlsx"');
+    res.set({
+      'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'Content-Disposition': "attachment; filename=\"server-template.xlsx\"; filename*=UTF-8''%E6%9C%8D%E5%8A%A1%E5%99%A8%E8%B5%84%E6%BA%90%E5%AF%BC%E5%85%A5%E6%A8%A1%E6%9D%BF.xlsx",
+      'Content-Length': buf.length,
+    });
     res.send(buf);
-  } catch {
+  } catch (e) {
+    console.error('模板生成失败:', e);
     res.status(500).json({ error: '模板生成失败' });
   }
 });
@@ -520,7 +671,7 @@ router.post('/:id/db-instances', (req, res) => {
   try {
     const server = getById('servers', req.params.id);
     if (!server) return res.status(404).json({ error: '服务器不存在' });
-    const { dbType, version, dbName, schema, username, password, credentials, internalIp, externalIp, port, notes } = req.body;
+    const { dbType, version, dbName, schema, username, password, credentials, internalIp, externalIp, port, notes, isCluster, clusterIps } = req.body;
     if (!dbType || !dbName || !port) {
       return res.status(400).json({ error: '数据库类型/库名/端口不能为空' });
     }
@@ -567,6 +718,8 @@ router.post('/:id/db-instances', (req, res) => {
       credentials: credsJson,
       internal_ip: internalIp || '', external_ip: externalIp || '',
       port: Number(port), notes: notes || '',
+      is_cluster: isCluster === true || isCluster === 1 ? 1 : 0,
+      cluster_ips: clusterIps || '',
       created_at: now, updated_at: now,
     };
     insert('servers_db_instances', inst);
@@ -593,6 +746,9 @@ router.put('/:id/db-instances/:di', (req, res) => {
   for (const [camel, snake] of Object.entries(fieldMap)) {
     if (body[camel] !== undefined) partial[snake] = typeof body[camel] === 'string' ? body[camel].trim() : body[camel];
   }
+  // 集群字段
+  if (body.isCluster !== undefined) partial.is_cluster = body.isCluster ? 1 : 0;
+  if (body.clusterIps !== undefined) partial.cluster_ips = String(body.clusterIps || '').trim();
   // 处理多用户凭据
   if (body.credentials !== undefined && Array.isArray(body.credentials)) {
     const creds = body.credentials.filter(c => c.username?.trim());
@@ -930,8 +1086,41 @@ router.delete('/:id/ports/:pi', (req, res) => {
 
 // ========= 批量导入 =========
 
+/** 标准化 tags 字段 */
+function normalizeTags(raw) {
+  if (Array.isArray(raw)) return raw.map(t => String(t).trim()).filter(Boolean);
+  if (typeof raw === 'string' && raw.trim()) return raw.split(',').map(t => t.trim()).filter(Boolean);
+  return [];
+}
+
+/** 导入子资源辅助函数 */
+function importSubResource(collection, items, serverNameMap, buildRecord, typeLabel) {
+  const results = [];
+  for (const item of items) {
+    const row = item.row || (results.length + 1);
+    const serverName = (item.serverName || '').trim();
+    const serverId = serverNameMap[serverName];
+    if (!serverId) {
+      results.push({ row, type: typeLabel, status: 'failed', error: `未找到服务器「${serverName}」，请先在"服务器资源"Sheet中填写该服务器` });
+      continue;
+    }
+    try {
+      const record = buildRecord(serverId, item);
+      if (!record) {
+        results.push({ row, type: typeLabel, status: 'failed', error: '必填字段缺失' });
+        continue;
+      }
+      insert(collection, record);
+      results.push({ row, type: typeLabel, name: record.name || record.db_name || record.api_address || '', status: 'created', id: record.id });
+    } catch (err) {
+      results.push({ row, type: typeLabel, status: 'failed', error: err.message });
+    }
+  }
+  return results;
+}
+
 router.post('/import', (req, res) => {
-  const { servers } = req.body;
+  const { servers, dbInstances, appInstances, apiInstances, midInstances } = req.body;
   if (!Array.isArray(servers) || servers.length === 0) {
     return res.status(400).json({ error: '请提供有效的服务器列表' });
   }
@@ -941,6 +1130,8 @@ router.post('/import', (req, res) => {
   let failCount = 0;
   const now = new Date().toISOString();
 
+  // 第一步：导入服务器
+  const serverNameToId = {};
   for (const item of servers) {
     const row = (item.row !== undefined ? item.row : results.length + 1);
     try {
@@ -950,7 +1141,7 @@ router.post('/import', (req, res) => {
         vpnInfo, macAddress, deployedContent, tags, notes, projectId, engineeringId, applicationId } = item;
 
       if (!name || !internalIp) {
-        results.push({ row, name: name || '(空)', status: 'failed', error: '服务器名称和内网IP不能为空' });
+        results.push({ row, name: name || '(空)', type: '服务器', status: 'failed', error: '服务器名称和内网IP不能为空' });
         failCount++;
         continue;
       }
@@ -958,8 +1149,10 @@ router.post('/import', (req, res) => {
       const id = nanoid(8);
       const server = {
         id,
+        project_id: projectId || null,
+        engineering_id: engineeringId || null,
         application_id: applicationId || null,
-        name: name.trim(),
+        name: (name || '').trim(),
         internal_ip: (internalIp || '').trim(),
         external_ip: (externalIp || '').trim(),
         public_ip: (publicIp || '').trim(),
@@ -982,7 +1175,7 @@ router.post('/import', (req, res) => {
         vpn_info: vpnInfo || '',
         mac_address: macAddress || '',
         deployed_content: deployedContent || '',
-        tags: Array.isArray(tags) ? tags : [],
+        tags: normalizeTags(tags),
         notes: notes || '',
         linked_connection_ids: [],
         created_at: now,
@@ -990,15 +1183,114 @@ router.post('/import', (req, res) => {
       };
 
       insert('servers', server);
-      results.push({ row, name, status: 'created', id });
+      serverNameToId[server.name] = id;
+      results.push({ row, name: server.name, type: '服务器', status: 'created', id });
       successCount++;
     } catch (err) {
-      results.push({ row, name: item.name || '(空)', status: 'failed', error: err.message });
+      results.push({ row, name: item.name || '(空)', type: '服务器', status: 'failed', error: err.message });
       failCount++;
     }
   }
 
-  res.json({ total: servers.length, success: successCount, failed: failCount, results });
+  // 第二步：导入数据库实例
+  if (Array.isArray(dbInstances) && dbInstances.length > 0) {
+    const dbResults = importSubResource('servers_db_instances', dbInstances, serverNameToId, (serverId, item) => {
+      const { dbType, dbName, port } = item;
+      if (!dbType || !dbName || port == null) return null;
+      const ndb = {
+        id: nanoid(8), server_id: serverId,
+        db_type: dbType, version: item.version || '', db_name: dbName,
+        port: Number(port),
+        internal_ip: item.internalIp || '', external_ip: item.externalIp || '',
+        schema_name: '', username: (item.username || '').trim(),
+        password_encrypted: item.password ? encryptPassword(String(item.password)) : '',
+        credentials: item.username && item.password ? JSON.stringify([{ username: (item.username || '').trim(), password_encrypted: encryptPassword(String(item.password)) }]) : '',
+        is_cluster: item.isCluster === true || item.isCluster === 1 || item.isCluster === '是' ? 1 : 0,
+        cluster_ips: (item.clusterIps || '').trim(),
+        notes: item.notes || '',
+        created_at: now, updated_at: now,
+      };
+      return ndb;
+    }, '数据库实例');
+    const dbOk = dbResults.filter(r => r.status === 'created').length;
+    const dbFail = dbResults.filter(r => r.status === 'failed').length;
+    successCount += dbOk; failCount += dbFail;
+    results.push(...dbResults);
+  }
+
+  // 第三步：导入应用实例
+  if (Array.isArray(appInstances) && appInstances.length > 0) {
+    const appResults = importSubResource('servers_app_instances', appInstances, serverNameToId, (serverId, item) => {
+      const { appName, url } = item;
+      if (!appName || !url) return null;
+      const na = {
+        id: nanoid(8), server_id: serverId,
+        name: appName, port: item.port != null ? Number(item.port) : null,
+        contact_person: item.contactPerson || '', contact_phone: item.contactPhone || '',
+        url, username: (item.username || '').trim(),
+        password_encrypted: item.password ? encryptPassword(String(item.password)) : '',
+        credentials: item.username && item.password ? JSON.stringify([{ username: (item.username || '').trim(), password_encrypted: encryptPassword(String(item.password)) }]) : '',
+        notes: item.notes || '',
+        created_at: now, updated_at: now,
+      };
+      return na;
+    }, '应用实例');
+    const appOk = appResults.filter(r => r.status === 'created').length;
+    const appFail = appResults.filter(r => r.status === 'failed').length;
+    successCount += appOk; failCount += appFail;
+    results.push(...appResults);
+  }
+
+  // 第四步：导入 API 实例
+  if (Array.isArray(apiInstances) && apiInstances.length > 0) {
+    const apiResults = importSubResource('servers_api_instances', apiInstances, serverNameToId, (serverId, item) => {
+      const { apiAddress, applicationName } = item;
+      if (!apiAddress || !applicationName) return null;
+      const isEnc = item.encrypted;
+      const encVal = typeof isEnc === 'boolean' ? isEnc : (isEnc === '是' || isEnc === 'true' || isEnc === '1' || isEnc === true);
+      return {
+        id: nanoid(8), server_id: serverId,
+        api_address: apiAddress,
+        port: item.port != null ? Number(item.port) : null,
+        application_name: applicationName,
+        encrypted: encVal ? 1 : 0,
+        encryption_method: item.encryptionMethod || '',
+        request_example: item.requestExample || '',
+        response_example: item.responseExample || '',
+        notes: item.notes || '',
+        created_at: now, updated_at: now,
+      };
+    }, 'API实例');
+    const apiOk = apiResults.filter(r => r.status === 'created').length;
+    const apiFail = apiResults.filter(r => r.status === 'failed').length;
+    successCount += apiOk; failCount += apiFail;
+    results.push(...apiResults);
+  }
+
+  // 第五步：导入中间件实例
+  if (Array.isArray(midInstances) && midInstances.length > 0) {
+    const midResults = importSubResource('servers_mid_instances', midInstances, serverNameToId, (serverId, item) => {
+      const { midName, type } = item;
+      if (!midName || !type) return null;
+      return {
+        id: nanoid(8), server_id: serverId,
+        name: midName, port: item.port != null ? Number(item.port) : null,
+        type, version: item.version || '', url: item.url || '',
+        service_app: item.serviceApp || '', username: (item.username || '').trim(),
+        password_encrypted: item.password ? encryptPassword(String(item.password)) : '',
+        credentials: item.username && item.password ? JSON.stringify([{ username: (item.username || '').trim(), password_encrypted: encryptPassword(String(item.password)) }]) : '',
+        notes: item.notes || '',
+        created_at: now, updated_at: now,
+      };
+    }, '中间件实例');
+    const midOk = midResults.filter(r => r.status === 'created').length;
+    const midFail = midResults.filter(r => r.status === 'failed').length;
+    successCount += midOk; failCount += midFail;
+    results.push(...midResults);
+  }
+
+  const totalItems = servers.length + (dbInstances?.length || 0) + (appInstances?.length || 0) + (apiInstances?.length || 0) + (midInstances?.length || 0);
+  res.json({ total: totalItems, success: successCount, failed: failCount, results });
 });
 
 export default router;

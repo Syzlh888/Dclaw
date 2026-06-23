@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box, Typography, Button, Chip, Tabs, Tab, IconButton, Tooltip,
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
+  Dialog, DialogTitle, DialogContent, DialogActions, TextField, Alert,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -9,6 +9,9 @@ import HistoryIcon from '@mui/icons-material/History';
 import KeyIcon from '@mui/icons-material/Key';
 import LinkIcon from '@mui/icons-material/Link';
 import LinkOffIcon from '@mui/icons-material/LinkOff';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+
 import DbInstanceTab from './DbInstanceTab';
 import AppInstanceTab from './AppInstanceTab';
 import ApiManagementTab from './ApiManagementTab';
@@ -18,6 +21,7 @@ import VerifyPasswordDialog from './VerifyPasswordDialog';
 import PasswordHistoryDialog from './PasswordHistoryDialog';
 import { useServerStore } from '../../stores/serverStore';
 import { useConnectionStore } from '../../stores/connectionStore';
+import { apiFetch } from '../../services/apiClient';
 
 
 interface Props {
@@ -39,6 +43,18 @@ const ServerDetailPanel: React.FC<Props> = ({ onEdit, onDelete }) => {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [decrypted, setDecrypted] = useState<any>(null);
 
+  // 访问管理相关状态
+  const [accessEntries, setAccessEntries] = useState<any[]>([]);
+  const [decryptedCache, setDecryptedCache] = useState<Map<string, string>>(new Map());
+  const [revealedPwds, setRevealedPwds] = useState<Set<string>>(new Set());
+  const [accessVerifyOpen, setAccessVerifyOpen] = useState(false);
+  const [accessVerifyTarget, setAccessVerifyTarget] = useState<{
+    entryId: string; pwdKey: string; credIndex: number; username: string;
+  } | null>(null);
+  const [accessVerifyInput, setAccessVerifyInput] = useState('');
+  const [accessVerifyError, setAccessVerifyError] = useState('');
+  const [accessVerifyLoading, setAccessVerifyLoading] = useState(false);
+
   const connections = useConnectionStore(s => s.connections);
   const updateConnection = useConnectionStore(s => s.updateConnection);
 
@@ -48,6 +64,98 @@ const ServerDetailPanel: React.FC<Props> = ({ onEdit, onDelete }) => {
   const linkedConnections = server
     ? Object.values(connections).filter(c => c.serverId === server.id || server.linkedConnectionIds?.includes(c.id))
     : [];
+
+  // 拉取全局访问条目
+  useEffect(() => {
+    apiFetch('/api/access')
+      .then(r => r.json())
+      .then(d => setAccessEntries(d.entries || []))
+      .catch(console.error);
+  }, [selectedId]);
+
+  // 获取访问条目的凭据列表
+  const getEntryCreds = (e: any): (any & { _key: string; _index: number })[] => {
+    if (e.credentials && e.credentials.length > 0) {
+      return e.credentials.map((c: any, i: number) => ({ ...c, _key: `${e.id}-${i}`, _index: i }));
+    }
+    return [{ username: e.username || '', password: e.password || '******', _key: `${e.id}-0`, _index: 0 }];
+  };
+
+  // 根据 server.accessList 匹配全局访问条目
+  const matchedAccessList = (() => {
+    if (!server?.accessList || server.accessList.length === 0) return [];
+    const matches: any[] = [];
+    server.accessList.forEach((al: any) => {
+      const entry = accessEntries.find((e: any) =>
+        e.type === al.type && e.address === al.address
+      );
+      if (entry) {
+        const creds = getEntryCreds(entry);
+        const cred = creds.find((c: any) => c.username === al.user);
+        matches.push({
+          ...al,
+          entryId: entry.id,
+          entry,
+          cred: cred || creds[0],
+          credIndex: cred ? cred._index : 0,
+          pwdKey: cred ? cred._key : `${entry.id}-0`,
+        });
+      } else {
+        // 即使没有找到匹配的全局条目，也展示 server.accessList 里记录的信息
+        matches.push({ ...al, entryId: '', entry: null, cred: null, credIndex: 0, pwdKey: '' });
+      }
+    });
+    return matches;
+  })();
+
+  // 获取密码显示文本
+  const getDisplayPassword = (pwdKey: string): string => {
+    if (decryptedCache.has(pwdKey) && revealedPwds.has(pwdKey)) {
+      return decryptedCache.get(pwdKey) || '';
+    }
+    return '••••••••';
+  };
+
+  // 查看/隐藏密码
+  const requestViewPassword = (entryId: string, pwdKey: string, credIndex: number, username: string) => {
+    if (decryptedCache.has(pwdKey)) {
+      setRevealedPwds(prev => {
+        const n = new Set(prev);
+        if (n.has(pwdKey)) n.delete(pwdKey); else n.add(pwdKey);
+        return n;
+      });
+      return;
+    }
+    setAccessVerifyTarget({ entryId, pwdKey, credIndex, username });
+    setAccessVerifyInput('');
+    setAccessVerifyError('');
+    setAccessVerifyOpen(true);
+  };
+
+  // 二次验证密码
+  const handleAccessVerify = async () => {
+    if (!accessVerifyInput.trim() || !accessVerifyTarget) return;
+    setAccessVerifyLoading(true);
+    setAccessVerifyError('');
+    try {
+      const res = await apiFetch(`/api/access/${accessVerifyTarget.entryId}/decrypt-credential`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ verifyPassword: accessVerifyInput, credentialIndex: accessVerifyTarget.credIndex }),
+      });
+      const result = await res.json();
+      if (result.error) { setAccessVerifyError(result.error); setAccessVerifyLoading(false); return; }
+      const plaintext = result.password || '';
+      setDecryptedCache(prev => { const next = new Map(prev); next.set(accessVerifyTarget.pwdKey, plaintext); return next; });
+      setRevealedPwds(prev => new Set(prev).add(accessVerifyTarget.pwdKey));
+      setAccessVerifyOpen(false);
+      setAccessVerifyTarget(null);
+      setAccessVerifyInput('');
+    } catch (err: any) {
+      setAccessVerifyError(err?.message || '验证失败');
+    }
+    setAccessVerifyLoading(false);
+  };
 
   const handleUnlink = async (connId: string) => {
     await updateConnection(connId, { serverId: undefined });
@@ -128,6 +236,41 @@ const ServerDetailPanel: React.FC<Props> = ({ onEdit, onDelete }) => {
           </Box>
         )}
         {server.notes && <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>{server.notes}</Typography>}
+
+        {/* 访问管理 — 内联行显示 */}
+        {matchedAccessList.map((al: any, i: number) => {
+          const isRevealed = al.pwdKey && decryptedCache.has(al.pwdKey) && revealedPwds.has(al.pwdKey);
+          return (
+            <Box key={`access-${i}`} sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
+              <Typography variant="caption" color="text.secondary">
+                {al.type === '堡垒机' ? '堡垒机' : 'VPN'}:
+              </Typography>
+              <Typography variant="body2" sx={{ ml: '2px', color: '#1565C0' }}>
+                {al.address}
+              </Typography>
+              <Typography variant="body2" sx={{ ml: '2px' }}>
+                ({al.user})
+              </Typography>
+              {al.pwdKey ? (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0, ml: 0.5 }}>
+                  <Typography sx={{
+                    fontFamily: 'monospace', fontSize: '0.75rem',
+                    userSelect: isRevealed ? 'text' : 'none',
+                    letterSpacing: isRevealed ? '0' : '2px',
+                    color: isRevealed ? 'text.primary' : 'text.disabled',
+                  }}>
+                    {getDisplayPassword(al.pwdKey)}
+                  </Typography>
+                  <Tooltip title="查看密码">
+                    <IconButton size="small" onClick={() => requestViewPassword(al.entryId, al.pwdKey, al.credIndex, al.user)} sx={{ p: 0.2 }}>
+                      {isRevealed ? <VisibilityOffIcon sx={{ fontSize: 14 }} /> : <VisibilityIcon sx={{ fontSize: 14 }} />}
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+              ) : null}
+            </Box>
+          );
+        })}
       </Box>
 
       {/* 下半部分：Tab 页 */}
@@ -200,6 +343,42 @@ const ServerDetailPanel: React.FC<Props> = ({ onEdit, onDelete }) => {
         serverId={server.id}
         onClose={() => setHistoryOpen(false)}
       />
+
+      {/* 访问管理 — 二次验证弹窗 */}
+      <Dialog
+        open={accessVerifyOpen}
+        onClose={() => { setAccessVerifyOpen(false); setAccessVerifyTarget(null); setAccessVerifyError(''); setAccessVerifyInput(''); }}
+        maxWidth="xs" fullWidth
+      >
+        <DialogTitle sx={{ fontWeight: 600, fontSize: '0.95rem' }}>
+          二次验证 - 查看访问密码
+        </DialogTitle>
+        <DialogContent>
+          {accessVerifyError && (
+            <Alert severity="error" sx={{ mb: 1.5 }}>{accessVerifyError}</Alert>
+          )}
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+            请输入二次验证密码以查看用户「{accessVerifyTarget?.username || '-'}」的密码
+          </Typography>
+          <TextField
+            autoFocus fullWidth size="small" type="password"
+            autoComplete="new-password"
+            label="二次验证密码"
+            value={accessVerifyInput}
+            onChange={e => { setAccessVerifyInput(e.target.value); setAccessVerifyError(''); }}
+            onKeyDown={e => { if (e.key === 'Enter') handleAccessVerify(); }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button size="small" onClick={() => { setAccessVerifyOpen(false); setAccessVerifyTarget(null); setAccessVerifyError(''); setAccessVerifyInput(''); }}>
+            取消
+          </Button>
+          <Button size="small" variant="contained" onClick={handleAccessVerify}
+            disabled={accessVerifyLoading || !accessVerifyInput.trim()}>
+            验证
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

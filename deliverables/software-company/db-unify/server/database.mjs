@@ -29,10 +29,12 @@ const DATA_FILES = {
   servers_db_instances: 'servers_db_instances.json',
   servers_app_instances: 'servers_app_instances.json',
   servers_mid_instances: 'servers_mid_instances.json',
+  servers_api_instances: 'servers_api_instances.json',
   servers_ports: 'servers_ports.json',
   access_entries: 'access_entries.json',
   passwordHistory: 'password_history.json',
   systemConfig: 'system_config.json',
+  queryTemplates: 'query_templates.json',
 };
 
 /** 内存缓存 */

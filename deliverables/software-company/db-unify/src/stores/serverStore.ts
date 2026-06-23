@@ -310,6 +310,8 @@ function mapDbInstFromApi(d: any): DbInstance {
     internalIp: d.internal_ip || '',
     externalIp: d.external_ip || '',
     port: d.port || 0,
+    isCluster: d.isCluster !== undefined ? d.isCluster : (d.is_cluster === 1),
+    clusterIps: d.clusterIps || d.cluster_ips || '',
     notes: d.notes || '',
   };
 }

@@ -45,6 +45,7 @@ import applicationsRouter from './routes/applications.mjs';
 import serversRouter from './routes/servers.mjs';
 import systemConfigRouter from './routes/systemConfig.mjs';
 import accessRouter from './routes/access.mjs';
+import queryRouter from './routes/query.mjs';
 
 const app = express();
 const PORT = parseInt(process.env.PORT, 10) || 3001;
@@ -204,6 +205,7 @@ app.use('/api/engineerings', authMiddleware, engineeringsRouter);
 app.use('/api/applications', authMiddleware, applicationsRouter);
 app.use('/api/system', authMiddleware, systemConfigRouter);
 app.use('/api/access', authMiddleware, accessRouter);
+app.use('/api/query', authMiddleware, queryRouter);
 
 // ========= 生产环境 SPA 回退 =========
 

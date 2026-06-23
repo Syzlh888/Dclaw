@@ -3,6 +3,7 @@ import {
   Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Button, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions,
   TextField, FormControl, InputLabel, Select, MenuItem, Chip, Alert, CircularProgress,
+  FormControlLabel, Switch,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -97,7 +98,7 @@ export default function DbInstanceTab({ serverId, instances, ports, serverIps = 
   const openAdd = () => { setEditItem(null); resetForm(); setForm({ internalIp: serverIps[0] || '' }); setOpen(true); };
   const openEdit = (item: DbInstance) => {
     setEditItem(item);
-    setForm({ ...item, password: '******' });
+    setForm({ ...item, password: '******', isCluster: item.isCluster || false, clusterIps: item.clusterIps || '' });
     if (item.credentials && item.credentials.length > 0) {
       setCredentials(item.credentials.map((c: any) => ({ username: c.username, schema: c.schema || '', region: c.region || '', connectionName: c.connectionName || '', password: c.password && c.password !== '******' ? '******' : (c.password || '') })));
     } else if (item.username) {
@@ -441,6 +442,7 @@ export default function DbInstanceTab({ serverId, instances, ports, serverIps = 
               <TableCell sx={{ fontWeight: 600, fontSize: '0.85rem' }}>类型</TableCell>
               <TableCell sx={{ fontWeight: 600, fontSize: '0.85rem' }}>库名</TableCell>
               <TableCell sx={{ fontWeight: 600, fontSize: '0.85rem' }}>IP:端口</TableCell>
+              <TableCell sx={{ fontWeight: 600, fontSize: '0.85rem' }}>集群</TableCell>
               <TableCell sx={{ fontWeight: 600, fontSize: '0.85rem' }}>Schema</TableCell>
               <TableCell sx={{ fontWeight: 600, fontSize: '0.85rem' }}>所属区域</TableCell>
               <TableCell sx={{ fontWeight: 600, fontSize: '0.85rem' }}>连接名称</TableCell>
@@ -461,6 +463,9 @@ export default function DbInstanceTab({ serverId, instances, ports, serverIps = 
                       {ci === 0 && <TableCell rowSpan={credCount}><Chip label={d.dbType} size="small" sx={{ fontSize: '0.8rem' }} /></TableCell>}
                       {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: '0.9rem' }}>{d.dbName}</TableCell>}
                       {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: '0.9rem' }}>{d.internalIp || d.externalIp || '-'}:{d.port}</TableCell>}
+                      {ci === 0 && <TableCell rowSpan={credCount}>
+                        {d.isCluster ? <Chip label="集群" size="small" color="warning" sx={{ fontSize: '0.75rem' }} title={d.clusterIps || ''} /> : '-'}
+                      </TableCell>}
                       <TableCell sx={{ fontSize: '0.9rem' }}>{cred.schema || '-'}</TableCell>
                       <TableCell sx={{ fontSize: '0.9rem' }}>{cred.region || '-'}</TableCell>
                       <TableCell sx={{ fontSize: '0.9rem' }}>{cred.connectionName || '-'}</TableCell>
@@ -558,6 +563,25 @@ export default function DbInstanceTab({ serverId, instances, ports, serverIps = 
               <TextField size="small" label="数据库名" value={form.dbName || ''} onChange={e => setForm({ ...form, dbName: e.target.value })} sx={{ flex: 1 }} />
               <TextField size="small" label="端口" type="number" value={form.port || ''} onChange={e => { const v = Number(e.target.value); setForm({ ...form, port: isNaN(v) ? '' : v }); }} sx={{ flex: 1 }} />
               <TextField size="small" label="备注" value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} sx={{ flex: 1 }} />
+            </Box>
+
+            {/* 是否集群 */}
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <FormControlLabel
+                control={<Switch checked={form.isCluster || false} onChange={e => setForm({ ...form, isCluster: e.target.checked })} size="small" />}
+                label="是否集群"
+                sx={{ m: 0 }}
+              />
+              {form.isCluster && (
+                <TextField
+                  size="small"
+                  label="集群其他IP地址"
+                  placeholder="多个IP用英文逗号分隔，如 10.0.0.2, 10.0.0.3"
+                  value={form.clusterIps || ''}
+                  onChange={e => setForm({ ...form, clusterIps: e.target.value })}
+                  fullWidth
+                />
+              )}
             </Box>
 
             {/* 多用户凭据列表（含Schema） */}

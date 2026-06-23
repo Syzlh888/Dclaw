@@ -55,6 +55,8 @@ export interface DbInstance {
   internalIp?: string;
   externalIp?: string;
   port: number;
+  isCluster?: boolean;
+  clusterIps?: string;
   notes?: string;
 }
 
@@ -211,6 +213,51 @@ export interface ServerSearchFilter {
   engineeringId?: string;
   applicationId?: string;
   tags?: string[];
+}
+
+/** 综合查询 - 过滤条件 */
+export interface FilterCondition {
+  field: string;
+  operator: 'equals' | 'contains' | 'gt' | 'lt' | 'gte' | 'lte' | 'notEquals' | 'isEmpty' | 'isNotEmpty';
+  value: string;
+}
+
+/** 综合查询 - 查询模板 */
+export interface QueryTemplate {
+  id: string;
+  name: string;
+  fields: string[];
+  filters: FilterCondition[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** 综合查询 - 查询结果列定义 */
+export interface QueryColumn {
+  key: string;
+  label: string;
+  type: string;
+}
+
+/** 综合查询 - 查询字段定义 */
+export interface QueryField {
+  key: string;
+  label: string;
+  type?: string;
+}
+
+/** 综合查询 - 字段分组 */
+export interface QueryFieldGroup {
+  group: string;
+  prefix: string;
+  fields: QueryField[];
+}
+
+/** 综合查询 - 查询结果 */
+export interface QueryResult {
+  columns: QueryColumn[];
+  rows: Record<string, any>[];
+  total: number;
 }
 
 /** 资产汇总数据 */
