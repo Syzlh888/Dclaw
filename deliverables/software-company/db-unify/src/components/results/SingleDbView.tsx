@@ -127,7 +127,7 @@ const SingleDbView: React.FC = () => {
 
       {/* Table */}
       {selectedResult ? (
-        <Box sx={{ flex: 1, overflow: 'hidden', minHeight: 0 }}>
+        <Box sx={{ flex: 1, minHeight: 0, minWidth: 0 }}>
           <ResultTable
             columns={tableData.columns}
             rows={tableData.rows}

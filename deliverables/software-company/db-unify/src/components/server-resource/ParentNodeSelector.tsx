@@ -158,7 +158,7 @@ const ParentNodeSelector: React.FC<ParentNodeSelectorProps> = ({ open, onClose, 
     const path: string[] = [];
     let currentId: string | null = selectedId;
     while (currentId) {
-      const node = nodes[currentId];
+      const node: any = nodes[currentId];
       if (node) {
         path.unshift(node.name);
         currentId = node.parentId;
@@ -203,7 +203,7 @@ const ParentNodeSelector: React.FC<ParentNodeSelectorProps> = ({ open, onClose, 
     <Dialog
       open={open}
       onClose={handleClose}
-      onRendered={handleOpen}
+      TransitionProps={{ onEntered: handleOpen }}
       maxWidth="sm"
       fullWidth
       PaperProps={{

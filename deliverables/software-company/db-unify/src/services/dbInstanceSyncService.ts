@@ -2,7 +2,7 @@
  * 数据库实例同步服务
  * 实现服务器资源中数据库实例与编辑器连接管理、左侧菜单树的单向实时同步
  */
-import { DbDriver, type DbConnection } from '../types/connection';
+import { DbDriver, ConnectionStatus, type DbConnection } from '../types/connection';
 import type { ServerHost, DbInstance, ServerCredential } from '../types/server';
 import { useConnectionStore } from '../stores/connectionStore';
 import { useTreeStore } from '../stores/treeStore';
@@ -117,6 +117,10 @@ export async function syncDbInstance(
   const newConnIds: string[] = [];
 
   // 遍历每个凭据，创建/更新连接
+  if (!dbInstance.credentials || dbInstance.credentials.length === 0) {
+    console.warn('[sync] 数据库实例无凭据，跳过同步');
+    return;
+  }
   for (let i = 0; i < dbInstance.credentials.length; i++) {
     const cred = dbInstance.credentials[i];
     console.log(`[sync] 凭据[${i}]:`, { username: cred.username, hasPassword: !!cred.password, passwordLen: cred.password?.length, schema: cred.schema });
@@ -137,6 +141,7 @@ export async function syncDbInstance(
       username: cred.username,
       password: password || '',
       database,
+      status: 'unknown' as ConnectionStatus,
       schema: cred.schema,
       serverId: serverHost.id,
       dbInstanceId: dbInstance.id,

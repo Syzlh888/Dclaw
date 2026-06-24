@@ -15,7 +15,7 @@ asar: false
 
 # 输出目录
 directories:
-  output: release
+  output: release2
   buildResources: build
 
 # 打包文件

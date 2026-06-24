@@ -522,6 +522,7 @@ const ServerFormDialog: React.FC<Props> = ({ open, server, loading, onClose, onS
       {/* 密码生成弹窗 */}
       <Dialog open={pwdDialogOpen} onClose={() => setPwdDialogOpen(false)} maxWidth="xs" fullWidth>
         <PasswordGenerator
+          open={pwdDialogOpen}
           onApply={p => { updateCredential(pwdTargetIndex, { password: p }); setPwdDialogOpen(false); }}
           onClose={() => setPwdDialogOpen(false)}
         />

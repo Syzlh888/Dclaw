@@ -42,3 +42,8 @@ body {
     background: rgba(255, 255, 255, 0.35);
   }
 }
+
+/* Ensure Monaco suggest widget is always visible */
+.monaco-editor .suggest-widget {
+  z-index: 99999 !important;
+}

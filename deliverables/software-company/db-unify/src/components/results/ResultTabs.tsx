@@ -54,7 +54,7 @@ const ResultTabs: React.FC<ResultTabsProps> = ({ showExecution = false }) => {
           </Box>
         )}
       </Tabs>
-      <Box sx={{ flex: 1, overflow: 'hidden', minHeight: 0 }}>
+      <Box sx={{ flex: 1, overflowY: 'auto', minHeight: 0, minWidth: 0 }}>
         <Fade in={activeTab === 0} unmountOnExit>
           <Box sx={{ height: '100%' }}>
             {activeTab === 0 && <SingleDbView />}

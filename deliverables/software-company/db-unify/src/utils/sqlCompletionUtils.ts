@@ -7,10 +7,10 @@
  * 从 SQL 中提取 表名→别名 的映射关系
  *
  * 支持的语法模式：
- *   FROM table_name [alias]
- *   JOIN table_name [alias]
- *   LEFT/RIGHT/INNER/OUTER/CROSS JOIN table_name [alias]
- *   , table_name [alias]  （隐式连接）
+ *   FROM table_name [AS] [alias]
+ *   JOIN table_name [AS] [alias]
+ *   LEFT/RIGHT/INNER/FULL/CROSS JOIN table_name [AS] [alias]
+ *   , table_name [AS] [alias]  （隐式连接）
  *
  * 返回 Map<alias | tableName, realTableName>
  */
@@ -21,25 +21,30 @@ export function parseTableAliases(sql: string): Map<string, string> {
   const cleanSql = sql.replace(/'[^']*'/g, "''");
 
   // 匹配 FROM / JOIN / 各种 JOIN / 逗号 后跟的表名和可选别名
-  // 正则说明：
-  //   (?:FROM|JOIN|LEFT\s+JOIN|RIGHT\s+JOIN|INNER\s+JOIN|OUTER\s+JOIN|CROSS\s+JOIN|,)
-  //     \s+
-  //   ([a-zA-Z_][\w.]*)    → 表名（可能带 schema 前缀如 schema.table）
-  //   (?:\s+([a-zA-Z_]\w*))?  → 可选的别名
-
   const pattern =
-    /\b(?:FROM|JOIN|LEFT\s+(?:OUTER\s+)?JOIN|RIGHT\s+(?:OUTER\s+)?JOIN|INNER\s+JOIN|OUTER\s+JOIN|CROSS\s+JOIN|,)\s+([a-zA-Z_][\w.]*)\s*(?:AS\s+)?([a-zA-Z_]?\w*)?/gi;
+    /\b(?:FROM|JOIN|LEFT\s+(?:OUTER\s+)?JOIN|RIGHT\s+(?:OUTER\s+)?JOIN|INNER\s+JOIN|FULL\s+(?:OUTER\s+)?JOIN|OUTER\s+JOIN|CROSS\s+JOIN|,)\s+([a-zA-Z_][\w.]*)\s*(?:AS\s+)?([a-zA-Z_]\w*)?/gi;
 
-  let match;
+  // SQL 关键字，不可能是表别名
+  const RESERVED = new Set(['ON','WHERE','SELECT','SET','AND','OR','AS','JOIN',
+    'LEFT','RIGHT','INNER','OUTER','CROSS','FULL','FROM','INTO','VALUES',
+    'GROUP','ORDER','BY','HAVING','LIMIT','OFFSET','UNION','EXISTS','NOT',
+    'NULL','TRUE','FALSE','CASE','WHEN','THEN','ELSE','END','ASC','DESC',
+    'INSERT','UPDATE','DELETE','CREATE','DROP','ALTER','TABLE','INDEX','VIEW',
+  ]);
+
+  let match: RegExpExecArray | null;
   while ((match = pattern.exec(cleanSql)) !== null) {
     const tableName = match[1];
     const alias = match[2];
 
     if (!tableName) continue;
 
-    if (alias && alias.toLowerCase() !== 'on' && alias.toLowerCase() !== 'where' && alias.toLowerCase() !== 'select' && alias.toLowerCase() !== 'set' && alias.toLowerCase() !== 'and' && alias.toLowerCase() !== 'or') {
+    // 过滤掉纯数字表名（不合理）
+    if (/^\d+$/.test(tableName)) continue;
+
+    if (alias && !RESERVED.has(alias.toUpperCase())) {
       map.set(alias, tableName);
-      // 也用表名本身作为 key（用户可能直接用表名）
+      // 也用表名本身作为 key（用户可能直接用表名加 . 引用列）
       map.set(tableName, tableName);
     } else {
       // 无别名，用表名本身
@@ -51,13 +56,16 @@ export function parseTableAliases(sql: string): Map<string, string> {
 }
 
 /**
- * 获取光标位置前的一个标识符（用于检测 . 前面的别名）
+ * 获取光标位置前的一个标识符（用于检测 . 前面的别名/表名）
+ * 支持：
+ *   alias.          → 返回 "alias"
+ *   schema.table.   → 返回 "schema.table"
  */
 export function getIdentifierBeforeDot(
   textBeforeCursor: string
 ): string | null {
-  // 从末尾往前找，取最后一个单词
-  const match = textBeforeCursor.match(/(\w+)\.\s*$/);
+  // 匹配末尾的 identifier.identifier. 模式（最多两级，如 schema.table. 或 alias.）
+  const match = textBeforeCursor.match(/(\w+(?:\.\w+)?)\.\s*$/);
   if (match) {
     return match[1];
   }

@@ -187,7 +187,7 @@ const CompareView: React.FC = () => {
 
       {/* Compare table */}
       {compareResult && displayData.rows.length > 0 ? (
-        <Box sx={{ flex: 1, overflow: 'hidden' }}>
+        <Box sx={{ flex: 1, minHeight: 0, minWidth: 0 }}>
           <ResultTable
             columns={displayData.columns}
             rows={displayData.rows}

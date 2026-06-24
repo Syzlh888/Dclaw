@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Box, Typography, Button, Chip, Tabs, Tab, IconButton, Tooltip,
   Dialog, DialogTitle, DialogContent, DialogActions, TextField, Alert,
+  TableContainer, Table, TableHead, TableBody, TableRow, TableCell,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -212,7 +213,7 @@ const ServerDetailPanel: React.FC<Props> = ({ onEdit, onDelete }) => {
           )}
           {server.credentials && Array.isArray(server.credentials) && server.credentials.length > 0 ? (
             server.credentials.map((cred: any, i: number) => (
-              <InfoRow key={i} label={`用户${server.credentials.length > 1 ? ` ${i + 1}` : ''}`} value={cred.username} />
+              <InfoRow key={i} label={`用户${(server.credentials?.length ?? 0) > 1 ? ` ${i + 1}` : ''}`} value={cred.username} />
             ))
           ) : (
             <InfoRow label="用户名" value={server.username} />
@@ -258,6 +259,7 @@ const ServerDetailPanel: React.FC<Props> = ({ onEdit, onDelete }) => {
                     userSelect: isRevealed ? 'text' : 'none',
                     letterSpacing: isRevealed ? '0' : '2px',
                     color: isRevealed ? 'text.primary' : 'text.disabled',
+                    lineHeight: 1,
                   }}>
                     {getDisplayPassword(al.pwdKey)}
                   </Typography>

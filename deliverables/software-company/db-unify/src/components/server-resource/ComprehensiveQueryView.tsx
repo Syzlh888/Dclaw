@@ -81,7 +81,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
   const [addFieldForTemplate, setAddFieldForTemplate] = useState<Record<string, string>>({});
 
   // ---- 图表相关 ----
-  const [chartType, setChartType] = useState<'bar' | 'pie' | 'line'>('bar');
+  const [chartType, setChartType] = useState<'bar' | 'pie' | 'line' | 'scatter'>('bar');
   const [chartXField, setChartXField] = useState('');
   const [chartYField, setChartYField] = useState('');
 

@@ -8,7 +8,6 @@ import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import LogoutIcon from '@mui/icons-material/Logout';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import SettingsBackupRestoreIcon from '@mui/icons-material/SettingsBackupRestore';
-import AssessmentIcon from '@mui/icons-material/Assessment';
 import CodeIcon from '@mui/icons-material/Code';
 import LanIcon from '@mui/icons-material/Lan';
 import SettingsInputComponentIcon from '@mui/icons-material/SettingsInputComponent';
@@ -27,14 +26,15 @@ import AccessManagementDialog from '../server-resource/AccessManagementDialog';
 
 const SCALE_STEPS = [0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.35, 1.5];
 
-type NavigableView = 'sql-editor' | 'server-resource' | 'asset-summary' | 'comprehensive-query';
+type NavigableView = 'sql-editor' | 'server-resource' | 'comprehensive-query';
 
 interface Props {
   mainView?: string;
   onNavigate?: (view: NavigableView) => void;
+  onToggleAI?: () => void;
 }
 
-const AppHeader: React.FC<Props> = ({ mainView, onNavigate }) => {
+const AppHeader: React.FC<Props> = ({ mainView, onNavigate, onToggleAI }) => {
   const { mode, toggleTheme, scale, setScale } = useThemeMode();
   const authUser = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
@@ -64,7 +64,6 @@ const AppHeader: React.FC<Props> = ({ mainView, onNavigate }) => {
 
   const isSqlEditor = mainView === 'sql-editor';
   const isServerResource = mainView === 'server-resource';
-  const isAssetSummary = mainView === 'asset-summary';
   const isComprehensiveQuery = mainView === 'comprehensive-query';
 
   return (
@@ -93,7 +92,7 @@ const AppHeader: React.FC<Props> = ({ mainView, onNavigate }) => {
         <Button
           size="small"
           onClick={() => {
-            if (isComprehensiveQuery || isAssetSummary) {
+            if (isComprehensiveQuery) {
               onNavigate?.('server-resource');
             } else if (isServerResource) {
               onNavigate?.('sql-editor');
@@ -116,7 +115,7 @@ const AppHeader: React.FC<Props> = ({ mainView, onNavigate }) => {
         >
           <CodeIcon sx={{ fontSize: 16, mr: 0.5 }} />
           <Typography component="span" sx={{ fontSize: 'inherit', fontWeight: 500 }}>
-            {isSqlEditor ? '服务器资源管理' : isComprehensiveQuery || isAssetSummary ? '服务器资源管理' : 'SQL编辑器'}
+            {isSqlEditor ? '服务器资源管理' : isComprehensiveQuery ? '服务器资源管理' : 'SQL编辑器'}
           </Typography>
         </Button>
       )}
@@ -258,28 +257,7 @@ const AppHeader: React.FC<Props> = ({ mainView, onNavigate }) => {
         </>
       )}
 
-      {/* 资产汇总 - 非服务器资源视图显示 */}
-      {mainView !== undefined && !isServerResource && !isComprehensiveQuery && (
-        <Button
-          size="small"
-          startIcon={<AssessmentIcon />}
-          onClick={() => onNavigate?.('asset-summary')}
-          variant={isAssetSummary ? 'contained' : 'outlined'}
-          sx={{
-            color: isAssetSummary ? 'primary.main' : 'white',
-            borderColor: 'rgba(255,255,255,0.4)',
-            textTransform: 'none',
-            mr: 0.5,
-            bgcolor: isAssetSummary ? 'white' : 'transparent',
-            '&:hover': {
-              borderColor: 'white',
-              bgcolor: isAssetSummary ? '#f0f0f0' : 'rgba(255,255,255,0.1)',
-            },
-          }}
-        >
-          资产汇总
-        </Button>
-      )}
+
 
       {/* 备份管理 */}
       <Button
@@ -298,7 +276,7 @@ const AppHeader: React.FC<Props> = ({ mainView, onNavigate }) => {
         备份管理
       </Button>
 
-      <Tooltip title={mode === 'dark' ? '切换亮色模式' : '切换暗色模式'}>
+      <Tooltip title={mode === 'dark' ? '切换亮色模式' : '切换暗色模式'}> 
         <IconButton onClick={toggleTheme} sx={{ color: 'white' }} size="small">
           {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
         </IconButton>

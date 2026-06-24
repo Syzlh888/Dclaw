@@ -39,6 +39,11 @@ const SqlEditor: React.FC<SqlEditorProps> = ({ onExecute }) => {
 
   // 元数据缓存: connectionId -> TableMeta[]
   const [metadataCache, setMetadataCache] = useState<Record<string, TableMeta[]>>({});
+  // 用 ref 保持最新缓存引用，解决 CompletionProvider 的 stale closure 问题
+  const metadataCacheRef = useRef<Record<string, TableMeta[]>>({});
+  useEffect(() => {
+    metadataCacheRef.current = metadataCache;
+  }, [metadataCache]);
 
   // 获取当前选中的数据库连接 ID 列表
   const selectedDbIds = useTreeStore((s) => s.selectedDbIds);
@@ -47,37 +52,110 @@ const SqlEditor: React.FC<SqlEditorProps> = ({ onExecute }) => {
   // 当选中库变化时，加载元数据
   useEffect(() => {
     if (selectedDbIds.length === 0) return;
-    const controller = new AbortController();
+    console.log('[metadata] loading for connectionIds:', selectedDbIds);
     selectedDbIds.forEach(async (dbId) => {
-      if (metadataCache[dbId]) return; // 已缓存则跳过
+      if (metadataCacheRef.current[dbId]) return; // 已缓存则跳过
       try {
+        console.log(`[metadata] fetching tables for connection: ${dbId}`);
         const tables = await fetchMetadata(dbId);
+        console.log(`[metadata] loaded ${tables.length} tables for ${dbId}`, tables.map(t => t.name));
+        // 立即更新 ref（不等待 React 渲染周期），避免 CompletionProvider 读到空缓存
+        metadataCacheRef.current = { ...metadataCacheRef.current, [dbId]: tables };
         setMetadataCache(prev => ({ ...prev, [dbId]: tables }));
-      } catch {
-        // 静默失败
+      } catch (err) {
+        console.error(`[metadata] failed to load for ${dbId}:`, err);
       }
     });
-    return () => controller.abort();
   }, [selectedDbIds]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  /** 从所有已缓存的库中查找指定表的列 */
-  const findTableColumns = useCallback(
-    (tableName: string): ColumnMeta[] | null => {
-      for (const dbId of Object.keys(metadataCache)) {
-        const tables = metadataCache[dbId];
-        const table = tables.find(
-          t => t.name.toLowerCase() === tableName.toLowerCase()
-        );
-        if (table && table.columns.length > 0) return table.columns;
-      }
-      return null;
-    },
-    [metadataCache]
-  );
 
   const fb = useMemo(() => fallbackStyle[editorTheme], [editorTheme]);
 
-  const handleEditorMount = useCallback((editor: any, monaco: any) => {
+  /** 在 Monaco 加载后、编辑器创建前注册补全 Provider */
+  const handleBeforeMount = useCallback((monaco: any) => {
+    console.log('[monaco] beforeMount, registering completion providers');
+
+    // ====== 统一的智能补全 Provider（列名 + 表名） ======
+    monaco.languages.registerCompletionItemProvider('sql', {
+      provideCompletionItems: (model: any, position: any) => {
+        try {
+          const lineContent = model.getLineContent(position.lineNumber);
+          const textBeforeCursor = lineContent.slice(0, position.column - 1);
+
+          // --- 优先级1: 列名补全（紧跟在 alias. 之后） ---
+          const alias = getIdentifierBeforeDot(textBeforeCursor);
+          if (alias) {
+            const fullText = model.getValue();
+            const tableMap = parseTableAliases(fullText);
+            console.log('[completion] alias:', alias, 'tableMap:', Object.fromEntries(tableMap));
+            const realTableName = tableMap.get(alias);
+
+            if (realTableName) {
+              const cache = metadataCacheRef.current;
+              console.log('[completion] looking for table:', realTableName, 'cache keys:', Object.keys(cache));
+              const realTN = realTableName.toLowerCase();
+              const tableOnly = realTN.includes('.') ? realTN.split('.').pop()! : realTN;
+
+              let columns: ColumnMeta[] | null = null;
+              for (const tables of Object.values(cache)) {
+                const table = tables.find(t => {
+                  const tn = t.name.toLowerCase();
+                  return tn === realTN || tn === tableOnly;
+                });
+                if (table?.columns.length) {
+                  columns = table.columns;
+                  console.log('[completion] found table, columns:', table.columns.map(c => c.name));
+                  break;
+                }
+              }
+
+              if (columns?.length) {
+                const suggestions = columns.map((col: ColumnMeta) => ({
+                  label: col.name,
+                  kind: monaco.languages.CompletionItemKind.Field,
+                  detail: `${col.type}${col.nullable ? '' : ' NOT NULL'}`,
+                  documentation: col.comment || undefined,
+                  insertText: col.name,
+                }));
+                console.log('[completion] returning', suggestions.length, 'column suggestions');
+                return { suggestions };
+              }
+              console.log('[completion] no columns found for:', realTableName);
+            } else {
+              console.log('[completion] table not found for alias:', alias);
+            }
+          }
+
+          // --- 优先级2: 表名补全（FROM/JOIN/逗号后） ---
+          const fromJoinPat = /(?:FROM|JOIN|,)\s+$/i;
+          const partialPat = /(?:FROM|JOIN|,)\s+\w*$/i;
+          if (fromJoinPat.test(textBeforeCursor) || partialPat.test(textBeforeCursor)) {
+            const cache = metadataCacheRef.current;
+            const allTables: TableMeta[] = Object.values(cache).flat();
+            if (allTables.length > 0) {
+              const suggestions = allTables.map(t => ({
+                label: t.name,
+                kind: monaco.languages.CompletionItemKind.Class,
+                detail: `${t.columns.length} columns`,
+                documentation: t.comment || undefined,
+                insertText: t.name,
+              }));
+              console.log('[completion] returning', suggestions.length, 'table suggestions');
+              return { suggestions };
+            }
+          }
+
+          return { suggestions: [] as any };
+        } catch (err) {
+          console.error('[completion] error:', err);
+          return { suggestions: [] as any };
+        }
+      },
+    });
+
+    console.log('[monaco] completion providers registered');
+  }, []);
+
+  const handleEditorMount = useCallback((editor: any, _monaco: any) => {
     editorRef.current = editor;
 
     // Register Ctrl+Enter to execute
@@ -90,56 +168,28 @@ const SqlEditor: React.FC<SqlEditorProps> = ({ onExecute }) => {
       },
     });
 
-    // ====== 注册列名智能补全 Provider ======
-    monaco.languages.registerCompletionItemProvider('sql', {
-      triggerCharacters: ['.'],
-      provideCompletionItems: (model: any, position: any) => {
-        const textUntilPosition = model.getValueInRange({
-          startLineNumber: position.lineNumber,
-          startColumn: 1,
-          endLineNumber: position.lineNumber,
-          endColumn: position.column,
-        });
-
-        // 检测是否是 alias. 模式
-        const alias = getIdentifierBeforeDot(textUntilPosition);
-        if (!alias) return { suggestions: [] };
-
-        // 解析当前 SQL 中所有表名-别名映射
-        const fullText = model.getValue();
-        const tableMap = parseTableAliases(fullText);
-
-        // 根据别名查找实际表名
-        const realTableName = tableMap.get(alias);
-        if (!realTableName) return { suggestions: [] };
-
-        // 查找该表的列信息
-        const columns = findTableColumns(realTableName);
-        if (!columns || columns.length === 0) return { suggestions: [] };
-
-        // 构建补全建议
-        const suggestions = columns.map(col => ({
-          label: col.name,
-          kind: monaco.CompletionItemKind.Field,
-          detail: `${col.type}${col.nullable ? '' : ' NOT NULL'}`,
-          documentation: col.comment || undefined,
-          insertText: col.name,
-          range: {
-            startLineNumber: position.lineNumber,
-            startColumn: position.column - alias.length - 1,
-            endLineNumber: position.lineNumber,
-            endColumn: position.column,
-          },
-        }));
-
-        return { suggestions };
-      },
+    // 输入 . 后强制触发 suggest widget（Monaco 某些版本 bug 兜底）
+    editor.onKeyDown((e: any) => {
+      if (e.browserEvent.key === '.') {
+        // 等待 Monaco 的 completion provider 处理完，再强制弹窗
+        setTimeout(() => {
+          // 检查光标是否紧跟在标识符.之后
+          const pos = editor.getPosition();
+          const model = editor.getModel();
+          if (!pos || !model) return;
+          const lineContent = model.getLineContent(pos.lineNumber);
+          const textBefore = lineContent.slice(0, pos.column - 1);
+          if (getIdentifierBeforeDot(textBefore)) {
+            console.log('[trigger] forcing suggest widget after dot');
+            editor.trigger('Keyboard', 'editor.action.triggerSuggest', {});
+          }
+        }, 100);
+      }
     });
 
-    // Focus editor
     editor.focus();
     setZoomReady(true);
-  }, [onExecute, findTableColumns]);
+  }, [onExecute]);
 
   const handleChange = useCallback(
     (value: string | undefined) => {
@@ -169,7 +219,7 @@ const SqlEditor: React.FC<SqlEditorProps> = ({ onExecute }) => {
   }, [zoomReady]);
 
   return (
-    <Box sx={{ height: '100%', border: '1px solid', borderColor: 'divider', borderRadius: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ height: '100%', border: '1px solid', borderColor: 'divider', borderRadius: 1, overflow: 'visible', display: 'flex', flexDirection: 'column' }}>
       <React.Suspense
         fallback={
           <Box
@@ -193,6 +243,7 @@ const SqlEditor: React.FC<SqlEditorProps> = ({ onExecute }) => {
           theme={editorTheme}
           value={sql}
           onChange={handleChange}
+          beforeMount={handleBeforeMount}
           onMount={handleEditorMount}
           options={{
             minimap: { enabled: false },
@@ -203,6 +254,8 @@ const SqlEditor: React.FC<SqlEditorProps> = ({ onExecute }) => {
             automaticLayout: true,
             padding: { top: 8 },
             suggestOnTriggerCharacters: true,
+            quickSuggestions: { other: true, comments: false, strings: false },
+            fixedOverflowWidgets: true,
           }}
         />
       </React.Suspense>

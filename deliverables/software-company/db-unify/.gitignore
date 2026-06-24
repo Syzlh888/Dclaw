@@ -7,4 +7,5 @@ logs/
 .DS_Store
 coverage/
 release/
+release2/
 keys/private.pem

@@ -200,7 +200,7 @@ const AggregateView: React.FC = () => {
       </Box>
 
       {/* Table */}
-      <Box sx={{ flex: 1, overflow: 'hidden' }}>
+      <Box sx={{ flex: 1, minHeight: 0, minWidth: 0 }}>
         <ResultTable
           columns={aggregatedResult.columns}
           rows={filteredRows}

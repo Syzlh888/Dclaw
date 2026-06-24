@@ -88,6 +88,12 @@ const ResultTable: React.FC<ResultTableProps> = ({
     });
   }, [columns.length, initWidths]);
 
+  // 计算所有列的总宽度，用于横向滚动
+  const totalWidth = React.useMemo(() => {
+    if (colWidths.length === 0) return columns.length * DEFAULT_COL_WIDTH;
+    return colWidths.reduce((sum, w) => sum + (w ?? DEFAULT_COL_WIDTH), 0);
+  }, [colWidths, columns.length]);
+
   // 拖拽调整列宽
   const dragRef = React.useRef<{
     index: number;
@@ -149,138 +155,154 @@ const ResultTable: React.FC<ResultTableProps> = ({
     }
   };
 
+  const containerHeight = typeof height === 'number' ? height : '100%';
+  const virtualRowsHeight = rowVirtualizer.getTotalSize();
+
   return (
     <Box
-      ref={parentRef}
       sx={{
-        height: typeof height === 'number' ? height : '100%',
-        overflow: 'auto',
+        height: containerHeight,
+        width: '100%',
+        overflowX: 'auto',
+        overflowY: 'hidden',
         border: '1px solid',
         borderColor: 'divider',
         borderRadius: 1,
       }}
     >
-      {/* Header */}
+      {/* Inner scroll container (handles vertical scroll via virtualizer) */}
       <Box
+        ref={parentRef}
         sx={{
-          display: 'flex',
-          position: 'sticky',
-          top: 0,
-          zIndex: 1,
-          bgcolor: '#F5F5F5',
-          borderBottom: '2px solid',
-          borderColor: 'divider',
+          height: '100%',
+          minWidth: totalWidth > 0 ? totalWidth : '100%',
+          overflowY: 'auto',
+          overflowX: 'hidden',
         }}
       >
-        {columns.map((col, idx) => (
-          <Box
-            key={col}
-            onClick={() => handleSort(col)}
-            sx={{
-              width: colWidths[idx] ?? DEFAULT_COL_WIDTH,
-              flex: '0 0 auto',
-              px: 1.5,
-              py: 0.75,
-              fontSize: tableFontSize,
-              fontWeight: 600,
-              color: 'text.primary',
-              borderRight: '1px solid',
-              borderColor: 'divider',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              position: 'relative',
-              cursor: 'pointer',
-              userSelect: 'none',
-              '&:hover': { bgcolor: 'rgba(0,0,0,0.06)' },
-              display: 'flex',
-              alignItems: 'center',
-            }}
-          >
-            {col}
-            {sortCol === col && (
-              sortDir === 'asc'
-                ? <ArrowUpwardIcon sx={{ fontSize: 14, ml: 0.5, flexShrink: 0, color: 'primary.main' }} />
-                : <ArrowDownwardIcon sx={{ fontSize: 14, ml: 0.5, flexShrink: 0, color: 'primary.main' }} />
-            )}
-            {/* 拖拽手柄 */}
+        {/* Header */}
+        <Box
+          sx={{
+            display: 'flex',
+            position: 'sticky',
+            top: 0,
+            zIndex: 1,
+            bgcolor: '#F5F5F5',
+            borderBottom: '2px solid',
+            borderColor: 'divider',
+            width: totalWidth,
+          }}
+        >
+          {columns.map((col, idx) => (
             <Box
-              onMouseDown={(e) => handleMouseDown(e, idx)}
+              key={col}
+              onClick={() => handleSort(col)}
               sx={{
-                position: 'absolute',
-                right: 0,
-                top: 0,
-                bottom: 0,
-                width: 6,
-                cursor: 'col-resize',
-                zIndex: 2,
-                '&:hover': { backgroundColor: 'rgba(0,0,0,0.15)' },
-              }}
-            />
-          </Box>
-        ))}
-      </Box>
-
-      {/* Virtual rows */}
-      <Box sx={{ position: 'relative', height: rowVirtualizer.getTotalSize() }}>
-        {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-          const row = sortedRows[virtualRow.index];
-          return (
-            <Box
-              key={virtualRow.index}
-              sx={{
-                position: 'absolute',
-                top: virtualRow.start,
-                left: 0,
-                width: '100%',
-                display: 'flex',
-                minHeight: rowHeight,
-                alignItems: 'center',
-                '&:hover': { bgcolor: 'action.hover' },
-                cursor: onRowClick ? 'pointer' : 'default',
-                borderBottom: '1px solid',
+                width: colWidths[idx] ?? DEFAULT_COL_WIDTH,
+                flex: '0 0 auto',
+                px: 1.5,
+                py: 0.75,
+                fontSize: tableFontSize,
+                fontWeight: 600,
+                color: 'text.primary',
+                borderRight: '1px solid',
                 borderColor: 'divider',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                position: 'relative',
+                cursor: 'pointer',
+                userSelect: 'none',
+                '&:hover': { bgcolor: 'rgba(0,0,0,0.06)' },
+                display: 'flex',
+                alignItems: 'center',
               }}
-              onClick={() => onRowClick?.(row)}
             >
-              {columns.map((col, idx) => {
-                const cellValue = row.values[col];
-                const cellStyle = cellValue ? getCellStyle(cellValue.diffType) : {};
-                return (
-                  <Box
-                    key={col}
-                    sx={{
-                      width: colWidths[idx] ?? DEFAULT_COL_WIDTH,
-                      flex: '0 0 auto',
-                      px: 1.5,
-                      py: 0.5,
-                      fontSize: tableFontSize,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                      borderRight: '1px solid',
-                      borderColor: 'divider',
-                      ...cellStyle,
-                    }}
-                  >
-                    {cellValue
-                      ? Array.isArray(cellValue.value)
-                        ? cellValue.value.join(' / ')
-                        : String(cellValue.value ?? '')
-                      : ''}
-                  </Box>
-                );
-              })}
+              {col}
+              {sortCol === col && (
+                sortDir === 'asc'
+                  ? <ArrowUpwardIcon sx={{ fontSize: 14, ml: 0.5, flexShrink: 0, color: 'primary.main' }} />
+                  : <ArrowDownwardIcon sx={{ fontSize: 14, ml: 0.5, flexShrink: 0, color: 'primary.main' }} />
+              )}
+              {/* 拖拽手柄 */}
+              <Box
+                onMouseDown={(e) => handleMouseDown(e, idx)}
+                sx={{
+                  position: 'absolute',
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                  width: 6,
+                  cursor: 'col-resize',
+                  zIndex: 2,
+                  '&:hover': { backgroundColor: 'rgba(0,0,0,0.15)' },
+                }}
+              />
             </Box>
-          );
-        })}
-      </Box>
-
-      {sortedRows.length === 0 && (
-        <Box sx={{ p: 3, textAlign: 'center', color: 'text.disabled' }}>
-          暂无数据
+          ))}
         </Box>
-      )}
+
+        {/* Virtual rows */}
+        <Box sx={{ position: 'relative', height: virtualRowsHeight, width: totalWidth }}>
+          {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+            const row = sortedRows[virtualRow.index];
+            return (
+              <Box
+                key={virtualRow.index}
+                sx={{
+                  position: 'absolute',
+                  top: virtualRow.start,
+                  left: 0,
+                  width: totalWidth,
+                  display: 'flex',
+                  minHeight: rowHeight,
+                  alignItems: 'center',
+                  '&:hover': { bgcolor: 'action.hover' },
+                  cursor: onRowClick ? 'pointer' : 'default',
+                  borderBottom: '1px solid',
+                  borderColor: 'divider',
+                }}
+                onClick={() => onRowClick?.(row)}
+              >
+                {columns.map((col, idx) => {
+                  const cellValue = row.values[col];
+                  const cellStyle = cellValue ? getCellStyle(cellValue.diffType) : {};
+                  return (
+                    <Box
+                      key={col}
+                      sx={{
+                        width: colWidths[idx] ?? DEFAULT_COL_WIDTH,
+                        flex: '0 0 auto',
+                        px: 1.5,
+                        py: 0.5,
+                        fontSize: tableFontSize,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        borderRight: '1px solid',
+                        borderColor: 'divider',
+                        ...cellStyle,
+                      }}
+                    >
+                      {cellValue
+                        ? Array.isArray(cellValue.value)
+                          ? cellValue.value.join(' / ')
+                          : String(cellValue.value ?? '')
+                        : ''}
+                    </Box>
+                  );
+                })}
+              </Box>
+            );
+          })}
+        </Box>
+
+        {sortedRows.length === 0 && (
+          <Box sx={{ p: 3, textAlign: 'center', color: 'text.disabled' }}>
+            暂无数据
+          </Box>
+        )}
+      </Box>
     </Box>
   );
 };

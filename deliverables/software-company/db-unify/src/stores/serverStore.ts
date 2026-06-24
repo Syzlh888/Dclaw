@@ -241,7 +241,7 @@ export const useServerStore = create<ServerState>((set, get) => ({
     }
   },
 
-  loadPasswordHistory: async (serverId, fieldName?) => {
+  loadPasswordHistory: async (serverId: string, fieldName?: string) => {
     try {
       const data = await api.fetchPasswordHistory(serverId, fieldName);
       const key = serverId + (fieldName ? `|${fieldName}` : '');

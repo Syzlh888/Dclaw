@@ -10,7 +10,6 @@ import ExecutionPanel from './components/execution/ExecutionPanel';
 import ResultTabs from './components/results/ResultTabs';
 import HistoryPanel from './components/history/HistoryPanel';
 import ServerResourceView from './components/server-resource/ServerResourceView';
-import AssetSummaryView from './components/server-resource/AssetSummaryView';
 import ResizableHandle from './components/layout/ResizableHandle';
 import ShortcutsDialog from './components/layout/ShortcutsDialog';
 import LoginPage from './components/auth/LoginPage';
@@ -91,7 +90,7 @@ const App: React.FC = () => {
 
   const [bottomTab, setBottomTab] = useState(0);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
-  const [mainView, setMainView] = useState<'sql-editor' | 'server-resource' | 'asset-summary' | 'comprehensive-query'>('sql-editor');  // Electron 激活状态（null=检测中，true/false 兼容旧逻辑）
+  const [mainView, setMainView] = useState<'sql-editor' | 'server-resource' | 'comprehensive-query'>('sql-editor');  // Electron 激活状态（null=检测中，true/false 兼容旧逻辑）
   // 开发环境直接激活
   const [electronActivated, setElectronActivated] = useState<boolean | null>(isDev ? true : null);
   // 完整授权状态（含试用信息）
@@ -290,12 +289,6 @@ const App: React.FC = () => {
                 <ComprehensiveQueryView onBack={() => setMainView('server-resource')} />
               </ErrorBoundary>
             </Box>
-          ) : mainView === 'asset-summary' ? (
-            <Box sx={{ flex: 1, overflow: 'hidden' }}>
-              <ErrorBoundary key="asum" name="资产汇总">
-                <AssetSummaryView />
-              </ErrorBoundary>
-            </Box>
           ) : (
             <>
               <Box sx={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
@@ -309,7 +302,7 @@ const App: React.FC = () => {
                       <EditorToolbar onExecute={handleExecute} onStop={handleStop} isExecuting={isExecuting} />
                     </ErrorBoundary>
                     <ErrorBoundary key="sqle" name="SQL编辑器">
-                      <Box sx={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
+                      <Box sx={{ flex: 1, minHeight: 0, overflow: 'visible' }}>
                         <React.Suspense fallback={
                           <Box sx={{ display:'flex',alignItems:'center',justifyContent:'center',height:'100%',color:'text.secondary',fontSize:'0.85rem' }}>
                             编辑器加载中...
@@ -332,7 +325,7 @@ const App: React.FC = () => {
                         <Tab label="执行历史" sx={{ minHeight: 32, textTransform: 'none', fontSize: '0.8rem' }} />
                       </Tabs>
                     </Box>
-                    <Box sx={{ flex: 1, overflow: 'auto', p: 1, minHeight: 0 }}>
+                    <Box sx={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', p: 1, minHeight: 0 }}>
                       {bottomTab === 0 && <ErrorBoundary key="exec" name="执行面板"><ExecutionPanel /></ErrorBoundary>}
                       {bottomTab === 1 && <ErrorBoundary key="res" name="查询结果"><ResultTabs /></ErrorBoundary>}
                       {bottomTab === 2 && <ErrorBoundary key="hist" name="执行历史"><HistoryPanel /></ErrorBoundary>}

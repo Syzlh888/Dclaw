@@ -38,7 +38,7 @@ export default function AppInstanceTab({ serverId, instances, ports }: Props) {
   const [open, setOpen] = useState(false);
   const [editItem, setEditItem] = useState<AppInstance | null>(null);
   const [form, setForm] = useState<any>({});
-  const [credentials, setCredentials] = useState<CredField[]>([{ username: '', password: '' }]);
+  const [credentials, setCredentials] = useState<CredField[]>([{ username: '', password: '', notes: '' }]);
   const [showPwdGen, setShowPwdGen] = useState<number | null>(null);
   const [saveError, setSaveError] = useState('');
 
