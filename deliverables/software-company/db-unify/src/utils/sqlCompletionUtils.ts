@@ -17,8 +17,8 @@
 export function parseTableAliases(sql: string): Map<string, string> {
   const map = new Map<string, string>();
 
-  // 移除字符串字面量，避免误匹配（简单处理单引号字符串）
-  const cleanSql = sql.replace(/'[^']*'/g, "''");
+  // 移除字符串字面量，避免误匹配（支持转义单引号 ''）
+  const cleanSql = sql.replace(/'(?:[^']|'')*'/g, "''");
 
   // 匹配 FROM / JOIN / 各种 JOIN / 逗号 后跟的表名和可选别名
   const pattern =

@@ -118,7 +118,12 @@ export async function syncDbInstance(
 
   // 遍历每个凭据，创建/更新连接
   if (!dbInstance.credentials || dbInstance.credentials.length === 0) {
-    console.warn('[sync] 数据库实例无凭据，跳过同步');
+    // 凭据为空时清理已有连接（用户可能移除了所有凭据）
+    if (existingConnIds) {
+      for (const oldConnId of existingConnIds) {
+        await removeConnectionAndNode(oldConnId);
+      }
+    }
     return;
   }
   for (let i = 0; i < dbInstance.credentials.length; i++) {

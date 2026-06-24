@@ -52,28 +52,23 @@ const SqlEditor: React.FC<SqlEditorProps> = ({ onExecute }) => {
   // 当选中库变化时，加载元数据
   useEffect(() => {
     if (selectedDbIds.length === 0) return;
-    console.log('[metadata] loading for connectionIds:', selectedDbIds);
     selectedDbIds.forEach(async (dbId) => {
       if (metadataCacheRef.current[dbId]) return; // 已缓存则跳过
       try {
-        console.log(`[metadata] fetching tables for connection: ${dbId}`);
         const tables = await fetchMetadata(dbId);
-        console.log(`[metadata] loaded ${tables.length} tables for ${dbId}`, tables.map(t => t.name));
         // 立即更新 ref（不等待 React 渲染周期），避免 CompletionProvider 读到空缓存
         metadataCacheRef.current = { ...metadataCacheRef.current, [dbId]: tables };
         setMetadataCache(prev => ({ ...prev, [dbId]: tables }));
-      } catch (err) {
-        console.error(`[metadata] failed to load for ${dbId}:`, err);
+      } catch {
+        // 静默失败，元数据加载非关键路径
       }
     });
   }, [selectedDbIds]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fb = useMemo(() => fallbackStyle[editorTheme], [editorTheme]);
 
-  /** 在 Monaco 加载后、编辑器创建前注册补全 Provider */
+  /** 在 Monaco 加载后、编辑器创建前注册补全 Provider（空依赖：通过 metadataCacheRef 访问最新缓存） */
   const handleBeforeMount = useCallback((monaco: any) => {
-    console.log('[monaco] beforeMount, registering completion providers');
-
     // ====== 统一的智能补全 Provider（列名 + 表名） ======
     monaco.languages.registerCompletionItemProvider('sql', {
       provideCompletionItems: (model: any, position: any) => {
@@ -86,12 +81,10 @@ const SqlEditor: React.FC<SqlEditorProps> = ({ onExecute }) => {
           if (alias) {
             const fullText = model.getValue();
             const tableMap = parseTableAliases(fullText);
-            console.log('[completion] alias:', alias, 'tableMap:', Object.fromEntries(tableMap));
             const realTableName = tableMap.get(alias);
 
             if (realTableName) {
               const cache = metadataCacheRef.current;
-              console.log('[completion] looking for table:', realTableName, 'cache keys:', Object.keys(cache));
               const realTN = realTableName.toLowerCase();
               const tableOnly = realTN.includes('.') ? realTN.split('.').pop()! : realTN;
 
@@ -103,7 +96,6 @@ const SqlEditor: React.FC<SqlEditorProps> = ({ onExecute }) => {
                 });
                 if (table?.columns.length) {
                   columns = table.columns;
-                  console.log('[completion] found table, columns:', table.columns.map(c => c.name));
                   break;
                 }
               }
@@ -116,12 +108,8 @@ const SqlEditor: React.FC<SqlEditorProps> = ({ onExecute }) => {
                   documentation: col.comment || undefined,
                   insertText: col.name,
                 }));
-                console.log('[completion] returning', suggestions.length, 'column suggestions');
                 return { suggestions };
               }
-              console.log('[completion] no columns found for:', realTableName);
-            } else {
-              console.log('[completion] table not found for alias:', alias);
             }
           }
 
@@ -139,20 +127,16 @@ const SqlEditor: React.FC<SqlEditorProps> = ({ onExecute }) => {
                 documentation: t.comment || undefined,
                 insertText: t.name,
               }));
-              console.log('[completion] returning', suggestions.length, 'table suggestions');
               return { suggestions };
             }
           }
 
           return { suggestions: [] as any };
-        } catch (err) {
-          console.error('[completion] error:', err);
+        } catch {
           return { suggestions: [] as any };
         }
       },
     });
-
-    console.log('[monaco] completion providers registered');
   }, []);
 
   const handleEditorMount = useCallback((editor: any, _monaco: any) => {
@@ -180,7 +164,6 @@ const SqlEditor: React.FC<SqlEditorProps> = ({ onExecute }) => {
           const lineContent = model.getLineContent(pos.lineNumber);
           const textBefore = lineContent.slice(0, pos.column - 1);
           if (getIdentifierBeforeDot(textBefore)) {
-            console.log('[trigger] forcing suggest widget after dot');
             editor.trigger('Keyboard', 'editor.action.triggerSuggest', {});
           }
         }, 100);
@@ -219,7 +202,7 @@ const SqlEditor: React.FC<SqlEditorProps> = ({ onExecute }) => {
   }, [zoomReady]);
 
   return (
-    <Box sx={{ height: '100%', border: '1px solid', borderColor: 'divider', borderRadius: 1, overflow: 'visible', display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ height: '100%', border: '1px solid', borderColor: 'divider', borderRadius: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
       <React.Suspense
         fallback={
           <Box

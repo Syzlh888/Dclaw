@@ -302,7 +302,7 @@ const App: React.FC = () => {
                       <EditorToolbar onExecute={handleExecute} onStop={handleStop} isExecuting={isExecuting} />
                     </ErrorBoundary>
                     <ErrorBoundary key="sqle" name="SQL编辑器">
-                      <Box sx={{ flex: 1, minHeight: 0, overflow: 'visible' }}>
+                      <Box sx={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
                         <React.Suspense fallback={
                           <Box sx={{ display:'flex',alignItems:'center',justifyContent:'center',height:'100%',color:'text.secondary',fontSize:'0.85rem' }}>
                             编辑器加载中...
