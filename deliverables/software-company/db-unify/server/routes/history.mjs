@@ -24,8 +24,8 @@ export function isCleanupEnabled() {
  * GET /api/history
  * 获取执行历史列表（按时间倒序，最近 100 条）
  */
-router.get('/', (_req, res) => {
-  const history = getAll('executionHistory')
+router.get('/', async (_req, res) => {
+  const history = await getAll('executionHistory')
     .sort((a, b) => new Date(b.executed_at) - new Date(a.executed_at))
     .slice(0, 100);
 
@@ -36,14 +36,14 @@ router.get('/', (_req, res) => {
  * GET /api/history/:id
  * 获取单次执行详情（含每个执行任务结果）
  */
-router.get('/:id', (req, res) => {
-  const history = getAll('executionHistory').find((h) => h.id === req.params.id);
+router.get('/:id', async (req, res) => {
+  const history = (await getAll('executionHistory')).find((h) => h.id === req.params.id);
   if (!history) {
     return res.status(404).json({ error: '记录不存在' });
   }
 
   // 查找关联的执行任务记录
-  const tasks = getAll('executionTasks').filter((t) => t.execution_id === req.params.id);
+  const tasks = (await getAll('executionTasks')).filter((t) => t.execution_id === req.params.id);
 
   res.json({ history, tasks });
 });
@@ -74,7 +74,7 @@ router.put('/cleanup-config', (req, res) => {
  * DELETE /api/history/batch
  * 批量删除多条执行历史记录
  */
-router.delete('/batch', (req, res) => {
+router.delete('/batch', async (req, res) => {
   const { ids } = req.body || {};
   if (!Array.isArray(ids) || ids.length === 0) {
     return res.status(400).json({ error: '请提供要删除的记录 ID 列表' });
@@ -83,9 +83,9 @@ router.delete('/batch', (req, res) => {
   const idSet = new Set(ids);
   let deletedCount = 0;
   for (const id of idSet) {
-    if (remove('executionHistory', id)) {
+    if (await remove('executionHistory', id)) {
       deletedCount++;
-      removeWhere('executionTasks', (t) => t.execution_id === id);
+      await removeWhere('executionTasks', (t) => t.execution_id === id);
     }
   }
   res.json({ success: true, deletedCount });
@@ -95,11 +95,11 @@ router.delete('/batch', (req, res) => {
  * DELETE /api/history/:id
  * 删除单条执行历史记录
  */
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
   const { id } = req.params;
-  const success = remove('executionHistory', id);
+  const success = await remove('executionHistory', id);
   if (success) {
-    removeWhere('executionTasks', (t) => t.execution_id === id);
+    await removeWhere('executionTasks', (t) => t.execution_id === id);
     res.json({ success: true });
   } else {
     res.status(404).json({ error: '记录不存在' });
@@ -110,9 +110,9 @@ router.delete('/:id', (req, res) => {
  * DELETE /api/history
  * 清空所有执行历史
  */
-router.delete('/', (_req, res) => {
-  const count = removeWhere('executionHistory', () => true);
-  removeWhere('executionTasks', () => true);
+router.delete('/', async (_req, res) => {
+  const count = await removeWhere('executionHistory', () => true);
+  await removeWhere('executionTasks', () => true);
   res.json({ success: true, deletedCount: count });
 });
 
@@ -121,12 +121,12 @@ router.delete('/', (_req, res) => {
  * @param {number} retentionDays 保留天数，默认 7 天
  * @returns {number} 清理的记录数
  */
-export function autoCleanup(retentionDays = 7) {
+export async function autoCleanup(retentionDays = 7) {
   const cutoff = new Date(Date.now() - retentionDays * 24 * 60 * 60 * 1000).toISOString();
 
   // 找出过期的历史记录 ID
   const expiredIds = new Set();
-  const expired = getAll('executionHistory').filter((h) => h.executed_at < cutoff);
+  const expired = (await getAll('executionHistory')).filter((h) => h.executed_at < cutoff);
   for (const h of expired) {
     expiredIds.add(h.id);
   }
@@ -134,8 +134,8 @@ export function autoCleanup(retentionDays = 7) {
   if (expiredIds.size === 0) return 0;
 
   // 删除过期历史记录及其关联任务
-  const historyCount = removeWhere('executionHistory', (h) => expiredIds.has(h.id));
-  const taskCount = removeWhere('executionTasks', (t) => expiredIds.has(t.execution_id));
+  const historyCount = await removeWhere('executionHistory', (h) => expiredIds.has(h.id));
+  const taskCount = await removeWhere('executionTasks', (t) => expiredIds.has(t.execution_id));
 
   console.log(`🧹 自动清理执行历史：${historyCount} 条记录，${taskCount} 条任务明细`);
   return historyCount;

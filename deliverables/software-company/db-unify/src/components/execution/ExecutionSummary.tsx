@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Chip, LinearProgress, Typography } from '@mui/material';
+import { Box, Chip, Typography } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorIcon from '@mui/icons-material/Error';
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
@@ -14,11 +14,11 @@ interface ExecutionSummaryProps {
 
 /** 状态配置：颜色、图标 */
 const STATUS_CONFIG = {
-  [ExecutionStatus.Success]:  { color: '#2E7D32', bg: '#E8F5E9', icon: <CheckCircleIcon sx={{ fontSize: 16 }} />, label: '成功' },
-  [ExecutionStatus.Failed]:   { color: '#D32F2F', bg: '#FFEBEE', icon: <ErrorIcon sx={{ fontSize: 16 }} />, label: '失败' },
-  [ExecutionStatus.Running]:  { color: '#1976D2', bg: '#E3F2FD', icon: <AutorenewIcon sx={{ fontSize: 16 }} />, label: '执行中' },
-  [ExecutionStatus.Pending]:  { color: '#757575', bg: '#F5F5F5', icon: <HourglassEmptyIcon sx={{ fontSize: 16 }} />, label: '等待' },
-  [ExecutionStatus.Timeout]:  { color: '#ED6C02', bg: '#FFF3E0', icon: <TimerIcon sx={{ fontSize: 16 }} />, label: '超时' },
+  [ExecutionStatus.Success]:  { color: '#2E7D32', icon: <CheckCircleIcon sx={{ fontSize: 16 }} />, label: '成功' },
+  [ExecutionStatus.Failed]:   { color: '#D32F2F', icon: <ErrorIcon sx={{ fontSize: 16 }} />, label: '失败' },
+  [ExecutionStatus.Running]:  { color: '#1976D2', icon: <AutorenewIcon sx={{ fontSize: 16 }} />, label: '执行中' },
+  [ExecutionStatus.Pending]:  { color: '#757575', icon: <HourglassEmptyIcon sx={{ fontSize: 16 }} />, label: '等待' },
+  [ExecutionStatus.Timeout]:  { color: '#ED6C02', icon: <TimerIcon sx={{ fontSize: 16 }} />, label: '超时' },
 } as const;
 
 type StatusKey = keyof typeof STATUS_CONFIG;
@@ -69,33 +69,22 @@ const ExecutionSummary: React.FC<ExecutionSummaryProps> = ({ tasks }) => {
         <Box
           sx={{
             display: 'flex',
+            alignItems: 'center',
             gap: 1,
             flexWrap: 'wrap',
             px: 0.5,
           }}
         >
           {/* 总进度条 */}
-          <Box sx={{ flex: '1 1 280px', minWidth: 200 }}>
-            <LinearProgress
-              variant="determinate"
-              value={100}
-              sx={{
-                height: 10,
-                borderRadius: 5,
-                backgroundColor: '#eee',
-                position: 'relative',
-                '& .MuiLinearProgress-bar': {
-                  display: 'none',
-                },
-              }}
-            />
+          <Box sx={{ flex: '1 1 280px', minWidth: 200, display: 'flex', alignItems: 'center' }}>
             <Box
               sx={{
                 display: 'flex',
-                height: 10,
-                borderRadius: 5,
-                mt: -1.25,
+                width: '100%',
+                height: 6,
+                borderRadius: 3,
                 overflow: 'hidden',
+                bgcolor: 'action.hover',
               }}
             >
               {sortedEntries.map(([key, count]) => (
@@ -125,7 +114,7 @@ const ExecutionSummary: React.FC<ExecutionSummaryProps> = ({ tasks }) => {
                   px: 1,
                   py: 0.25,
                   borderRadius: 1,
-                  bgcolor: cfg.bg,
+                  bgcolor: 'action.hover',
                   border: `1px solid ${cfg.color}40`,
                 }}
               >

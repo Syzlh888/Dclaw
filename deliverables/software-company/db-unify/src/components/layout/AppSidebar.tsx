@@ -27,7 +27,7 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ width, onWidthChange }) => {
         borderColor: 'divider',
         display: 'flex',
         flexDirection: 'column',
-        bgcolor: 'background.paper',
+        bgcolor: 'background.default',
         overflow: 'hidden',
         position: 'relative',
       }}
@@ -57,7 +57,7 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ width, onWidthChange }) => {
 
       {activeTab === 'tree' ? (
         <>
-          {/* 搜索区 - 固定顶部 */}
+          {/* 搜索框 + 批量导入（同一行） */}
           <TreeSearch />
 
           {/* 数据库树 - 占满剩余空间，内部滚动 */}

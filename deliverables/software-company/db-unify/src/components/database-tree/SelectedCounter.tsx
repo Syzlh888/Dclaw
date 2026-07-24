@@ -18,7 +18,7 @@ const SelectedCounter: React.FC = () => {
         px: 2,
         borderTop: '1px solid',
         borderColor: 'divider',
-        bgcolor: '#F5F5F5',
+        bgcolor: 'background.default',
       }}
     >
       <Typography variant="caption" sx={{ color: 'text.secondary' }}>

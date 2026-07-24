@@ -46,6 +46,15 @@ export async function createConnection(params: ConnectionParams) {
   return response.json();
 }
 
+export async function duplicateConnection(id: string) {
+  const response = await apiFetch(`${API_BASE}/${id}/duplicate`, { method: 'POST' });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({ error: '复制失败' }));
+    throw new Error(err.error || '复制连接失败');
+  }
+  return response.json();
+}
+
 export async function updateConnection(id: string, params: Partial<ConnectionParams>) {
   const response = await apiFetch(`${API_BASE}/${id}`, {
     method: 'PUT',
@@ -94,6 +103,8 @@ export interface BulkImportItem {
   password: string;
   database?: string;
   schema?: string;
+  /** 自定义驱动名称（driver=custom 时使用，按名称匹配已安装的自定义驱动） */
+  customDriverName?: string;
   /** 层级：项目（可选） */
   platform?: string;
   /** 层级：业务模块（可选） */

@@ -4,13 +4,10 @@
  * 支持查询模板的保存/加载/删除
  * 支持查询结果导出（XLSX）
  */
-import { createRequire } from 'module';
 import { Router } from 'express';
 import { nanoid } from 'nanoid';
 import { getAll, getById, insert, update, remove, query } from '../database.mjs';
-
-const require = createRequire(import.meta.url);
-const XLSX = require('xlsx');
+import XLSX from 'xlsx';
 
 const router = Router();
 
@@ -186,11 +183,11 @@ function applyFilter(item, filters) {
 }
 
 /** 展平服务器数据（含子资源） */
-function flattenServers(fields) {
-  const servers = getAll('servers');
-  const projects = getAll('projects');
-  const engineerings = getAll('engineerings');
-  const applications = getAll('applications');
+async function flattenServers(fields) {
+  const servers = await getAll('servers');
+  const projects = await getAll('projects');
+  const engineerings = await getAll('engineerings');
+  const applications = await getAll('applications');
 
   const hasSubField = (prefix) => fields.some((f) => f.startsWith(prefix + '.'));
   const hasServerField = fields.some((f) => f.startsWith('server.'));
@@ -257,11 +254,11 @@ function flattenServers(fields) {
       result.push(baseObj);
     } else {
       // 需要展开子资源
-      const dbInstances = needDb ? query('servers_db_instances', (d) => d.server_id === s.id || d.serverId === s.id) : [];
-      const appInstances = needApp ? query('servers_app_instances', (a) => a.server_id === s.id || a.serverId === s.id) : [];
-      const midInstances = needMid ? query('servers_mid_instances', (m) => m.server_id === s.id || m.serverId === s.id) : [];
-      const apiInstances = needApi ? query('servers_api_instances', (a) => a.server_id === s.id || a.serverId === s.id) : [];
-      const ports = needPort ? query('servers_ports', (p) => p.server_id === s.id || p.serverId === s.id) : [];
+      const dbInstances = needDb ? await query('servers_db_instances', (d) => d.server_id === s.id || d.serverId === s.id) : [];
+      const appInstances = needApp ? await query('servers_app_instances', (a) => a.server_id === s.id || a.serverId === s.id) : [];
+      const midInstances = needMid ? await query('servers_mid_instances', (m) => m.server_id === s.id || m.serverId === s.id) : [];
+      const apiInstances = needApi ? await query('servers_api_instances', (a) => a.server_id === s.id || a.serverId === s.id) : [];
+      const ports = needPort ? await query('servers_ports', (p) => p.server_id === s.id || p.serverId === s.id) : [];
 
       // 转换为 camelCase
       const normalizeDb = (d) => ({
@@ -402,9 +399,9 @@ router.get('/fields', (_req, res) => {
  * GET /api/query-templates
  * 获取所有查询模板
  */
-router.get('/templates', (_req, res) => {
+router.get('/templates', async (_req, res) => {
   try {
-    const templates = getAll('queryTemplates');
+    const templates = await getAll('queryTemplates');
     res.json(templates.sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || '')));
   } catch (err) {
     console.error('获取查询模板错误:', err);
@@ -416,7 +413,7 @@ router.get('/templates', (_req, res) => {
  * POST /api/query-templates
  * 保存查询模板
  */
-router.post('/templates', (req, res) => {
+router.post('/templates', async (req, res) => {
   try {
     const { name, fields, filters } = req.body;
     if (!name || !Array.isArray(fields)) {
@@ -432,7 +429,7 @@ router.post('/templates', (req, res) => {
       createdAt: now,
       updatedAt: now,
     };
-    insert('queryTemplates', template);
+    await insert('queryTemplates', template);
     res.json(template);
   } catch (err) {
     console.error('保存查询模板错误:', err);
@@ -444,11 +441,11 @@ router.post('/templates', (req, res) => {
  * PUT /api/query-templates/:id
  * 更新查询模板
  */
-router.put('/templates/:id', (req, res) => {
+router.put('/templates/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const { name, fields, filters } = req.body;
-    const existing = getById('queryTemplates', id);
+    const existing = await getById('queryTemplates', id);
     if (!existing) {
       return res.status(404).json({ error: '模板不存在' });
     }
@@ -459,7 +456,7 @@ router.put('/templates/:id', (req, res) => {
       filters: filters || existing.filters || [],
       updatedAt: new Date().toISOString(),
     };
-    update('queryTemplates', id, updated);
+    await update('queryTemplates', id, updated);
     res.json(updated);
   } catch (err) {
     console.error('更新查询模板错误:', err);
@@ -471,10 +468,10 @@ router.put('/templates/:id', (req, res) => {
  * DELETE /api/query-templates/:id
  * 删除查询模板
  */
-router.delete('/templates/:id', (req, res) => {
+router.delete('/templates/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const result = remove('queryTemplates', id);
+    const result = await remove('queryTemplates', id);
     if (!result) {
       return res.status(404).json({ error: '模板不存在' });
     }

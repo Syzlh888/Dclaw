@@ -3,6 +3,13 @@ export enum DbDriver {
   PostgreSQL = 'postgresql',
   Oracle = 'oracle',
   SQLServer = 'sqlserver',
+  MariaDB = 'mariadb',
+  SQLite = 'sqlite',
+  HighGo = 'highgo',
+  Kingbase = 'kingbase',
+  Dameng = 'dameng',
+  DB2 = 'db2',
+  H2 = 'h2',
   Custom = 'custom',
 }
 
@@ -32,4 +39,6 @@ export interface DbConnection {
   dbInstanceId?: string;
   /** 凭据索引（区分同一实例的多个凭据） */
   credentialIndex?: number;
+  /** 创建时间（ISO 字符串） */
+  created_at?: string;
 }

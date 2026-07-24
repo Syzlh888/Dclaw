@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import type { TreeNode } from '../types/tree';
 import { CheckState, TreeNodeType } from '../types/tree';
 import { broadcastDown, bubbleUp, filterByKeyword, getDescendantDbIds, removeNode, getChildType } from '../utils/treeUtils';
-import { fetchTree, createNode, updateNode, deleteNode, reorderNodes } from '../services/treeService';
+import { fetchTree, createNode, updateNode, deleteNode, reorderNodes, moveHospital } from '../services/treeService';
 
 /** Recompute selectedDbIds from all root nodes */
 function recomputeSelectedDbIds(
@@ -33,11 +33,13 @@ interface TreeState {
   toggleExpand: (nodeId: string) => void;
   search: (keyword: string) => void;
   getSelectedDbIds: () => string[];
+  setSelectedDbIds: (ids: string[]) => void;
   addNode: (parentId: string, name: string) => Promise<string | undefined>;
   addHospitalNode: (parentId: string, name: string, dbConnectionId: string) => Promise<void>;
   updateNode: (nodeId: string, newName: string) => Promise<void>;
   deleteNode: (nodeId: string) => Promise<void>;
   reorderChildren: (nodeId: string, newChildrenIds: string[]) => Promise<void>;
+  moveHospitalToParent: (hospitalId: string, newParentId: string, newChildrenIds: string[]) => Promise<void>;
 }
 
 export const useTreeStore = create<TreeState>((set, get) => ({
@@ -52,12 +54,15 @@ export const useTreeStore = create<TreeState>((set, get) => ({
       // 确保所有节点都有前端需要的默认字段
       const nodes: Record<string, TreeNode> = {};
       for (const [id, raw] of Object.entries(data.nodes || {}) as Array<[string, Partial<TreeNode>]>) {
+        const nodeType = raw.type || TreeNodeType.Platform;
+        // 默认展开到第一级：仅 Platform(项目) 展开，PreDbType/区域/医院默认收起
+        const defaultExpanded = nodeType === TreeNodeType.Platform;
         nodes[id] = {
           id: raw.id || id,
           name: raw.name || '',
-          type: raw.type || TreeNodeType.Platform,
+          type: nodeType,
           checkState: raw.checkState || CheckState.Unchecked,
-          expanded: raw.expanded ?? false,
+          expanded: defaultExpanded,
           parentId: raw.parentId || null,
           childrenIds: raw.childrenIds || [],
           dbConnectionId: raw.dbConnectionId,
@@ -114,6 +119,35 @@ export const useTreeStore = create<TreeState>((set, get) => ({
 
   getSelectedDbIds: () => {
     return get().selectedDbIds;
+  },
+
+  setSelectedDbIds: (ids: string[]) => {
+    const { nodes, rootNodeIds } = get();
+
+    // Collect all Hospital nodes with dbConnectionId
+    const allHospitals = Object.values(nodes).filter(
+      (n) => n.type === TreeNodeType.Hospital && n.dbConnectionId
+    );
+
+    const idSet = new Set(ids);
+
+    // First pass: reset all Hospital nodes to Unchecked
+    let updated = { ...nodes };
+    for (const h of allHospitals) {
+      if (updated[h.id]) {
+        updated[h.id] = { ...updated[h.id], checkState: CheckState.Unchecked };
+      }
+    }
+
+    // Second pass: set matching hospitals to Checked and bubble up
+    for (const h of allHospitals) {
+      if (h.dbConnectionId && idSet.has(h.dbConnectionId)) {
+        updated = broadcastDown(h.id, CheckState.Checked, updated);
+        updated = bubbleUp(h.id, updated);
+      }
+    }
+
+    set({ nodes: updated, selectedDbIds: ids });
   },
 
   addNode: async (parentId: string, name: string) => {
@@ -199,10 +233,17 @@ export const useTreeStore = create<TreeState>((set, get) => ({
     const parent = nodes[parentId];
     if (!parent) return;
 
+    // 根据父节点类型映射到后端字段
+    let parentType: 'platform' | 'predb_type' | 'district' = 'district';
+    if (parent.type === TreeNodeType.Platform) parentType = 'platform';
+    else if (parent.type === TreeNodeType.PreDbType) parentType = 'predb_type';
+    else if (parent.type === TreeNodeType.District) parentType = 'district';
+
     try {
       const created = await createNode({
         type: 'hospital',
         parentId,
+        parentType,
         name,
         connectionId: dbConnectionId,
       });
@@ -331,6 +372,73 @@ export const useTreeStore = create<TreeState>((set, get) => ({
         // 回滚: 重新加载树
         await get().loadTree();
       }
+    }
+  },
+
+  /**
+   * 移动 Hospital（连接实例）到新的父节点（platform / predb_type / district 之一），
+   * 并同时更新新父节点下 hospital 兄弟的顺序。
+   * newParentId: 新的父节点 id
+   * newChildrenIds: 新父节点下 hospital 类型子节点的完整顺序（含被移动的 hospital），
+   *                 用于同时更新 sort_order。
+   */
+  moveHospitalToParent: async (hospitalId, newParentId, newChildrenIds) => {
+    const { nodes, rootNodeIds } = get();
+    const hospital = nodes[hospitalId];
+    const newParent = nodes[newParentId];
+    if (!hospital || hospital.type !== TreeNodeType.Hospital || !newParent) return;
+
+    // 判定 parent_type
+    let parentType: 'platform' | 'predb_type' | 'district';
+    switch (newParent.type) {
+      case TreeNodeType.Platform:
+        parentType = 'platform';
+        break;
+      case TreeNodeType.PreDbType:
+        parentType = 'predb_type';
+        break;
+      case TreeNodeType.District:
+        parentType = 'district';
+        break;
+      default:
+        console.warn('无效的目标父节点类型', newParent.type);
+        return;
+    }
+
+    const oldParentId = hospital.parentId;
+
+    // 乐观更新：本地状态先改
+    const updated = { ...nodes };
+    // 1) 更新 hospital 自身的 parentId
+    updated[hospitalId] = { ...updated[hospitalId], parentId: newParentId };
+    // 2) 从旧父节点的 childrenIds 移除
+    if (oldParentId && updated[oldParentId]) {
+      updated[oldParentId] = {
+        ...updated[oldParentId],
+        childrenIds: updated[oldParentId].childrenIds.filter(id => id !== hospitalId),
+      };
+    }
+    // 3) 更新新父节点的 childrenIds：保留非 hospital 子节点 + 传入的新顺序
+    const nonHospitalChildren = (updated[newParentId].childrenIds || [])
+      .filter(id => id !== hospitalId && updated[id]?.type !== TreeNodeType.Hospital);
+    updated[newParentId] = {
+      ...updated[newParentId],
+      childrenIds: [...nonHospitalChildren, ...newChildrenIds],
+    };
+    set({ nodes: updated });
+
+    // 异步持久化
+    try {
+      await moveHospital({
+        hospitalId,
+        parentType,
+        parentId: newParentId,
+        siblingIds: newChildrenIds,
+      });
+    } catch (err) {
+      console.error('移动 Hospital 失败:', err);
+      // 回滚：重载树
+      await get().loadTree();
     }
   },
 

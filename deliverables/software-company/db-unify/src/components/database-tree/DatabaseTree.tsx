@@ -32,6 +32,7 @@ const DatabaseTree: React.FC = () => {
   const updateNode = useTreeStore((s) => s.updateNode);
   const deleteNode = useTreeStore((s) => s.deleteNode);
   const reorderChildren = useTreeStore((s) => s.reorderChildren);
+  const moveHospitalToParent = useTreeStore((s) => s.moveHospitalToParent);
   const addConnection = useConnectionStore((s) => s.addConnection);
   const connections = useConnectionStore((s) => s.connections);
   const { handleCheck } = useTreeCheck();
@@ -67,22 +68,25 @@ const DatabaseTree: React.FC = () => {
     setDialogOpen(true);
   };
 
-  /** Open add dialog - L3 shows connection form, others show name input */
-  const handleAddChild = (nodeId: string) => {
+  /** Open add dialog - 根据 kind 决定行为：
+   *   - kind='folder'  → 新增下一层"分组"（如项目下建业务模块），弹名称输入
+   *   - kind='connection' → 新增连接：若当前不是 District，自动补齐"默认"中间层，然后弹连接表单
+   */
+  const handleAddChild = async (nodeId: string, kind: 'folder' | 'connection' = 'folder') => {
     const node = nodes[nodeId];
     if (!node) return;
 
-    if (node.type === TreeNodeType.District) {
-      // 区域节点：打开连接配置表单
-      setConnDialogParentId(nodeId);
-      setConnDialogOpen(true);
-    } else {
-      // 项目/业务模块：简单名称输入弹窗
+    // ─── 新增分组：弹名称输入（会自动创建下一层类型的节点） ───
+    if (kind === 'folder') {
       setDialogMode('add');
       setDialogName('');
       setDialogTargetId(nodeId);
       setDialogOpen(true);
+      return;
     }
+
+    // ─── 新增连接：直接打开连接对话框（不再自动补齐层级） ───
+    setConnDialogOpen(true);
   };
 
   /** Open edit dialog - Hospital opens connection form, others open name input */
@@ -134,43 +138,89 @@ const DatabaseTree: React.FC = () => {
       } as any);
       if (!newConnId) throw new Error('创建连接失败');
 
-      // 2. Add hospital tree node under the same parent
+      // 2. 在原节点的兄弟位置创建 hospital（父节点可以是 platform/predb_type/district）
       await addHospitalNode(node.parentId, `${conn.name} (副本)`, newConnId);
-
-      // Also copy connection config to clipboard
-      const text = `${conn.name}\n驱动: ${conn.driver}\n主机: ${conn.host}\n端口: ${conn.port}\n数据库: ${conn.database}\n用户名: ${conn.username}`;
-      navigator.clipboard.writeText(text);
 
       setSnackbarMsg(`已复制 "${conn.name}" 并创建副本`);
       setSnackbarOpen(true);
     } catch (err) {
       console.error('复制节点失败:', err);
-      setSnackbarMsg('复制节点失败');
+      setSnackbarMsg(`复制失败：${(err as any)?.message || '未知错误'}`);
       setSnackbarOpen(true);
     }
   };
 
-  /** Handle drag reorder: move dragId to before/after dropId within the same parent */
+  /**
+   * Handle drag reorder:
+   *  - position='before'|'after': 排序（同级 → 仅排序；跨级且 dragNode 是 Hospital → 移动 Hospital 到新父级并定位）
+   *  - position='inside': 放入 dropNode 内部作为其子节点（仅当 dragNode 是 Hospital 且 dropNode 是 Platform/PreDbType/District）
+   */
   const handleReorder = useCallback(
-    (dragId: string, dropId: string, position: 'before' | 'after') => {
+    (dragId: string, dropId: string, position: 'before' | 'after' | 'inside') => {
       const dragNode = nodes[dragId];
       const dropNode = nodes[dropId];
       if (!dragNode || !dropNode) return;
-      // 必须在同一父节点下
-      if (dragNode.parentId !== dropNode.parentId) return;
+      if (dragId === dropId) return;
 
-      const parentId = dropNode.parentId || '';
-      // 获取当前父节点的 childrenIds（如果是 root 级，用 rootNodeIds）
-      const currentIds = parentId ? nodes[parentId]?.childrenIds || [] : rootNodeIds;
-      const newIds = currentIds.filter((id) => id !== dragId);
+      // ─── 情况 1：inside → 放入 dropNode 内部（作为其新子节点，追加到末尾） ───
+      if (position === 'inside') {
+        // 仅支持 Hospital 拖入 Platform / PreDbType / District
+        if (dragNode.type !== TreeNodeType.Hospital) return;
+        if (
+          dropNode.type !== TreeNodeType.Platform &&
+          dropNode.type !== TreeNodeType.PreDbType &&
+          dropNode.type !== TreeNodeType.District
+        ) return;
+        // 已经是该节点的直接子节点则跳过
+        if (dragNode.parentId === dropId) return;
 
-      const dropIdx = newIds.indexOf(dropId);
-      const insertIdx = position === 'before' ? dropIdx : dropIdx + 1;
-      newIds.splice(insertIdx, 0, dragId);
+        // 新父节点下的 hospital 子节点顺序 = 原有 hospital 子节点 + 本 hospital 追加末尾
+        const existingHospitalChildren = (dropNode.childrenIds || [])
+          .filter((cid) => nodes[cid]?.type === TreeNodeType.Hospital && cid !== dragId);
+        const newChildrenIds = [...existingHospitalChildren, dragId];
+        moveHospitalToParent(dragId, dropId, newChildrenIds);
+        return;
+      }
 
-      reorderChildren(parentId, newIds);
+      // ─── 情况 2：before/after 且同父 → 简单同级排序 ───
+      if (dragNode.parentId === dropNode.parentId) {
+        const parentId = dropNode.parentId || '';
+        const currentIds = parentId ? nodes[parentId]?.childrenIds || [] : rootNodeIds;
+        const newIds = currentIds.filter((id) => id !== dragId);
+        const dropIdx = newIds.indexOf(dropId);
+        const insertIdx = position === 'before' ? dropIdx : dropIdx + 1;
+        newIds.splice(insertIdx, 0, dragId);
+        reorderChildren(parentId, newIds);
+        return;
+      }
+
+      // ─── 情况 3：before/after 且跨父 → 仅当 dragNode 是 Hospital 时允许移动 ───
+      if (dragNode.type !== TreeNodeType.Hospital) return;
+      const newParentId = dropNode.parentId;
+      if (!newParentId) return; // Hospital 不能挂到 root 之外
+      const newParent = nodes[newParentId];
+      if (!newParent) return;
+      if (
+        newParent.type !== TreeNodeType.Platform &&
+        newParent.type !== TreeNodeType.PreDbType &&
+        newParent.type !== TreeNodeType.District
+      ) return;
+
+      // 计算新父下 hospital 子节点顺序：现有 hospital 子（去掉 dragId）中，
+      // 在 dropId 位置插入 dragId（before/after）
+      const siblings = (newParent.childrenIds || [])
+        .filter((cid) => nodes[cid]?.type === TreeNodeType.Hospital && cid !== dragId);
+      const dropIdx = siblings.indexOf(dropId);
+      if (dropIdx === -1) {
+        // dropNode 不是 hospital（可能是排在 district 中间的 folder）—— 追加末尾
+        siblings.push(dragId);
+      } else {
+        const insertIdx = position === 'before' ? dropIdx : dropIdx + 1;
+        siblings.splice(insertIdx, 0, dragId);
+      }
+      moveHospitalToParent(dragId, newParentId, siblings);
     },
-    [nodes, rootNodeIds, reorderChildren],
+    [nodes, rootNodeIds, reorderChildren, moveHospitalToParent],
   );
 
   /** Confirm add/edit dialog */

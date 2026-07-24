@@ -141,7 +141,7 @@ const FolderPicker: React.FC<FolderPickerProps> = ({ open, onClose, onSelect, cu
                   }}
                 >
                   <ListItemIcon sx={{ minWidth: 36 }}>
-                    <FolderIcon fontSize="small" sx={{ color: '#1976D2' }} />
+                    <FolderIcon fontSize="small" sx={{ color: 'primary.main' }} />
                   </ListItemIcon>
                   <ListItemText primary={d.name} secondary="本地磁盘" primaryTypographyProps={{ fontSize: '0.85rem' }} secondaryTypographyProps={{ fontSize: '0.7rem' }} />
                 </ListItemButton>

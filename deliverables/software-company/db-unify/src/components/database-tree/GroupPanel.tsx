@@ -2,16 +2,20 @@ import React, { useState } from 'react';
 import {
   Box, Typography, Button, IconButton, Tooltip, TextField,
   Chip, Dialog, DialogTitle, DialogContent, DialogActions,
-  List, ListItem, ListItemButton, ListItemText,
+  List, ListItem, ListItemButton, ListItemText, Checkbox, Collapse,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
+import SettingsIcon from '@mui/icons-material/Settings';
 import GroupWorkIcon from '@mui/icons-material/GroupWork';
 import RadioButtonCheckedIcon from '@mui/icons-material/RadioButtonChecked';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { useGroupStore } from '../../stores/groupStore';
 import { useTreeStore } from '../../stores/treeStore';
+import type { TreeNode } from '../../types/tree';
 
 const GroupPanel: React.FC = () => {
   const groups = useGroupStore((s) => s.groups);
@@ -28,6 +32,9 @@ const GroupPanel: React.FC = () => {
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
   const [renameTarget, setRenameTarget] = useState<{ id: string; name: string } | null>(null);
   const [renameValue, setRenameValue] = useState('');
+  const [editInstancesOpen, setEditInstancesOpen] = useState(false);
+  const [editGroupTarget, setEditGroupTarget] = useState<{ id: string; name: string; dbConnectionIds: string[] } | null>(null);
+  const [selectedInstances, setSelectedInstances] = useState<string[]>([]);
 
   // 获取当前勾选的连接实例信息用于分组创建预览
   const selectedHospitals = Object.values(nodes).filter(
@@ -139,6 +146,20 @@ const GroupPanel: React.FC = () => {
                           <EditIcon sx={{ fontSize: 13 }} />
                         </IconButton>
                       </Tooltip>
+                      <Tooltip title="编辑实例">
+                        <IconButton
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditGroupTarget({ id: group.id, name: group.name, dbConnectionIds: group.dbConnectionIds });
+                            setSelectedInstances([...group.dbConnectionIds]);
+                            setEditInstancesOpen(true);
+                          }}
+                          sx={{ p: 0.25 }}
+                        >
+                          <SettingsIcon sx={{ fontSize: 13 }} />
+                        </IconButton>
+                      </Tooltip>
                       <Tooltip title="删除">
                         <IconButton
                           size="small"
@@ -227,7 +248,7 @@ const GroupPanel: React.FC = () => {
             sx={{
               mt: 1, maxHeight: 160, overflow: 'auto',
               border: '1px solid', borderColor: 'divider', borderRadius: 1,
-              bgcolor: '#F5F5F5', p: 1,
+              bgcolor: 'background.default', p: 1,
             }}
           >
             {selectedHospitals.length === 0 ? (
@@ -272,6 +293,115 @@ const GroupPanel: React.FC = () => {
           <Button onClick={() => setRenameDialogOpen(false)} size="small">取消</Button>
           <Button onClick={handleRenameConfirm} variant="contained" size="small" disabled={!renameValue.trim()}>
             确认
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* 编辑实例对话框 */}
+      <Dialog open={editInstancesOpen} onClose={() => setEditInstancesOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ fontSize: '1rem', py: 1 }}>
+          编辑分组实例 — {editGroupTarget?.name}
+        </DialogTitle>
+        <DialogContent dividers sx={{ py: 1.5, maxHeight: 400 }}>
+          {(() => {
+            // 递归渲染树节点
+            const renderNode = (nodeId: string, depth: number = 0): React.ReactNode => {
+              const node = nodes[nodeId];
+              if (!node) return null;
+
+              const indent = depth * 20;
+              const hasChildren = node.childrenIds && node.childrenIds.length > 0;
+              const isHospital = node.type === 'hospital';
+              const isChecked = isHospital && node.dbConnectionId
+                ? selectedInstances.includes(node.dbConnectionId)
+                : false;
+
+              // 如果是医院节点且有 dbConnectionId，显示为可勾选项
+              if (isHospital && node.dbConnectionId) {
+                return (
+                  <ListItem key={nodeId} disablePadding sx={{ py: 0 }}>
+                    <ListItemButton
+                      dense
+                      onClick={() => {
+                        setSelectedInstances(prev =>
+                          isChecked
+                            ? prev.filter(id => id !== node.dbConnectionId)
+                            : [...prev, node.dbConnectionId!]
+                        );
+                      }}
+                      sx={{ py: 0.15, pl: indent + 1 }}
+                    >
+                      <Checkbox
+                        size="small"
+                        checked={isChecked}
+                        sx={{ p: 0.25, mr: 0.5 }}
+                      />
+                      <ListItemText
+                        primary={node.name}
+                        sx={{ '& .MuiListItemText-primary': { fontSize: '0.75rem' } }}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                );
+              }
+
+              // 非医院节点（Platform / PreDbType / District）：作为分组标题
+              return (
+                <React.Fragment key={nodeId}>
+                  <ListItem disablePadding sx={{ py: 0 }}>
+                    <ListItemButton
+                      dense
+                      sx={{ py: 0.15, pl: indent + 1, cursor: hasChildren ? 'pointer' : 'default' }}
+                      onClick={() => {
+                        if (hasChildren) {
+                          useTreeStore.getState().toggleExpand(nodeId);
+                        }
+                      }}
+                    >
+                      {hasChildren ? (
+                        node.expanded
+                          ? <ExpandMoreIcon sx={{ fontSize: 14, color: 'text.secondary', mr: 0.5 }} />
+                          : <ChevronRightIcon sx={{ fontSize: 14, color: 'text.secondary', mr: 0.5 }} />
+                      ) : (
+                        <Box sx={{ width: 18, mr: 0.5 }} />
+                      )}
+                      <ListItemText
+                        primary={node.name}
+                        sx={{ '& .MuiListItemText-primary': { fontSize: '0.72rem', fontWeight: 600, color: 'text.secondary' } }}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                  {hasChildren && node.expanded && (
+                    <Collapse in={node.expanded} timeout="auto">
+                      <List dense disablePadding>
+                        {node.childrenIds.map(childId => renderNode(childId, depth + 1))}
+                      </List>
+                    </Collapse>
+                  )}
+                </React.Fragment>
+              );
+            };
+
+            return (
+              <List dense disablePadding>
+                {useTreeStore.getState().rootNodeIds.map(id => renderNode(id))}
+              </List>
+            );
+          })()}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEditInstancesOpen(false)} size="small">取消</Button>
+          <Button
+            onClick={() => {
+              if (editGroupTarget) {
+                useGroupStore.getState().updateGroupDbIds(editGroupTarget.id, selectedInstances);
+              }
+              setEditInstancesOpen(false);
+            }}
+            variant="contained"
+            size="small"
+          >
+            保存
           </Button>
         </DialogActions>
       </Dialog>

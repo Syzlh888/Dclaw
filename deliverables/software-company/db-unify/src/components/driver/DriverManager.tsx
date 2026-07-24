@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -7,24 +7,37 @@ import {
   Button,
   List,
   ListItem,
+  ListItemButton,
   ListItemText,
   ListItemIcon,
-  IconButton,
   Box,
   Typography,
+  TextField,
+  InputAdornment,
+  IconButton,
   Chip,
-  Divider,
-  Tooltip,
   Snackbar,
   Alert,
   CircularProgress,
+  Divider,
+  DialogActions as ConfirmActions,
+  DialogContent as ConfirmContent,
+  DialogContentText,
 } from '@mui/material';
+import ClearIcon from '@mui/icons-material/Clear';
+import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
-import DeleteIcon from '@mui/icons-material/Delete';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import EditIcon from '@mui/icons-material/Edit';
-import MemoryIcon from '@mui/icons-material/Memory';
+import DeleteIcon from '@mui/icons-material/Delete';
+import UndoIcon from '@mui/icons-material/Undo';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
 import ExtensionIcon from '@mui/icons-material/Extension';
+import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import Inventory2Icon from '@mui/icons-material/Inventory2';
+import * as MuiDialog from '@mui/material/Dialog';
 import { useDriverStore } from '../../stores/driverStore';
 import DriverUpload from './DriverUpload';
 
@@ -33,48 +46,147 @@ interface DriverManagerProps {
   onClose: () => void;
 }
 
+/** 数据库类型 → 品牌颜色映射 */
+const DB_BRAND_COLORS: Record<string, string> = {
+  mysql: '#00758F',
+  postgresql: '#336791',
+  mariadb: '#003545',
+  sqlite: '#003B57',
+  oracle: '#F80000',
+  sqlserver: '#CC2927',
+  highgo: '#1E6B4F',
+  kingbase: '#2E7D32',
+  dameng: '#E65100',
+  db2: '#0033A0',
+  h2: '#0A8A8A',
+};
+
+/** 获取驱动品牌色（自定义驱动用橙色） */
+const getDriverColor = (driver: { dbType: string; isBuiltIn?: boolean }): string => {
+  if (!driver.isBuiltIn) return '#FFA726';
+  return DB_BRAND_COLORS[driver.dbType.toLowerCase()] || '#757575';
+};
+
+/** 获取驱动名称的首字母（用于图标 fallback） */
+const getInitial = (name: string): string => {
+  return name.charAt(0).toUpperCase();
+};
+
 const DriverManager: React.FC<DriverManagerProps> = ({ open, onClose }) => {
   const drivers = useDriverStore((s) => s.drivers);
   const loading = useDriverStore((s) => s.loading);
   const deleteDriver = useDriverStore((s) => s.deleteDriver);
+  const uninstallDriver = useDriverStore((s) => s.uninstallDriver);
+  const downloadDriver = useDriverStore((s) => s.downloadDriver);
   const loadDrivers = useDriverStore((s) => s.loadDrivers);
 
+  const [searchText, setSearchText] = useState('');
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [uploadOpen, setUploadOpen] = useState(false);
-  const [editingDriver, setEditingDriver] = useState<ReturnType<typeof useDriverStore.getState>['drivers'][string] | null>(null);
+  const [editingDriver, setEditingDriver] = useState<NonNullable<ReturnType<typeof useDriverStore.getState>['drivers'][string]> | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<'delete' | 'uninstall' | null>(null);
   const [snackMsg, setSnackMsg] = useState('');
   const [snackSeverity, setSnackSeverity] = useState<'success' | 'error'>('success');
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
-  const driverList = Object.values(drivers);
-  const builtInDrivers = driverList.filter((d) => d.isBuiltIn);
-  const customDrivers = driverList.filter((d) => !d.isBuiltIn);
+  // 搜索过滤
+  const filteredDrivers = useMemo(() => {
+    const list = Object.values(drivers);
+    if (!searchText.trim()) return list;
+    const q = searchText.toLowerCase();
+    return list.filter((d) => d.name.toLowerCase().includes(q) || d.dbType.toLowerCase().includes(q));
+  }, [drivers, searchText]);
 
-  const formatFileSize = (bytes: number): string => {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  const selectedDriver = selectedId ? drivers[selectedId] : null;
+
+  const isCustomDriver = selectedDriver && !selectedDriver.isBuiltIn;
+  const isDownloadedBuiltIn = selectedDriver && selectedDriver.isBuiltIn && selectedDriver.downloaded;
+  const hasDownloadUrl = selectedDriver && !!selectedDriver.downloadUrl;
+
+  const handleSearchClear = () => setSearchText('');
+
+  const handleSelect = (id: string) => {
+    setSelectedId(id === selectedId ? null : id);
   };
 
-  const formatUploadTime = (isoTime: string): string => {
+  const handleNew = () => {
+    setEditingDriver(null);
+    setUploadOpen(true);
+  };
+
+  const handleEdit = () => {
+    if (!selectedDriver || selectedDriver.isBuiltIn) return;
+    setEditingDriver(selectedDriver);
+    setUploadOpen(true);
+  };
+
+  const handleDeleteOrUninstall = () => {
+    if (!selectedDriver) return;
+    if (selectedDriver.isBuiltIn && selectedDriver.downloaded) {
+      // 内置驱动已下载 → 卸载（移除 JAR）
+      setConfirmAction('uninstall');
+    } else if (!selectedDriver.isBuiltIn) {
+      // 自定义驱动 → 删除
+      setConfirmAction('delete');
+    }
+    setConfirmOpen(true);
+  };
+
+  const handleConfirm = async () => {
+    if (!selectedId) return;
+    setConfirmOpen(false);
     try {
-      return new Date(isoTime).toLocaleString('zh-CN', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
+      if (confirmAction === 'uninstall') {
+        const ok = await uninstallDriver(selectedId);
+        if (ok) {
+          setSnackMsg('驱动已卸载');
+          setSnackSeverity('success');
+        } else {
+          setSnackMsg('卸载失败');
+          setSnackSeverity('error');
+        }
+      } else if (confirmAction === 'delete') {
+        await deleteDriver(selectedId);
+        setSnackMsg('驱动已删除');
+        setSnackSeverity('success');
+      }
+      setSelectedId(null);
     } catch {
-      return isoTime;
+      setSnackMsg('操作失败');
+      setSnackSeverity('error');
     }
   };
 
-  const handleDeleteDriver = async (id: string) => {
-    await deleteDriver(id);
-    setSnackMsg('驱动已删除');
+  const handleUncancel = () => {
+    setSelectedId(null);
+    loadDrivers();
+    setSnackMsg('已刷新驱动列表');
     setSnackSeverity('success');
   };
 
-  const handleEditDriver = (driver: typeof customDrivers[number]) => {
+  const handleDownload = async (driverId: string) => {
+    setDownloadingId(driverId);
+    try {
+      const ok = await downloadDriver(driverId);
+      if (ok) {
+        setSnackMsg('驱动下载成功');
+        setSnackSeverity('success');
+        loadDrivers();
+      } else {
+        setSnackMsg('驱动下载失败，请检查网络或尝试手动下载 JAR 后上传');
+        setSnackSeverity('error');
+      }
+    } catch (err: any) {
+      setSnackMsg(err?.message || '驱动下载失败，请检查网络或尝试手动下载 JAR 后上传');
+      setSnackSeverity('error');
+    } finally {
+      setDownloadingId(null);
+    }
+  };
+
+  /** 打开手动上传弹窗（用于下载失败的驱动） */
+  const handleManualUpload = (driver: any) => {
     setEditingDriver(driver);
     setUploadOpen(true);
   };
@@ -87,148 +199,442 @@ const DriverManager: React.FC<DriverManagerProps> = ({ open, onClose }) => {
   const handleUploadComplete = () => {
     setUploadOpen(false);
     setEditingDriver(null);
-    loadDrivers(); // 重新加载驱动列表
+    loadDrivers();
     setSnackMsg(editingDriver ? '驱动已更新' : '驱动已添加');
     setSnackSeverity('success');
   };
 
+  /** 获取驱动状态 Chip */
+  const renderStatusChip = (driver: typeof filteredDrivers[number]) => {
+    if (!driver.isBuiltIn) {
+      return (
+        <Chip
+          icon={<ExtensionIcon sx={{ fontSize: 13 }} />}
+          label="用户定义"
+          size="small"
+          variant="outlined"
+          sx={{
+            fontSize: '0.6rem',
+            height: 20,
+            borderColor: '#FFA726',
+            color: '#FFA726',
+            '& .MuiChip-icon': { color: '#FFA726' },
+          }}
+        />
+      );
+    }
+    if (driver.downloaded) {
+      return (
+        <Chip
+          icon={<CheckCircleIcon sx={{ fontSize: 13 }} />}
+          label="已下载"
+          size="small"
+          variant="outlined"
+          color="success"
+          sx={{ fontSize: '0.6rem', height: 20 }}
+        />
+      );
+    }
+    if (driver.downloadUrl) {
+      return (
+        <Chip
+          label="未下载"
+          size="small"
+          variant="outlined"
+          sx={{ fontSize: '0.6rem', height: 20, color: 'text.disabled', borderColor: 'divider' }}
+        />
+      );
+    }
+    return (
+      <Chip
+        icon={<CancelIcon sx={{ fontSize: 13 }} />}
+        label="不可获得"
+        size="small"
+        variant="outlined"
+        color="error"
+        sx={{ fontSize: '0.6rem', height: 20 }}
+      />
+    );
+  };
+
+  const confirmMessage =
+    confirmAction === 'uninstall'
+      ? `确定要卸载驱动"${selectedDriver?.name}"吗？这将移除已下载的 JAR 文件，但保留驱动记录，可随时重新下载。`
+      : `确定要删除驱动"${selectedDriver?.name}"吗？此操作不可恢复。`;
+
   return (
     <>
-      <Dialog open={open} onClose={onClose} maxWidth={false} fullWidth PaperProps={{ sx: { maxWidth: 540 } }}>
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Inventory2Icon color="primary" />
-            驱动管理
-          </Box>
-          <Button
-            size="small"
-            startIcon={<AddIcon />}
-            onClick={() => setUploadOpen(true)}
-            variant="contained"
-            sx={{ textTransform: 'none' }}
-          >
-            上传驱动
-          </Button>
+      <Dialog
+        open={open}
+        onClose={onClose}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            maxWidth: 720,
+            minHeight: 480,
+            maxHeight: 600,
+          },
+        }}
+      >
+        {/* 标题栏 */}
+        <DialogTitle
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            px: 2,
+            py: 1.5,
+            borderBottom: '1px solid',
+            borderColor: 'divider',
+          }}
+        >
+          <Inventory2Icon sx={{ fontSize: 20, color: 'primary.main' }} />
+          <Typography variant="subtitle1" sx={{ fontWeight: 600, fontSize: '0.95rem' }}>
+            驱动管理器
+          </Typography>
         </DialogTitle>
-        <DialogContent dividers>
+
+        {/* 主内容区 */}
+        <DialogContent sx={{ p: 0, display: 'flex', flex: 1, overflow: 'hidden', minHeight: 380 }}>
           {loading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-              <CircularProgress size={32} />
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flex: 1 }}>
+              <CircularProgress size={28} />
             </Box>
           ) : (
-            <>
-              {/* 内置驱动 */}
-              <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary', fontWeight: 600 }}>
-                <MemoryIcon sx={{ fontSize: 16, mr: 0.5, verticalAlign: 'text-bottom' }} />
-                内置驱动
-              </Typography>
-              <List dense sx={{ mb: 2 }}>
-                {builtInDrivers.map((driver) => (
-                  <ListItem
-                    key={driver.id}
+            <Box sx={{ display: 'flex', flex: 1 }}>
+              {/* ===== 左栏：搜索 + 驱动列表 ===== */}
+              <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', borderRight: '1px solid', borderColor: 'divider' }}>
+                {/* 搜索框 */}
+                <Box sx={{ px: 1.5, py: 1 }}>
+                  <TextField
+                    size="small"
+                    placeholder="搜索驱动..."
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                    fullWidth
+                    variant="outlined"
                     sx={{
-                      bgcolor: 'action.hover',
-                      borderRadius: 1,
-                      mb: 0.5,
-                    }}
-                  >
-                    <ListItemIcon sx={{ minWidth: 32 }}>
-                      <MemoryIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {driver.name}
-                          </Typography>
-                          <Chip label={`v${driver.version}`} size="small" variant="outlined" sx={{ fontSize: '0.65rem', height: 20 }} />
-                        </Box>
-                      }
-                      secondary={
-                        <Typography variant="caption" color="text.secondary">
-                          {driver.driverClass} · {formatFileSize(driver.fileSize)}
-                        </Typography>
-                      }
-                    />
-                  </ListItem>
-                ))}
-              </List>
-
-              <Divider sx={{ my: 1.5 }} />
-
-              {/* 自定义驱动 */}
-              <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary', fontWeight: 600 }}>
-                <ExtensionIcon sx={{ fontSize: 16, mr: 0.5, verticalAlign: 'text-bottom' }} />
-                自定义驱动
-              </Typography>
-              {customDrivers.length > 0 ? (
-                <List dense>
-                  {customDrivers.map((driver) => (
-                    <ListItem
-                      key={driver.id}
-                      sx={{
-                        bgcolor: 'background.paper',
+                      '& .MuiOutlinedInput-root': {
+                        fontSize: '0.8rem',
                         borderRadius: 1,
-                        mb: 0.5,
-                        border: '1px solid',
-                        borderColor: 'divider',
-                      }}
-                    >
-                      <ListItemIcon sx={{ minWidth: 32 }}>
-                        <ExtensionIcon sx={{ fontSize: 20, color: 'warning.main' }} />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                              {driver.name}
-                            </Typography>
-                            <Chip label={`v${driver.version}`} size="small" variant="outlined" sx={{ fontSize: '0.65rem', height: 20 }} />
-                          </Box>
-                        }
-                        secondary={
-                          <Typography variant="caption" color="text.secondary">
-                            {driver.driverClass} · {driver.fileName} · {formatFileSize(driver.fileSize)} · {formatUploadTime(driver.uploadTime)}
-                          </Typography>
-                        }
-                      />
-                      <Tooltip title="编辑驱动">
-                        <IconButton
-                          size="small"
-                          color="primary"
-                          onClick={() => handleEditDriver(driver)}
-                        >
-                          <EditIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="删除驱动">
-                        <IconButton
-                          size="small"
-                          color="error"
-                          onClick={() => handleDeleteDriver(driver.id)}
-                        >
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    </ListItem>
-                  ))}
-                </List>
-              ) : (
-                <Box sx={{ py: 2, textAlign: 'center' }}>
-                  <Typography variant="body2" color="text.disabled">
-                    暂无自定义驱动，点击右上角"上传驱动"添加
+                      },
+                    }}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <SearchIcon sx={{ fontSize: 18, color: 'text.disabled' }} />
+                        </InputAdornment>
+                      ),
+                      endAdornment: searchText ? (
+                        <InputAdornment position="end">
+                          <IconButton size="small" onClick={handleSearchClear} edge="end">
+                            <ClearIcon sx={{ fontSize: 16 }} />
+                          </IconButton>
+                        </InputAdornment>
+                      ) : null,
+                    }}
+                  />
+                </Box>
+
+                <Divider />
+
+                {/* 驱动列表头部 */}
+                <Box sx={{ px: 2, py: 0.75, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                    数据库驱动
                   </Typography>
                 </Box>
-              )}
-            </>
+
+                {/* 驱动列表 */}
+                <List dense sx={{ flex: 1, overflow: 'auto', px: 0.5, py: 0 }}>
+                  {filteredDrivers.length === 0 ? (
+                    <Box sx={{ py: 4, textAlign: 'center' }}>
+                      <Typography variant="body2" color="text.disabled" sx={{ fontSize: '0.8rem' }}>
+                        {searchText ? '未找到匹配的驱动' : '暂无驱动'}
+                      </Typography>
+                    </Box>
+                  ) : (
+                    filteredDrivers.map((driver) => {
+                      const color = getDriverColor(driver);
+                      const isSelected = selectedId === driver.id;
+                      return (
+                        <ListItem key={driver.id} disablePadding sx={{ mb: 0.25 }}>
+                          <ListItemButton
+                            selected={isSelected}
+                            onClick={() => handleSelect(driver.id)}
+                            sx={{
+                              borderRadius: 0.5,
+                              py: 0.5,
+                              px: 1.5,
+                              '&.Mui-selected': {
+                                bgcolor: 'primary.dark',
+                                '&:hover': {
+                                  bgcolor: 'primary.dark',
+                                },
+                              },
+                            }}
+                          >
+                            {/* 彩色品牌图标 */}
+                            <ListItemIcon sx={{ minWidth: 28 }}>
+                              <Box
+                                sx={{
+                                  width: 22,
+                                  height: 22,
+                                  borderRadius: '4px',
+                                  bgcolor: color,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  color: '#fff',
+                                  fontSize: '0.65rem',
+                                  fontWeight: 700,
+                                  flexShrink: 0,
+                                }}
+                              >
+                                {getInitial(driver.name)}
+                              </Box>
+                            </ListItemIcon>
+
+                            {/* 驱动名称 */}
+                            <ListItemText
+                              primary={
+                                <Typography
+                                  variant="body2"
+                                  sx={{
+                                    fontWeight: 500,
+                                    fontSize: '0.8rem',
+                                    color: isSelected ? '#fff' : 'text.primary',
+                                  }}
+                                >
+                                  {driver.name}
+                                </Typography>
+                              }
+                              sx={{ my: 0 }}
+                            />
+
+                            {/* 状态标识 */}
+                            <Box sx={{ ml: 1, flexShrink: 0 }}>
+                              {renderStatusChip(driver)}
+                            </Box>
+
+                            {/* 未下载且有下载链接时显示下载按钮 */}
+                            {!driver.downloaded && driver.downloadUrl && (
+                              <IconButton
+                                size="small"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDownload(driver.id);
+                                }}
+                                disabled={downloadingId === driver.id}
+                                sx={{
+                                  ml: 0.5,
+                                  color: isSelected ? '#fff' : 'primary.main',
+                                  p: 0.5,
+                                }}
+                              >
+                                {downloadingId === driver.id ? (
+                                  <CircularProgress size={14} color="inherit" />
+                                ) : (
+                                  <CloudDownloadIcon sx={{ fontSize: 16 }} />
+                                )}
+                              </IconButton>
+                            )}
+                            {/* 未下载/不可获得 → 手动上传 JAR */}
+                            {!driver.downloaded && !downloadingId && (
+                              <IconButton
+                                size="small"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleManualUpload(driver);
+                                }}
+                                sx={{
+                                  ml: 0.25,
+                                  color: isSelected ? '#fff' : 'warning.main',
+                                  p: 0.5,
+                                }}
+                                title="手动上传 JAR"
+                              >
+                                <CloudUploadIcon sx={{ fontSize: 16 }} />
+                              </IconButton>
+                            )}
+                          </ListItemButton>
+                        </ListItem>
+                      );
+                    })
+                  )}
+                </List>
+              </Box>
+
+              {/* ===== 右栏：操作按钮 + 图例 ===== */}
+              <Box
+                sx={{
+                  width: 130,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  p: 1.5,
+                  gap: 0.75,
+                  flexShrink: 0,
+                }}
+              >
+                {/* 操作按钮 */}
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  size="small"
+                  startIcon={<AddIcon sx={{ fontSize: 16 }} />}
+                  onClick={handleNew}
+                  sx={{
+                    textTransform: 'none',
+                    justifyContent: 'flex-start',
+                    fontSize: '0.75rem',
+                    px: 1,
+                  }}
+                >
+                  新建(N)
+                </Button>
+
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  size="small"
+                  startIcon={<ContentCopyIcon sx={{ fontSize: 16 }} />}
+                  disabled
+                  sx={{
+                    textTransform: 'none',
+                    justifyContent: 'flex-start',
+                    fontSize: '0.75rem',
+                    px: 1,
+                  }}
+                >
+                  复制(C)
+                </Button>
+
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  size="small"
+                  startIcon={<EditIcon sx={{ fontSize: 16 }} />}
+                  onClick={handleEdit}
+                  disabled={!selectedDriver || selectedDriver.isBuiltIn}
+                  sx={{
+                    textTransform: 'none',
+                    justifyContent: 'flex-start',
+                    fontSize: '0.75rem',
+                    px: 1,
+                  }}
+                >
+                  编辑(E)...
+                </Button>
+
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  size="small"
+                  startIcon={<DeleteIcon sx={{ fontSize: 16 }} />}
+                  onClick={handleDeleteOrUninstall}
+                  disabled={
+                    !selectedDriver ||
+                    (!selectedDriver.isBuiltIn ? false : !selectedDriver.downloaded)
+                  }
+                  color="error"
+                  sx={{
+                    textTransform: 'none',
+                    justifyContent: 'flex-start',
+                    fontSize: '0.75rem',
+                    px: 1,
+                  }}
+                >
+                  {selectedDriver?.isBuiltIn ? '卸载(D)' : '删除(D)'}
+                </Button>
+
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  size="small"
+                  startIcon={<UndoIcon sx={{ fontSize: 16 }} />}
+                  onClick={handleUncancel}
+                  sx={{
+                    textTransform: 'none',
+                    justifyContent: 'flex-start',
+                    fontSize: '0.75rem',
+                    px: 1,
+                  }}
+                >
+                  取消删除
+                </Button>
+
+                <Box sx={{ flex: 1 }} />
+
+                {/* 图例 */}
+                <Divider />
+
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                    <Box sx={{ width: 10, height: 10, borderRadius: '2px', bgcolor: '#FFA726', flexShrink: 0 }} />
+                    <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.secondary' }}>
+                      用户定义
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                    <CancelIcon sx={{ fontSize: 12, color: 'error.main', flexShrink: 0 }} />
+                    <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.secondary' }}>
+                      不可获得
+                    </Typography>
+                  </Box>
+                </Box>
+              </Box>
+            </Box>
           )}
         </DialogContent>
-        <DialogActions>
-          <Button onClick={onClose} sx={{ textTransform: 'none' }}>
-            关闭
+
+        {/* 底部 */}
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            px: 2,
+            py: 1,
+            borderTop: '1px solid',
+            borderColor: 'divider',
+          }}
+        >
+          <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.65rem' }}>
+            可以在驱动设置中更改全局首选项
+          </Typography>
+          <Button onClick={onClose} variant="outlined" size="small" sx={{ textTransform: 'none', fontSize: '0.75rem' }}>
+            关闭(C)
           </Button>
-        </DialogActions>
+        </Box>
       </Dialog>
+
+      {/* 确认对话框 */}
+      <MuiDialog.default
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <ConfirmContent>
+          <DialogContentText sx={{ fontSize: '0.85rem' }}>
+            {confirmMessage}
+          </DialogContentText>
+        </ConfirmContent>
+        <ConfirmActions>
+          <Button onClick={() => setConfirmOpen(false)} sx={{ textTransform: 'none', fontSize: '0.8rem' }}>
+            取消
+          </Button>
+          <Button
+            onClick={handleConfirm}
+            color="error"
+            variant="contained"
+            sx={{ textTransform: 'none', fontSize: '0.8rem' }}
+          >
+            {confirmAction === 'uninstall' ? '卸载' : '删除'}
+          </Button>
+        </ConfirmActions>
+      </MuiDialog.default>
 
       {/* 上传/编辑驱动弹窗 */}
       <DriverUpload open={uploadOpen} onClose={handleUploadClose} editDriver={editingDriver} onSuccess={handleUploadComplete} />
@@ -240,7 +646,7 @@ const DriverManager: React.FC<DriverManagerProps> = ({ open, onClose }) => {
         onClose={() => setSnackMsg('')}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert severity={snackSeverity} sx={{ width: '100%' }}>
+        <Alert severity={snackSeverity} sx={{ width: '100%', fontSize: '0.8rem' }}>
           {snackMsg}
         </Alert>
       </Snackbar>

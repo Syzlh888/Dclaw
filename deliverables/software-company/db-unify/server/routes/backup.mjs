@@ -11,7 +11,11 @@ import path from 'node:path';
 import zlib from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __dirname = path.dirname(
+  typeof import.meta !== 'undefined' && import.meta.url
+    ? fileURLToPath(import.meta.url)
+    : __filename
+);
 const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, '..', 'data');
 
 /** 备份配置存储路径（与 data 目录同级） */
@@ -25,6 +29,7 @@ const DEFAULT_CONFIG = {
   backupIntervalHours: 24,        // 自动备份间隔（小时）
   backupPath: '',                 // 备份保存路径（为空则默认 data/../backups/）
   maxBackupCount: 10,             // 保留最近 N 个备份
+  lastManualBackupPath: '',       // 上次手动备份的自定义路径，用于还原列表
 };
 
 /** 读取备份配置 */
@@ -55,6 +60,107 @@ function getBackupDir(config) {
   return cfg.backupPath || path.join(path.dirname(DATA_DIR), 'backups');
 }
 
+/** 驱动文件存储目录 */
+const DRIVERS_DIR = path.join(DATA_DIR, 'drivers');
+
+/** 加密密钥文件路径（Electron userData 下）
+ *  ensureEncryptionKey() 把它写到 app.getPath('userData') 下的 .encryption-key
+ *  这里通过 DATA_DIR 的父目录反推（DATA_DIR = <userData>/data）
+ */
+const ENCRYPTION_KEY_FILE = path.join(path.dirname(DATA_DIR), '.encryption-key');
+
+/**
+ * 读取本机加密密钥（用于跨机还原时随备份一起打包）
+ * 返回 hex 字符串 或 null
+ */
+function collectEncryptionKey() {
+  try {
+    if (fs.existsSync(ENCRYPTION_KEY_FILE)) {
+      const key = fs.readFileSync(ENCRYPTION_KEY_FILE, 'utf8').trim();
+      if (key.length === 64) return key;
+    }
+  } catch (e) {
+    console.warn('[backup] 读取加密密钥失败:', e.message);
+  }
+  return null;
+}
+
+/**
+ * 还原备份中的加密密钥。返回是否替换了本机密钥
+ * 注意：替换后必须重启进程，crypto.mjs 模块级常量才会重新读取
+ */
+function restoreEncryptionKey(keyHex) {
+  if (!keyHex || typeof keyHex !== 'string' || keyHex.length !== 64) return false;
+  try {
+    // 先备份现有 key，防止意外
+    if (fs.existsSync(ENCRYPTION_KEY_FILE)) {
+      const oldKey = fs.readFileSync(ENCRYPTION_KEY_FILE, 'utf8').trim();
+      if (oldKey === keyHex) return false; // 同 key，无需替换
+      fs.writeFileSync(ENCRYPTION_KEY_FILE + '.pre-restore-' + Date.now(), oldKey, { mode: 0o600 });
+    }
+    fs.writeFileSync(ENCRYPTION_KEY_FILE, keyHex, { mode: 0o600 });
+    console.log('[backup] 加密密钥已还原（重启后生效）');
+    return true;
+  } catch (e) {
+    console.error('[backup] 还原加密密钥失败:', e.message);
+    return false;
+  }
+}
+
+/**
+ * 收集 drivers/ 目录下所有二进制驱动文件（jar/zip/tar.gz 等）
+ * 返回结构: { "driverId/filename.jar": base64string, ... }
+ */
+function collectDriverFiles() {
+  const out = {};
+  if (!fs.existsSync(DRIVERS_DIR)) return out;
+  try {
+    const driverDirs = fs.readdirSync(DRIVERS_DIR, { withFileTypes: true });
+    for (const dir of driverDirs) {
+      if (!dir.isDirectory()) continue;
+      const subDir = path.join(DRIVERS_DIR, dir.name);
+      const files = fs.readdirSync(subDir);
+      for (const f of files) {
+        const fp = path.join(subDir, f);
+        if (!fs.statSync(fp).isFile()) continue;
+        const buf = fs.readFileSync(fp);
+        // key 用相对路径，跨平台统一 /
+        out[`${dir.name}/${f}`] = buf.toString('base64');
+      }
+    }
+  } catch (e) {
+    console.warn('[backup] 收集驱动文件失败:', e.message);
+  }
+  return out;
+}
+
+/**
+ * 将备份中的驱动文件写回 drivers/ 目录
+ * 返回恢复文件数
+ */
+function restoreDriverFiles(driverFiles) {
+  if (!driverFiles || typeof driverFiles !== 'object') return 0;
+  if (!fs.existsSync(DRIVERS_DIR)) fs.mkdirSync(DRIVERS_DIR, { recursive: true });
+  let n = 0;
+  for (const [relPath, b64] of Object.entries(driverFiles)) {
+    try {
+      // 安全检查：禁止路径穿越
+      if (relPath.includes('..') || path.isAbsolute(relPath)) continue;
+      const target = path.join(DRIVERS_DIR, relPath);
+      const targetDir = path.dirname(target);
+      if (!fs.existsSync(targetDir)) fs.mkdirSync(targetDir, { recursive: true });
+      const buf = Buffer.from(b64, 'base64');
+      const tmp = target + '.tmp';
+      fs.writeFileSync(tmp, buf);
+      fs.renameSync(tmp, target);
+      n++;
+    } catch (e) {
+      console.warn(`[restore] 恢复驱动文件失败 ${relPath}:`, e.message);
+    }
+  }
+  return n;
+}
+
 // ===== API 路由 =====
 
 /**
@@ -80,6 +186,7 @@ router.put('/config', (req, res) => {
     backupIntervalHours: typeof body.backupIntervalHours === 'number' ? body.backupIntervalHours : current.backupIntervalHours,
     backupPath: typeof body.backupPath === 'string' ? body.backupPath : current.backupPath,
     maxBackupCount: typeof body.maxBackupCount === 'number' ? body.maxBackupCount : current.maxBackupCount,
+    lastManualBackupPath: typeof body.lastManualBackupPath === 'string' ? body.lastManualBackupPath : current.lastManualBackupPath,
   };
 
   saveConfig(updated);
@@ -119,11 +226,15 @@ router.post('/now', async (req, res) => {
     }
 
     // 构建备份结构：包含元数据和所有数据文件
+    const driverFiles = collectDriverFiles();
+    const encryptionKey = collectEncryptionKey();
     const backupData = {
-      version: '1.0',
+      version: '1.2',
       timestamp: new Date().toISOString(),
       appVersion: '1.0.0',
       dataFiles,
+      driverFiles, // { "driverId/filename.jar": base64 }
+      encryptionKey, // hex string 或 null（跨机还原时用于解密数据库密码）
     };
 
     // Gzip 压缩后写入磁盘
@@ -133,16 +244,23 @@ router.post('/now', async (req, res) => {
 
     const stat = fs.statSync(filePath);
 
+    // 记住手动备份的自定义路径，以便还原列表能扫描到
+    if (customPath) {
+      saveConfig({ ...config, lastManualBackupPath: customPath });
+    }
+
     // 清理旧备份（保留最近 N 个）
     cleanupOldBackups(backupDir, config.maxBackupCount);
 
-    console.log(`💾 数据备份完成: ${fileName} (${(stat.size / 1024).toFixed(1)} KB)`);
+    console.log(`💾 数据备份完成: ${fileName} (${(stat.size / 1024).toFixed(1)} KB) 数据文件=${Object.keys(dataFiles).length} 驱动文件=${Object.keys(driverFiles).length}`);
     res.json({
       success: true,
       fileName,
       filePath,
       size: stat.size,
       timestamp: new Date().toISOString(),
+      dataFileCount: Object.keys(dataFiles).length,
+      driverFileCount: Object.keys(driverFiles).length,
     });
   } catch (err) {
     console.error('备份失败:', err.message);
@@ -151,33 +269,53 @@ router.post('/now', async (req, res) => {
 });
 
 /**
- * GET /api/backup/list
- * 列出所有备份文件
+ * 列出所有备份文件（扫描自动备份目录、手动备份目录、默认目录以及各盘符根目录）
  */
 router.get('/list', (_req, res) => {
   try {
     const config = loadConfig();
-    const backupDir = getBackupDir(config);
+    const autoBackupDir = getBackupDir(config);
 
-    if (!fs.existsSync(backupDir)) {
-      return res.json([]);
+    // 扫描多个目录：自动备份路径、手动备份自定义路径、默认备份路径
+    const dirsToScan = new Set([autoBackupDir]);
+    if (config.backupPath) dirsToScan.add(path.resolve(config.backupPath));
+    if (config.lastManualBackupPath) dirsToScan.add(path.resolve(config.lastManualBackupPath));
+
+    // 兼容旧版本：手动备份路径未记录时，也扫描各盘符根目录，找回已存在的 .dclaw 文件
+    if (process.platform === 'win32') {
+      for (let i = 65; i <= 90; i++) {
+        const letter = String.fromCharCode(i);
+        const p = `${letter}:\\`;
+        if (fs.existsSync(p)) dirsToScan.add(p);
+      }
+    } else {
+      dirsToScan.add('/');
     }
 
-    const entries = fs.readdirSync(backupDir);
-    const backups = entries
-      .filter(f => f.endsWith('.dclaw'))
-      .map(f => {
+    const seen = new Set();
+    const backups = [];
+
+    for (const backupDir of dirsToScan) {
+      if (!fs.existsSync(backupDir)) continue;
+
+      const entries = fs.readdirSync(backupDir);
+      for (const f of entries) {
+        if (!f.endsWith('.dclaw')) continue;
+        // 按文件名去重，避免同一文件在不同路径出现多次
+        if (seen.has(f)) continue;
+        seen.add(f);
         const fp = path.join(backupDir, f);
         const stat = fs.statSync(fp);
-        return {
+        backups.push({
           fileName: f,
           filePath: fp,
           size: stat.size,
           createdAt: stat.birthtime || stat.mtime,
-        };
-      })
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        });
+      }
+    }
 
+    backups.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     res.json(backups);
   } catch (err) {
     res.status(500).json({ error: '列出备份失败: ' + err.message });
@@ -234,7 +372,14 @@ router.post('/restore', async (req, res) => {
         }
       }
     }
-    const rollbackBackup = { version: '1.0', timestamp: new Date().toISOString(), appVersion: '1.0.0', dataFiles: currentData };
+    const rollbackBackup = {
+      version: '1.2',
+      timestamp: new Date().toISOString(),
+      appVersion: '1.0.0',
+      dataFiles: currentData,
+      driverFiles: collectDriverFiles(),
+      encryptionKey: collectEncryptionKey(),
+    };
     const rollbackCompressed = zlib.gzipSync(Buffer.from(JSON.stringify(rollbackBackup), 'utf8'));
     fs.writeFileSync(rollbackFile, rollbackCompressed);
 
@@ -251,14 +396,22 @@ router.post('/restore', async (req, res) => {
       restoredCount++;
     }
 
-    console.log(`🔄 数据已从备份还原，共恢复 ${restoredCount} 个数据文件。回滚备份: ${rollbackFile}`);
+    // 恢复驱动 JAR 文件（版本 1.1+ 才有）
+    const restoredDriverCount = restoreDriverFiles(backupData.driverFiles);
+
+    // 恢复加密密钥（版本 1.2+ 才有）—— 用于跨机还原后能解密数据库密码
+    const keyRestored = restoreEncryptionKey(backupData.encryptionKey);
+
+    console.log(`🔄 数据已从备份还原，共恢复 ${restoredCount} 个数据文件、${restoredDriverCount} 个驱动文件${keyRestored ? '、加密密钥已同步' : ''}。回滚备份: ${rollbackFile}`);
 
     res.json({
       success: true,
       restoredCount,
+      restoredDriverCount,
+      encryptionKeyRestored: keyRestored,
       rollbackFile,
       timestamp: backupData.timestamp,
-      message: `成功还原 ${restoredCount} 个数据文件。如果结果不符合预期，可使用回滚备份 ${path.basename(rollbackFile)} 恢复。`,
+      message: `成功还原 ${restoredCount} 个数据文件${restoredDriverCount ? ` + ${restoredDriverCount} 个驱动文件` : ''}${keyRestored ? '，加密密钥已同步（请重启软件后连接密码才能解密）' : ''}。如果结果不符合预期，可使用回滚备份 ${path.basename(rollbackFile)} 恢复。`,
     });
   } catch (err) {
     console.error('还原失败:', err.message);
@@ -268,7 +421,9 @@ router.post('/restore', async (req, res) => {
 
 /**
  * DELETE /api/backup/:fileName
- * 删除指定备份文件（需 URL 编码文件名）
+ * 删除指定备份文件。
+ * 优先从 query 或 body 里读 filePath（列表接口返回的完整路径），
+ * 兼容旧行为：只给 fileName 则从默认 backupDir 找
  */
 router.delete('/:fileName', (req, res) => {
   try {
@@ -276,18 +431,40 @@ router.delete('/:fileName', (req, res) => {
     const backupDir = getBackupDir(config);
     const fileName = decodeURIComponent(req.params.fileName);
 
-    // 安全检查：防止路径穿越
+    // 安全检查：文件名不允许路径穿越字符
     if (fileName.includes('..') || fileName.includes('/') || fileName.includes('\\')) {
       return res.status(400).json({ error: '无效的文件名' });
     }
 
-    const filePath = path.join(backupDir, fileName);
-    if (!fs.existsSync(filePath)) {
-      return res.status(404).json({ error: '备份文件不存在' });
+    // 尝试多种路径来源：query filePath / body filePath / 默认 backupDir
+    let filePath = req.query.filePath || (req.body && req.body.filePath) || '';
+    if (filePath) filePath = decodeURIComponent(String(filePath));
+
+    // 若外部传了 filePath，校验它确实指向一个 .dclaw 文件
+    if (filePath) {
+      const resolved = path.resolve(filePath);
+      if (!resolved.endsWith('.dclaw') || path.basename(resolved) !== fileName) {
+        return res.status(400).json({ error: 'filePath 与文件名不匹配' });
+      }
+      if (!fs.existsSync(resolved)) {
+        return res.status(404).json({ error: `备份文件不存在: ${resolved}` });
+      }
+      fs.unlinkSync(resolved);
+      return res.json({ success: true, deleted: resolved });
     }
 
-    fs.unlinkSync(filePath);
-    res.json({ success: true });
+    // 兜底：从 list 接口扫描的所有目录里找该文件
+    const dirsToScan = new Set([backupDir]);
+    if (config.backupPath) dirsToScan.add(path.resolve(config.backupPath));
+    if (config.lastManualBackupPath) dirsToScan.add(path.resolve(config.lastManualBackupPath));
+    for (const dir of dirsToScan) {
+      const candidate = path.join(dir, fileName);
+      if (fs.existsSync(candidate)) {
+        fs.unlinkSync(candidate);
+        return res.json({ success: true, deleted: candidate });
+      }
+    }
+    return res.status(404).json({ error: '备份文件不存在（已扫描默认与自定义目录）' });
   } catch (err) {
     res.status(500).json({ error: '删除失败: ' + err.message });
   }
@@ -295,7 +472,7 @@ router.delete('/:fileName', (req, res) => {
 
 /**
  * GET /api/backup/download/:fileName
- * 下载备份文件
+ * 下载备份文件。同 delete，优先用 query filePath 定位真实路径
  */
 router.get('/download/:fileName', (req, res) => {
   try {
@@ -307,14 +484,31 @@ router.get('/download/:fileName', (req, res) => {
       return res.status(400).json({ error: '无效的文件名' });
     }
 
-    const filePath = path.join(backupDir, fileName);
-    if (!fs.existsSync(filePath)) {
+    let filePath = req.query.filePath ? decodeURIComponent(String(req.query.filePath)) : '';
+    let resolved = '';
+    if (filePath) {
+      resolved = path.resolve(filePath);
+      if (!resolved.endsWith('.dclaw') || path.basename(resolved) !== fileName) {
+        return res.status(400).json({ error: 'filePath 与文件名不匹配' });
+      }
+    } else {
+      // 兜底扫描
+      const dirsToScan = new Set([backupDir]);
+      if (config.backupPath) dirsToScan.add(path.resolve(config.backupPath));
+      if (config.lastManualBackupPath) dirsToScan.add(path.resolve(config.lastManualBackupPath));
+      for (const dir of dirsToScan) {
+        const candidate = path.join(dir, fileName);
+        if (fs.existsSync(candidate)) { resolved = candidate; break; }
+      }
+    }
+
+    if (!resolved || !fs.existsSync(resolved)) {
       return res.status(404).json({ error: '备份文件不存在' });
     }
 
     res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
     res.setHeader('Content-Type', 'application/octet-stream');
-    fs.createReadStream(filePath).pipe(res);
+    fs.createReadStream(resolved).pipe(res);
   } catch (err) {
     res.status(500).json({ error: '下载失败: ' + err.message });
   }
@@ -433,12 +627,13 @@ async function performAutoBackup() {
       }
     }
 
-    const backupData = { version: '1.0', timestamp: new Date().toISOString(), appVersion: '1.0.0', dataFiles };
+    const driverFiles = collectDriverFiles();
+    const backupData = { version: '1.2', timestamp: new Date().toISOString(), appVersion: '1.0.0', dataFiles, driverFiles, encryptionKey: collectEncryptionKey() };
     const compressed = zlib.gzipSync(Buffer.from(JSON.stringify(backupData), 'utf8'));
     fs.writeFileSync(filePath, compressed);
 
     const stat = fs.statSync(filePath);
-    console.log(`📦 自动备份完成: ${fileName} (${(stat.size / 1024).toFixed(1)} KB)`);
+    console.log(`📦 自动备份完成: ${fileName} (${(stat.size / 1024).toFixed(1)} KB) 数据=${Object.keys(dataFiles).length} 驱动=${Object.keys(driverFiles).length}`);
 
     cleanupOldBackups(backupDir, config.maxBackupCount);
   } catch (err) {

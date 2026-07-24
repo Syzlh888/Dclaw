@@ -17,24 +17,53 @@ export function createAppTheme(mode: ThemeMode, scale: number) {
     return createTheme({
       palette: {
         mode: 'dark',
-        primary: { main: '#90CAF9', light: '#BBDEFB', dark: '#64B5F6' },
-        secondary: { main: '#FFB74D', light: '#FFCC80', dark: '#FFA726' },
+        primary: { main: '#4DB8E6', light: '#6CC8F0', dark: '#2DA0D0' }, // DBeaver 数据蓝
+        secondary: { main: '#DAAA4E', light: '#E0C077', dark: '#B8903A' }, // DBeaver SQL 关键字金橙色
         error: { main: '#EF5350' },
         warning: { main: '#FF9800' },
         success: { main: '#66BB6A' },
-        background: { default: '#121212', paper: '#1E1E1E' },
+        background: { default: '#2B2B2B', paper: '#3C3F41' }, // DBeaver 主背景 / 面板背景
+        text: { primary: '#BBBBBB', secondary: '#888888' }, // DBeaver 文字主色 / 次要文字
+        divider: '#4B4B4B', // DBeaver 分割线
+        action: { hover: 'rgba(255,255,255,0.06)', selected: 'rgba(255,255,255,0.10)' }, // DBeaver 悬浮/选中高亮
       },
       typography: {
         fontSize,
-        htmlFontSize: 16,
+        htmlFontSize: Math.round(16 * scale),
         fontFamily: ['-apple-system','BlinkMacSystemFont','"Segoe UI"','Roboto','"Helvetica Neue"','Arial','sans-serif'].join(','),
       },
       components: {
         MuiButton: { styleOverrides: { root: { textTransform: 'none', fontSize: rem(fontSize) } } },
         MuiChip: { styleOverrides: { root: { fontWeight: 500 } } },
-        MuiSvgIcon: { defaultProps: { fontSize: iconSize } },
+        MuiSvgIcon: { defaultProps: { fontSize: iconSize } }, // DBeaver 彩色图标：颜色通过 palette primary/secondary/error 映射
+        // ─── DBeaver 风格表格 ───
+        MuiTableHead: {
+          styleOverrides: {
+            root: {
+              backgroundColor: '#3C3F41', // DBeaver 表头背景（与面板背景一致）
+              '& .MuiTableCell-head': {
+                fontWeight: 700, // 表头文字加粗
+              },
+            },
+          },
+        },
+        MuiTableRow: {
+          styleOverrides: {
+            root: {
+              '&:hover': {
+                backgroundColor: 'rgba(255,255,255,0.04)', // DBeaver 表格行悬浮高亮
+              },
+            },
+          },
+        },
         MuiIconButton: { styleOverrides: { sizeSmall: { padding: Math.round(4 * scale) }, root: { padding: Math.round(6 * scale) } } },
         MuiTab: { styleOverrides: { root: { fontSize: rem(fontSize), minHeight: Math.round(36 * scale) } } },
+        MuiTableCell: { styleOverrides: { root: { fontSize: rem(fontSize) } } },
+        MuiInputBase: { styleOverrides: { input: { fontSize: rem(fontSize) }, root: { fontSize: rem(fontSize) } } },
+        MuiInputLabel: { styleOverrides: { root: { fontSize: rem(fontSize) } } },
+        MuiFormLabel: { styleOverrides: { root: { fontSize: rem(fontSize) } } },
+        MuiDialogTitle: { styleOverrides: { root: { fontSize: rem(Math.round(fontSize * 1.2)) } } },
+        MuiMenuItem: { styleOverrides: { root: { fontSize: rem(fontSize) } } },
       },
     });
   }
@@ -48,18 +77,42 @@ export function createAppTheme(mode: ThemeMode, scale: number) {
       warning: { main: '#ED6C02' },
       success: { main: '#2E7D32' },
       background: { default: '#F5F5F5', paper: '#FFFFFF' },
+      text: { primary: 'rgba(0,0,0,0.87)', secondary: 'rgba(0,0,0,0.6)' },
+      divider: 'rgba(0,0,0,0.12)',
+      action: { hover: 'rgba(0,0,0,0.04)', selected: 'rgba(25,118,210,0.08)' },
     },
     typography: {
       fontSize,
-      htmlFontSize: 16,
+      htmlFontSize: Math.round(16 * scale),
       fontFamily: ['-apple-system','BlinkMacSystemFont','"Segoe UI"','Roboto','"Helvetica Neue"','Arial','sans-serif'].join(','),
     },
     components: {
       MuiButton: { styleOverrides: { root: { textTransform: 'none', fontSize: rem(fontSize) } } },
       MuiChip: { styleOverrides: { root: { fontWeight: 500 } } },
       MuiSvgIcon: { defaultProps: { fontSize: iconSize } },
+      MuiTableHead: {
+        styleOverrides: {
+          root: {
+            backgroundColor: '#F5F5F5',
+            '& .MuiTableCell-head': { fontWeight: 700 },
+          },
+        },
+      },
+      MuiTableRow: {
+        styleOverrides: {
+          root: {
+            '&:hover': { backgroundColor: 'rgba(0,0,0,0.04)' },
+          },
+        },
+      },
       MuiIconButton: { styleOverrides: { sizeSmall: { padding: Math.round(4 * scale) }, root: { padding: Math.round(6 * scale) } } },
       MuiTab: { styleOverrides: { root: { fontSize: rem(fontSize), minHeight: Math.round(36 * scale) } } },
+      MuiTableCell: { styleOverrides: { root: { fontSize: rem(fontSize) } } },
+      MuiInputBase: { styleOverrides: { input: { fontSize: rem(fontSize) }, root: { fontSize: rem(fontSize) } } },
+      MuiInputLabel: { styleOverrides: { root: { fontSize: rem(fontSize) } } },
+      MuiFormLabel: { styleOverrides: { root: { fontSize: rem(fontSize) } } },
+      MuiDialogTitle: { styleOverrides: { root: { fontSize: rem(Math.round(fontSize * 1.2)) } } },
+      MuiMenuItem: { styleOverrides: { root: { fontSize: rem(fontSize) } } },
     },
   });
 }

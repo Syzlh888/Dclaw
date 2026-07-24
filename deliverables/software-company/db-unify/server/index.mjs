@@ -26,6 +26,7 @@ import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import { nanoid } from 'nanoid';
 import { initDatabase, initDefaultData } from './database.mjs';
+import { initAuthDefaults } from './permissions/init.mjs';
 import { log, runWithTrace } from './logger.mjs';
 import { authMiddleware } from './middleware/auth.mjs';
 import { getMachineInfo, validateLicense, saveLicense, loadLicense } from './license.mjs';
@@ -46,6 +47,10 @@ import serversRouter from './routes/servers.mjs';
 import systemConfigRouter from './routes/systemConfig.mjs';
 import accessRouter from './routes/access.mjs';
 import queryRouter from './routes/query.mjs';
+import tableMgmtRouter from './routes/table-mgmt.mjs';
+import usersRouter from './routes/users.mjs';
+import rolesRouter from './routes/roles.mjs';
+import permissionsRouter from './routes/permissions.mjs';
 
 const app = express();
 const PORT = parseInt(process.env.PORT, 10) || 3001;
@@ -112,7 +117,7 @@ app.use((req, res, next) => {
 });
 
 // 静态文件服务（生产环境）
-// APP_DIST 由 Electron 主进程注入，指向 asar 虚拟文件系统中的 dist/ 目录
+// APP_DIST 由 Electron 主进程注入，指向 asar 解包后的真实 dist/ 目录
 const staticDir = process.env.APP_DIST || 'dist';
 if (isProduction) {
   app.use(express.static(staticDir));
@@ -120,8 +125,18 @@ if (isProduction) {
 
 // ========= 初始化数据库 =========
 
-initDatabase();
-initDefaultData();
+// initDatabase / initDefaultData 现在是 async (PG adapter)
+// 用 IIFE 而非 top-level await，兼容 esbuild CJS bundle 打包
+(async () => {
+  try {
+    await initDatabase();
+    await initDefaultData();
+    await initAuthDefaults();
+  } catch (e) {
+    console.error('[boot] 数据库初始化失败:', e);
+    process.exit(1);
+  }
+})();
 
 // 启动时不自动清理（默认关闭，用户需在界面上手动开启）
 // 每小时检查：仅当用户启用时执行
@@ -206,6 +221,11 @@ app.use('/api/applications', authMiddleware, applicationsRouter);
 app.use('/api/system', authMiddleware, systemConfigRouter);
 app.use('/api/access', authMiddleware, accessRouter);
 app.use('/api/query', authMiddleware, queryRouter);
+app.use('/api/connections', authMiddleware, tableMgmtRouter);
+app.use('/api/connection', authMiddleware, tableMgmtRouter);
+app.use('/api/users', authMiddleware, usersRouter);
+app.use('/api/roles', authMiddleware, rolesRouter);
+app.use('/api/permissions', authMiddleware, permissionsRouter);
 
 
 // ========= 生产环境 SPA 回退 =========

@@ -12,8 +12,8 @@ const router = Router();
  * GET /api/templates
  * 获取所有模板
  */
-router.get('/', (_req, res) => {
-  const templates = getAll('sqlTemplates')
+router.get('/', async (_req, res) => {
+  const templates = await getAll('sqlTemplates')
     .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
   res.json({ templates });
 });
@@ -22,8 +22,8 @@ router.get('/', (_req, res) => {
  * GET /api/templates/:id
  * 获取单个模板
  */
-router.get('/:id', (req, res) => {
-  const tmpl = getById('sqlTemplates', req.params.id);
+router.get('/:id', async (req, res) => {
+  const tmpl = await getById('sqlTemplates', req.params.id);
   if (!tmpl) {
     return res.status(404).json({ error: '模板不存在' });
   }
@@ -34,7 +34,7 @@ router.get('/:id', (req, res) => {
  * POST /api/templates
  * 创建新模板
  */
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const { name, description, sql_text, category } = req.body;
 
   if (!name || !sql_text) {
@@ -53,7 +53,7 @@ router.post('/', (req, res) => {
     updated_at: now,
   };
 
-  insert('sqlTemplates', template);
+  await insert('sqlTemplates', template);
   res.status(201).json(template);
 });
 
@@ -61,8 +61,8 @@ router.post('/', (req, res) => {
  * PUT /api/templates/:id
  * 更新模板
  */
-router.put('/:id', (req, res) => {
-  const existing = getById('sqlTemplates', req.params.id);
+router.put('/:id', async (req, res) => {
+  const existing = await getById('sqlTemplates', req.params.id);
   if (!existing) {
     return res.status(404).json({ error: '模板不存在' });
   }
@@ -74,7 +74,7 @@ router.put('/:id', (req, res) => {
   if (sql_text !== undefined) partial.sql_text = sql_text;
   if (category !== undefined) partial.category = category;
 
-  const updated = update('sqlTemplates', req.params.id, partial);
+  const updated = await update('sqlTemplates', req.params.id, partial);
   res.json(updated);
 });
 
@@ -82,13 +82,13 @@ router.put('/:id', (req, res) => {
  * DELETE /api/templates/:id
  * 删除模板
  */
-router.delete('/:id', (req, res) => {
-  const existing = getById('sqlTemplates', req.params.id);
+router.delete('/:id', async (req, res) => {
+  const existing = await getById('sqlTemplates', req.params.id);
   if (!existing) {
     return res.status(404).json({ error: '模板不存在' });
   }
 
-  remove('sqlTemplates', req.params.id);
+  await remove('sqlTemplates', req.params.id);
   res.json({ success: true });
 });
 
@@ -96,8 +96,8 @@ router.delete('/:id', (req, res) => {
  * POST /api/templates/preset
  * 初始化预置模板（如果模板库为空时调用）
  */
-router.post('/preset', (_req, res) => {
-  const existing = getAll('sqlTemplates');
+router.post('/preset', async (_req, res) => {
+  const existing = await getAll('sqlTemplates');
   if (existing.length > 0) {
     return res.json({ templates: existing });
   }
@@ -166,7 +166,7 @@ ORDER BY table_rows DESC;`,
   }));
 
   for (const tmpl of created) {
-    insert('sqlTemplates', tmpl);
+    await insert('sqlTemplates', tmpl);
   }
 
   res.status(201).json({ templates: created });

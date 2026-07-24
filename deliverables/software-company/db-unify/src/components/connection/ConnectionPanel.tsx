@@ -13,6 +13,7 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
 import SettingsInputComponentIcon from '@mui/icons-material/SettingsInputComponent';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import { useConnectionStore } from '../../stores/connectionStore';
@@ -39,6 +40,7 @@ const ConnectionPanel = forwardRef<ConnectionPanelHandle, ConnectionPanelProps>(
   const addConnection = useConnectionStore((s) => s.addConnection);
   const updateConnection = useConnectionStore((s) => s.updateConnection);
   const deleteConnection = useConnectionStore((s) => s.deleteConnection);
+  const clearAbnormalConnections = useConnectionStore((s) => s.clearAbnormalConnections);
   const loadTree = useTreeStore((s) => s.loadTree);
 
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -66,6 +68,20 @@ const ConnectionPanel = forwardRef<ConnectionPanelHandle, ConnectionPanelProps>(
     await deleteConnection(id);
     await loadTree();
   };
+
+  const handleClearAbnormal = async () => {
+    const abnormal = connectionList.filter(
+      c => c.status === ConnectionStatus.Error || c.status === ConnectionStatus.Offline
+    );
+    if (abnormal.length === 0) return;
+    if (!window.confirm(`确定删除全部 ${abnormal.length} 个异常连接吗？\n此操作将同步删除左侧数据库树中的关联节点。`)) return;
+    const deleted = await clearAbnormalConnections();
+    if (deleted.length > 0) await loadTree();
+  };
+
+  const abnormalCount = connectionList.filter(
+    c => c.status === ConnectionStatus.Error || c.status === ConnectionStatus.Offline
+  ).length;
 
   const handleSave = (data: Omit<DbConnection, 'id'>) => {
     if (editingId) {
@@ -152,6 +168,13 @@ const ConnectionPanel = forwardRef<ConnectionPanelHandle, ConnectionPanelProps>(
             连接管理
           </Typography>
           <Box sx={{ display: 'flex', gap: 0.5 }}>
+            {abnormalCount > 0 && (
+              <Tooltip title={`清除 ${abnormalCount} 个异常连接`}>
+                <IconButton size="small" onClick={handleClearAbnormal} color="error">
+                  <DeleteSweepIcon sx={{ fontSize: 18 }} />
+                </IconButton>
+              </Tooltip>
+            )}
             <Tooltip title="批量导入">
               <IconButton size="small" onClick={() => setBulkImportOpen(true)} color="inherit">
                 <UploadFileIcon sx={{ fontSize: 18 }} />
@@ -246,6 +269,13 @@ const ConnectionPanel = forwardRef<ConnectionPanelHandle, ConnectionPanelProps>(
                 >
                   添加连接
                 </Button>
+              </Box>
+            )}
+            {connectionList.length > 0 && abnormalCount === 0 && (
+              <Box sx={{ py: 2, textAlign: 'center' }}>
+                <Typography variant="caption" color="text.disabled">
+                  {connectionList.length} 个连接，全部正常 ✓
+                </Typography>
               </Box>
             )}
           </List>

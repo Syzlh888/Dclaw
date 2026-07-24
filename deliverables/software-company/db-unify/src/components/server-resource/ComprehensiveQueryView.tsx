@@ -10,7 +10,7 @@ import {
   Paper, Checkbox, FormControl, Select, MenuItem, TextField,
   Stack, Divider, Tooltip, Alert, CircularProgress,
   Accordion, AccordionSummary, AccordionDetails,
-  ToggleButtonGroup, ToggleButton, Radio,
+  ToggleButtonGroup, ToggleButton, Radio, useTheme,
 } from '@mui/material';
 import {
   Close as CloseIcon,
@@ -57,6 +57,7 @@ const OPERATORS = [
 const SIDEBAR_WIDTH = 300;
 
 const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
+  const theme = useTheme();
   // ---- 核心状态 ----
   const [fieldGroups, setFieldGroups] = useState<QueryFieldGroup[]>([]);
   const [selectedFields, setSelectedFields] = useState<string[]>([]);
@@ -289,7 +290,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
   };
 
   return (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: '#f5f6fa', overflow: 'hidden' }}>
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'background.default', overflow: 'hidden' }}>
       {/* ======= 顶部标题栏 ======= */}
       <Box
         sx={{
@@ -298,7 +299,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
           justifyContent: 'space-between',
           px: 3,
           py: 1,
-          bgcolor: 'white',
+          bgcolor: 'background.paper',
           borderBottom: '1px solid',
           borderColor: 'divider',
           flexShrink: 0,
@@ -379,7 +380,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
             height: '100%',
             display: 'flex',
             flexDirection: 'column',
-            bgcolor: 'white',
+            bgcolor: 'background.paper',
             borderRight: '1px solid',
             borderColor: 'divider',
             overflow: 'hidden',
@@ -464,7 +465,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                   justifyContent: 'space-between',
                   position: 'sticky',
                   top: 0,
-                  bgcolor: 'white',
+                  bgcolor: 'background.paper',
                   zIndex: 1,
                   borderBottom: '1px solid',
                   borderColor: 'divider',
@@ -540,7 +541,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                             py: 0.25,
                             cursor: 'pointer',
                             '&:hover': { bgcolor: 'action.hover' },
-                            bgcolor: selectedFields.includes(field.key) ? '#e3f2fd' : 'transparent',
+                            bgcolor: selectedFields.includes(field.key) ? 'action.selected' : 'transparent',
                           }}
                           onClick={() => toggleField(field.key)}
                         >
@@ -574,7 +575,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
 
                 {templates.length === 0 ? (
                   <Box sx={{ px: 2, py: 4, textAlign: 'center' }}>
-                    <SaveIcon sx={{ fontSize: 32, color: '#bdbdbd', mb: 1 }} />
+                    <SaveIcon sx={{ fontSize: 32, color: 'text.disabled', mb: 1 }} />
                     <Typography variant="body2" color="text.disabled" sx={{ fontSize: '0.75rem' }}>
                       还没有保存任何模板
                     </Typography>
@@ -620,7 +621,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                                   }}
                                   onBlur={handleConfirmRename}
                                   sx={{
-                                    '& .MuiOutlinedInput-root': { fontSize: '0.78rem', bgcolor: 'white' },
+                                    '& .MuiOutlinedInput-root': { fontSize: '0.78rem', bgcolor: 'background.paper' },
                                   }}
                                   inputProps={{ style: { padding: '4px 8px' } }}
                                 />
@@ -684,7 +685,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                               <Paper
                                 variant="outlined"
                                 sx={{
-                                  bgcolor: '#fafafa',
+                                  bgcolor: 'background.paper',
                                   overflow: 'hidden',
                                 }}
                               >
@@ -863,7 +864,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                   pb: 1.5,
                   borderTop: '1px solid',
                   borderColor: 'divider',
-                  bgcolor: '#fafafa',
+                  bgcolor: 'background.paper',
                   flexShrink: 0,
                 }}
               >
@@ -877,7 +878,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         fontSize: '0.78rem',
-                        bgcolor: 'white',
+                        bgcolor: 'background.paper',
                       },
                     }}
                     inputProps={{ style: { padding: '6px 10px' } }}
@@ -935,7 +936,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
-            bgcolor: '#f5f6fa',
+            bgcolor: 'background.default',
           }}
         >
           {/* 过滤条件区域 */}
@@ -943,7 +944,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
             sx={{
               mx: 3,
               mt: 2,
-              bgcolor: 'white',
+              bgcolor: 'background.paper',
               borderRadius: 1,
               border: '1px solid',
               borderColor: 'divider',
@@ -968,7 +969,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                     width: 6,
                     height: 6,
                     borderRadius: '50%',
-                    bgcolor: filters.length > 0 ? '#4caf50' : 'grey.400',
+                    bgcolor: filters.length > 0 ? 'success.main' : 'grey.400',
                   }}
                 />
                 <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.8rem' }}>
@@ -1005,7 +1006,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                             sx={{ fontSize: '0.76rem' }}
                           >
                             <MenuItem value="" disabled>
-                              <em style={{ color: '#999' }}>选择字段</em>
+                              <em style={{ color: theme.palette.text.disabled }}>选择字段</em>
                             </MenuItem>
                             {fieldGroups.flatMap((g) =>
                               g.fields.map((fd) => (
@@ -1104,14 +1105,14 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    bgcolor: 'white',
+                    bgcolor: 'background.paper',
                     borderRadius: 1,
                     border: '1px solid',
                     borderColor: 'divider',
                     color: 'text.secondary',
                   }}
                 >
-                  <SearchIcon sx={{ fontSize: 48, color: '#bdbdbd', mb: 1 }} />
+                  <SearchIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
                   <Typography variant="body1" color="text.secondary">
                     请在左侧选择字段，点击"执行查询"获取结果
                   </Typography>
@@ -1123,7 +1124,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                 <TableContainer
                   component={Paper}
                   variant="outlined"
-                  sx={{ flex: 1, bgcolor: 'white', borderRadius: 1 }}
+                  sx={{ flex: 1, bgcolor: 'background.paper', borderRadius: 1 }}
                 >
                   <Table size="small" stickyHeader>
                     <TableHead>
@@ -1131,7 +1132,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                         <TableCell
                           padding="checkbox"
                           sx={{
-                            bgcolor: '#f5f5f5',
+                            bgcolor: 'action.hover',
                             fontWeight: 600,
                             fontSize: '0.76rem',
                             borderBottom: '2px solid',
@@ -1144,7 +1145,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                           <TableCell
                             key={col.key}
                             sx={{
-                              bgcolor: '#f5f5f5',
+                              bgcolor: 'action.hover',
                               fontWeight: 600,
                               fontSize: '0.76rem',
                               whiteSpace: 'nowrap',
@@ -1162,7 +1163,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                         <TableRow
                           key={row._id || idx}
                           hover
-                          sx={{ '&:nth-of-type(odd)': { bgcolor: '#fafafa' } }}
+                          sx={{ '&:nth-of-type(odd)': { bgcolor: 'action.hover' } }}
                         >
                           <TableCell sx={{ fontSize: '0.72rem', color: 'text.secondary' }}>
                             {idx + 1}
@@ -1196,7 +1197,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
 
           {/* 图表视图 */}
           {viewMode === 'chart' && (
-            <Box sx={{ flex: 1, mx: 3, mb: 2, mt: 1.5, overflow: 'auto', bgcolor: 'white', borderRadius: 1, border: '1px solid', borderColor: 'divider' }}>
+            <Box sx={{ flex: 1, mx: 3, mb: 2, mt: 1.5, overflow: 'auto', bgcolor: 'background.paper', borderRadius: 1, border: '1px solid', borderColor: 'divider' }}>
               <QueryChartPanel
                 queryResult={queryResult}
                 selectedFields={selectedFields}
@@ -1221,7 +1222,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
           justifyContent: 'space-between',
           px: 3,
           py: 0.75,
-          bgcolor: 'white',
+          bgcolor: 'background.paper',
           borderTop: '1px solid',
           borderColor: 'divider',
           flexShrink: 0,

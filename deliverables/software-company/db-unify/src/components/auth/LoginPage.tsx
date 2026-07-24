@@ -35,7 +35,7 @@ const LoginPage: React.FC = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        bgcolor: 'grey.100',
+        bgcolor: 'background.default',
       }}
     >
       <Card sx={{ p: 4, width: 400, maxWidth: '90vw' }} elevation={3}>

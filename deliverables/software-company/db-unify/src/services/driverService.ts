@@ -66,3 +66,64 @@ export async function deleteDriverApi(id: string): Promise<void> {
     throw new Error(err.error || '删除驱动失败');
   }
 }
+
+/**
+ * 在线下载内置驱动
+ * @param driverId 驱动 ID
+ */
+export async function downloadDriverApi(driverId: string): Promise<{ success: boolean; fileSize: number; message: string }> {
+  const response = await fetch(`${API_BASE}/download`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ driverId }),
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({ error: '驱动下载失败' }));
+    throw new Error(err.error || '驱动下载失败');
+  }
+  return response.json();
+}
+
+/**
+ * 卸载驱动（移除已下载的 JAR 文件）
+ * @param id 驱动 ID
+ */
+export async function uninstallDriverApi(id: string): Promise<{ success: boolean; message: string }> {
+  const response = await fetch(`${API_BASE}/${id}/uninstall`, {
+    method: 'POST',
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({ error: '驱动卸载失败' }));
+    throw new Error(err.error || '驱动卸载失败');
+  }
+  return response.json();
+}
+
+/**
+ * 为内置驱动手动上传 JAR 文件
+ * @param driverId 内置驱动 ID
+ * @param file JAR 文件
+ * @param metadata 驱动元数据
+ */
+export async function uploadBuiltinJarApi(
+  driverId: string,
+  file: File,
+  metadata: { name: string; version: string; driverClass: string }
+): Promise<{ fileName: string; fileSize: number; message: string }> {
+  const formData = new FormData();
+  formData.append('driverId', driverId);
+  formData.append('name', metadata.name);
+  formData.append('version', metadata.version);
+  formData.append('driverClass', metadata.driverClass);
+  formData.append('driverFile', file);
+
+  const response = await fetch(`${API_BASE}/${driverId}/upload-jar`, {
+    method: 'POST',
+    body: formData,
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({ error: '上传驱动文件失败' }));
+    throw new Error(err.error || '上传驱动文件失败');
+  }
+  return response.json();
+}

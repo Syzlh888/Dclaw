@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
   Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Button, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Alert,
-  TextField, Chip, MenuItem,
+  TextField, Chip, MenuItem, Autocomplete, useTheme,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -16,11 +16,13 @@ interface Props {
   serverId: string;
   instances: ApiInstance[];
   appInstances: AppInstance[];
+  serverIps: string[];
 }
 
 const ENCRYPTION_METHODS = ['HTTPS (TLS)', 'mTLS', 'AES-128-GCM', 'AES-256-GCM', 'RSA-2048', 'RSA-4096', 'ECC', 'SM2 (国密非对称)', 'SM3 (国密哈希)', 'SM4 (国密对称)', 'SM9 (国密标识)', '自定义'];
 
-export default function ApiManagementTab({ serverId, instances, appInstances }: Props) {
+export default function ApiManagementTab({ serverId, instances, appInstances, serverIps }: Props) {
+  const theme = useTheme();
   const addApi = useServerStore(s => s.addApiInstance);
   const updApi = useServerStore(s => s.updateApiInstance);
   const delApi = useServerStore(s => s.deleteApiInstance);
@@ -61,6 +63,7 @@ export default function ApiManagementTab({ serverId, instances, appInstances }: 
     const data: any = {
       apiAddress: form.apiAddress.trim(),
       port: form.port || undefined,
+      ip: form.ip || '',
       applicationName: form.applicationName.trim(),
       encrypted: !!form.encrypted,
       encryptionMethod: finalMethod,
@@ -94,8 +97,9 @@ export default function ApiManagementTab({ serverId, instances, appInstances }: 
       ) : (
         <TableContainer><Table size="small">
           <TableHead><TableRow>
-            <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>API 地址</TableCell>
+            <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>IP</TableCell>
             <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>端口</TableCell>
+            <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>API 地址</TableCell>
             <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>所属应用</TableCell>
             <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>加密</TableCell>
             <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>加密方式</TableCell>
@@ -105,18 +109,19 @@ export default function ApiManagementTab({ serverId, instances, appInstances }: 
           <TableBody>
             {instances.map(a => (
               <TableRow key={a.id}>
-                <TableCell sx={{ fontSize: '0.8rem' }}>
-                  <span style={{ color: '#1565C0', wordBreak: 'break-all' }}>{a.apiAddress}</span>
+                <TableCell sx={{ fontSize: '0.7rem' }}>{a.ip || '-'}</TableCell>
+                <TableCell sx={{ fontSize: '0.7rem' }}>{a.port || '-'}</TableCell>
+                <TableCell sx={{ fontSize: '0.7rem' }}>
+                  <span style={{ color: theme.palette.primary.dark, wordBreak: 'break-all' }}>{a.apiAddress}</span>
                 </TableCell>
-                <TableCell sx={{ fontSize: '0.8rem' }}>{a.port || '-'}</TableCell>
-                <TableCell sx={{ fontSize: '0.8rem' }}>{a.applicationName || '-'}</TableCell>
+                <TableCell sx={{ fontSize: '0.7rem' }}>{a.applicationName || '-'}</TableCell>
                 <TableCell>
                   {a.encrypted
                     ? <VerifiedUserIcon sx={{ fontSize: 16, color: 'success.main' }} />
                     : <PublicIcon sx={{ fontSize: 16, color: 'text.secondary' }} />}
                 </TableCell>
-                <TableCell sx={{ fontSize: '0.8rem' }}>{a.encrypted ? (a.encryptionMethod || '-') : '-'}</TableCell>
-                <TableCell sx={{ fontSize: '0.8rem', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <TableCell sx={{ fontSize: '0.7rem' }}>{a.encrypted ? (a.encryptionMethod || '-') : '-'}</TableCell>
+                <TableCell sx={{ fontSize: '0.7rem', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {a.notes || '-'}
                 </TableCell>
                 <TableCell>
@@ -139,21 +144,22 @@ export default function ApiManagementTab({ serverId, instances, appInstances }: 
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
             {saveError && <Alert severity="error" onClose={() => setSaveError('')}>{saveError}</Alert>}
 
-            {/* 第一行：API地址 | 端口 */}
+            {/* 第一行：IP | 端口 | API 地址 */}
             <Box sx={{ display: 'flex', gap: 2 }}>
-              <TextField
-                size="small" label="API 地址"
-                value={form.apiAddress || ''}
-                onChange={e => setForm({ ...form, apiAddress: e.target.value })}
-                placeholder="例如：https://api.example.com/v1/users"
-                sx={{ flex: 3 }}
-              />
+              <Autocomplete freeSolo options={serverIps} inputValue={form.ip || ''} onInputChange={(_, v) => setForm({ ...form, ip: v })} sx={{ flex: 1 }} renderInput={params => <TextField {...params} size="small" label="IP" />} />
               <TextField
                 size="small" label="端口" type="number"
                 value={form.port || ''}
                 onChange={e => setForm({ ...form, port: e.target.value ? Number(e.target.value) : '' })}
                 placeholder="例如：443"
                 sx={{ flex: 1 }}
+              />
+              <TextField
+                size="small" label="API 地址"
+                value={form.apiAddress || ''}
+                onChange={e => setForm({ ...form, apiAddress: e.target.value })}
+                placeholder="例如：https://api.example.com/v1/users"
+                sx={{ flex: 3 }}
               />
             </Box>
 

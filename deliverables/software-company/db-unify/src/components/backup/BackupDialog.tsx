@@ -20,7 +20,7 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import SettingsBackupRestoreIcon from '@mui/icons-material/SettingsBackupRestore';
 import {
   fetchBackupConfig, updateBackupConfig, backupNow,
-  fetchBackupList, restoreBackup, deleteBackup, getBackupDownloadUrl,
+  fetchBackupList, restoreBackup, deleteBackup, downloadBackup,
 } from '../../services/backupService';
 import type { BackupConfig, BackupFile } from '../../services/backupService';
 import FolderPicker from './FolderPicker';
@@ -79,9 +79,9 @@ const BackupDialog: React.FC<BackupDialogProps> = ({ open, onClose }) => {
       const [cfg, list] = await Promise.all([fetchBackupConfig(), fetchBackupList()]);
       setConfig(cfg);
       setBackups(list);
-      // 手动备份路径默认同步自动备份路径
-      if (!manualBackupPath && cfg.backupPath) {
-        setManualBackupPath(cfg.backupPath);
+      // 手动备份路径优先使用上次手动备份路径，否则同步自动备份路径
+      if (!manualBackupPath) {
+        setManualBackupPath(cfg.lastManualBackupPath || cfg.backupPath || '');
       }
     } catch {
       showMsg('加载备份信息失败', 'error');
@@ -89,6 +89,7 @@ const BackupDialog: React.FC<BackupDialogProps> = ({ open, onClose }) => {
       setLoading(false);
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
 
   useEffect(() => {
     if (open) loadData();
@@ -108,7 +109,8 @@ const BackupDialog: React.FC<BackupDialogProps> = ({ open, onClose }) => {
     setBackingUp(true);
     try {
       const result = await backupNow(manualBackupPath || undefined);
-      showMsg(`备份成功: ${result.fileName}`, 'success');
+      const driverHint = result.driverFileCount ? `，含 ${result.driverFileCount} 个驱动文件` : '';
+      showMsg(`备份成功: ${result.fileName}${driverHint}`, 'success');
       loadData();
     } catch (err: any) {
       showMsg(err.message || '备份失败', 'error');
@@ -134,7 +136,7 @@ const BackupDialog: React.FC<BackupDialogProps> = ({ open, onClose }) => {
   const handleDelete = async (file: BackupFile) => {
     if (!window.confirm(`确定删除备份 "${file.fileName}"？`)) return;
     try {
-      await deleteBackup(file.fileName);
+      await deleteBackup(file.fileName, file.filePath);
       showMsg('已删除', 'success');
       loadData();
     } catch {
@@ -152,6 +154,8 @@ const BackupDialog: React.FC<BackupDialogProps> = ({ open, onClose }) => {
   const handleFolderSelected = (selectedPath: string) => {
     if (folderPickerTarget === 'manual') {
       setManualBackupPath(selectedPath);
+      // 记住手动备份路径，以便还原列表能扫描到
+      handleSaveConfig({ lastManualBackupPath: selectedPath });
     } else if (folderPickerTarget === 'auto') {
       const updatedConfig = { ...config, backupPath: selectedPath };
       setConfig(updatedConfig);
@@ -342,7 +346,14 @@ const BackupDialog: React.FC<BackupDialogProps> = ({ open, onClose }) => {
                       <Tooltip title="下载备份">
                         <IconButton
                           size="small"
-                          onClick={() => window.open(getBackupDownloadUrl(f.fileName))}
+                          onClick={async () => {
+                            try {
+                              await downloadBackup(f.fileName, f.filePath);
+                              setSnackbar({ open: true, message: `已下载 ${f.fileName}`, severity: 'success' });
+                            } catch (e: any) {
+                              setSnackbar({ open: true, message: e?.message || '下载失败', severity: 'error' });
+                            }
+                          }}
                         >
                           <DownloadIcon sx={{ fontSize: 18 }} />
                         </IconButton>

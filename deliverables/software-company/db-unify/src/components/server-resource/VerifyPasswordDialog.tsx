@@ -115,12 +115,12 @@ const VerifyPasswordDialog: React.FC<Props> = ({ open, serverId, serverName, loa
         {!decrypted ? (
           <Box sx={{ mt: 1 }}>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              请输入当前登录密码以查看明文密码
+              请输入二次验证密码以查看明文密码（30秒后自动掩码）
             </Typography>
             <TextField
               fullWidth size="small" type="password"
               autoComplete="new-password"
-              label="登录密码"
+              label="二次验证密码"
               value={verifyPassword}
               onChange={e => setVerifyPassword(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') handleVerify(); }}

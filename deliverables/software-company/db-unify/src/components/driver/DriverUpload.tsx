@@ -27,6 +27,7 @@ interface DriverUploadProps {
 const DriverUpload: React.FC<DriverUploadProps> = ({ open, onClose, editDriver, onSuccess }) => {
   const addDriver = useDriverStore((s) => s.addDriver);
   const updateDriver = useDriverStore((s) => s.updateDriver);
+  const uploadBuiltinJar = useDriverStore((s) => s.uploadBuiltinJar);
 
   const [name, setName] = useState('');
   const [version, setVersion] = useState('');
@@ -103,22 +104,42 @@ const DriverUpload: React.FC<DriverUploadProps> = ({ open, onClose, editDriver, 
     }
 
     if (isEdit) {
-      setUploading(true);
-      const ok = await updateDriver(editDriver.id, {
-        name: name.trim(),
-        version: version.trim(),
-        driverClass: driverClass.trim(),
-        description: description.trim() || undefined,
-      });
-      setUploading(false);
-      if (ok) {
-        handleReset();
-        onSuccess?.();
-        onClose();
-      } else {
-        setError('保存失败，请检查后端服务是否正常');
+      if (!selectedFile && !editDriver?.isBuiltIn) {
+        // 非内置驱动编辑：仅更新元数据
+        setUploading(true);
+        const ok = await updateDriver(editDriver.id, {
+          name: name.trim(),
+          version: version.trim(),
+          driverClass: driverClass.trim(),
+          description: description.trim() || undefined,
+        });
+        setUploading(false);
+        if (ok) {
+          handleReset();
+          onSuccess?.();
+          onClose();
+        } else {
+          setError('保存失败，请检查后端服务是否正常');
+        }
+        return;
+      } else if (selectedFile && editDriver.isBuiltIn) {
+        // 内置驱动上传 JAR
+        setUploading(true);
+        const ok = await uploadBuiltinJar(editDriver.id, selectedFile, {
+          name: name.trim(),
+          version: version.trim(),
+          driverClass: driverClass.trim(),
+        });
+        setUploading(false);
+        if (ok) {
+          handleReset();
+          onSuccess?.();
+          onClose();
+        } else {
+          setError('上传失败，请检查后端服务是否正常');
+        }
+        return;
       }
-      return;
     }
 
     if (!selectedFile) {
@@ -257,6 +278,52 @@ const DriverUpload: React.FC<DriverUploadProps> = ({ open, onClose, editDriver, 
                   </Typography>
                   <Typography variant="caption" color="text.disabled">
                     支持 .jar / .zip / .tar.gz 格式
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+          ) : editDriver?.isBuiltIn ? (
+            <Box
+              onDrop={handleDrop}
+              onDragOver={handleDragOver}
+              onClick={() => fileInputRef.current?.click()}
+              sx={{
+                border: '2px dashed',
+                borderColor: selectedFile ? 'success.main' : 'divider',
+                borderRadius: 1,
+                p: 2,
+                textAlign: 'center',
+                cursor: 'pointer',
+                bgcolor: selectedFile ? 'success.50' : 'action.hover',
+                transition: 'all 0.2s',
+                '&:hover': {
+                  borderColor: 'primary.main',
+                  bgcolor: 'action.selected',
+                },
+              }}
+            >
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".jar,.zip,.tar.gz,.tar"
+                hidden
+                onChange={handleFileSelect}
+              />
+              {selectedFile ? (
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                  <InsertDriveFileIcon color="success" />
+                  <Typography variant="body2">
+                    {selectedFile.name} ({formatFileSize(selectedFile.size)})
+                  </Typography>
+                </Box>
+              ) : (
+                <Box>
+                  <CloudUploadIcon sx={{ fontSize: 32, color: 'text.secondary', mb: 0.5 }} />
+                  <Typography variant="body2" color="text.secondary">
+                    为内置驱动选择 JAR 文件
+                  </Typography>
+                  <Typography variant="caption" color="text.disabled">
+                    选择手动下载的驱动文件完成配置
                   </Typography>
                 </Box>
               )}

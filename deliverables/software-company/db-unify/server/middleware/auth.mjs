@@ -3,6 +3,7 @@
  * 验证请求中的 Bearer Token
  */
 import jwt from 'jsonwebtoken';
+import { signGm, verifyGm } from '../gm-jwt.mjs';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-in-production';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
@@ -25,7 +26,7 @@ export function generateToken(payload) {
  * 验证 JWT Token
  */
 export function verifyToken(token) {
-  return jwt.verify(token, JWT_SECRET);
+  return verifyGm(token);
 }
 
 /**
@@ -35,12 +36,6 @@ export function verifyToken(token) {
 export function authMiddleware(req, res, next) {
   // 开发环境跳过认证
   if (process.env.NODE_ENV !== 'production' && !process.env.FORCE_AUTH) {
-    return next();
-  }
-
-  // Electron 桌面模式：后端仅监听 localhost，前端入口已受许可证激活保护，跳过 JWT 认证
-  if (process.env.ELECTRON_MODE === 'true') {
-    req.user = { username: 'electron', role: 'admin' };
     return next();
   }
 

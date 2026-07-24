@@ -4,6 +4,7 @@ import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   TextField, List, ListItem, ListItemText, IconButton,
   Tooltip, Snackbar, Alert, Select, MenuItem,
+  Popover,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
@@ -24,7 +25,7 @@ import { fetchScripts, saveScript, deleteScript, fetchScript } from '../../servi
 import type { SqlScript, ScriptCategory } from '../../types/script';
 import { SCRIPT_CATEGORIES } from '../../types/script';
 import TemplatesDialog from './TemplatesDialog';
-import { detectSqlParams } from '../../utils/sqlUtils';
+import { detectSqlParams, isPureQuerySql } from '../../utils/sqlUtils';
 import ParamsDialog from './ParamsDialog';
 
 const themeOptions: { value: EditorTheme; color: string; label: string }[] = [
@@ -63,6 +64,12 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ onExecute, onStop, isExec
   const activeGroupId = useGroupStore((s) => s.activeGroupId);
   const activeGroup = useGroupStore((s) => activeGroupId ? s.groups.find(g => g.id === activeGroupId) : null);
   const getActiveDbIds = useGroupStore((s) => s.getActiveDbIds);
+  const tabDbIds = useEditorStore((s) => s.tabDbIds);
+  const unbindDbFromTab = useEditorStore((s) => s.unbindDbFromTab);
+  const setTabDbIds = useEditorStore((s) => s.setTabDbIds);
+
+  // 已选库查看弹窗
+  const [selPopoverAnchor, setSelPopoverAnchor] = useState<HTMLElement | null>(null);
 
   // 根据是否有激活的分组，决定生效的数据库ID
   const isGroupMode = !!activeGroupId;
@@ -105,7 +112,7 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ onExecute, onStop, isExec
       setParamsDialogOpen(true);
       return;
     }
-    if (!readOnlyMode && selectedDbInfo.length > 0) {
+    if (!readOnlyMode && selectedDbInfo.length > 0 && !isPureQuerySql(sql)) {
       setConfirmDialogOpen(true);
     } else {
       onExecute();
@@ -121,7 +128,7 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ onExecute, onStop, isExec
     setSql(newSql);
     setParamsDialogOpen(false);
     // 继续执行流程
-    if (!readOnlyMode && selectedDbInfo.length > 0) {
+    if (!readOnlyMode && selectedDbInfo.length > 0 && !isPureQuerySql(newSql)) {
       setConfirmDialogOpen(true);
     } else {
       onExecute();
@@ -147,12 +154,19 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ onExecute, onStop, isExec
   const [scripts, setScripts] = useState<SqlScript[]>([]);
   const [loading, setLoading] = useState(false);
   const [scriptFilterCat, setScriptFilterCat] = useState<ScriptCategory>('');
+  const [scriptFilterProject, setScriptFilterProject] = useState('');
 
   // 保存对话框
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [saveName, setSaveName] = useState('');
   const [saveDesc, setSaveDesc] = useState('');
   const [saveCategory, setSaveCategory] = useState<ScriptCategory>('');
+  const [saveProjectId, setSaveProjectId] = useState('');
+
+  // 获取左侧树一级目录（项目）
+  const treeNodes = useTreeStore((s) => s.nodes);
+  const rootNodeIds = useTreeStore((s) => s.rootNodeIds);
+  const platforms = rootNodeIds.map(id => treeNodes[id]).filter(Boolean);
 
   // 模板对话框
   const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
@@ -225,6 +239,7 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ onExecute, onStop, isExec
     setSaveName(`脚本_${new Date().toLocaleDateString('zh-CN').replace(/\//g, '-')}`);
     setSaveDesc('');
     setSaveCategory('');
+    setSaveProjectId('');
     setSaveDialogOpen(true);
   };
 
@@ -236,6 +251,7 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ onExecute, onStop, isExec
         name: saveName.trim(),
         description: saveDesc,
         category: saveCategory || undefined,
+        projectId: saveProjectId || undefined,
         sql_text: sql,
       } as any);
       showMessage('保存成功');
@@ -264,7 +280,7 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ onExecute, onStop, isExec
           bgcolor: 'background.paper',
           overflow: 'auto',
           '&::-webkit-scrollbar': { height: 4 },
-          '&::-webkit-scrollbar-thumb': { backgroundColor: '#ccc', borderRadius: 2 },
+          '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgba(128,128,128,0.4)', borderRadius: 2 },
         }}
       >
         {tabs.map((tab) => (
@@ -315,7 +331,7 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ onExecute, onStop, isExec
           px: 1,
           borderBottom: '1px solid',
           borderColor: 'divider',
-          bgcolor: '#FAFAFA',
+          bgcolor: 'background.default',
         }}
       >
         <Button
@@ -456,21 +472,73 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ onExecute, onStop, isExec
           size="small"
           color={effectiveDbIds.length > 0 ? 'primary' : 'default'}
           variant={effectiveDbIds.length > 0 ? 'filled' : 'outlined'}
+          onClick={(e) => effectiveDbIds.length > 0 && setSelPopoverAnchor(e.currentTarget)}
+          sx={{ cursor: effectiveDbIds.length > 0 ? 'pointer' : 'default' }}
         />
       )}
+
+      {/* 已选库查看弹窗 */}
+      <Popover
+        open={!!selPopoverAnchor}
+        anchorEl={selPopoverAnchor}
+        onClose={() => setSelPopoverAnchor(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        slotProps={{ paper: { sx: { bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, minWidth: 220, maxHeight: 300 } } }}
+      >
+        <Box sx={{ p: 1 }}>
+          <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.65rem', fontWeight: 600, mb: 0.5, display: 'block' }}>
+            已选数据库 ({effectiveDbIds.length})
+          </Typography>
+          {selectedDbInfo.map((info, idx) => (
+            <Box key={idx} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 0.25, px: 0.5, borderRadius: 0.5, '&:hover': { bgcolor: 'action.hover' } }}>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography variant="caption" sx={{ fontSize: '0.68rem', color: 'text.primary', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {info.hospitalName}
+                </Typography>
+                {info.predbName && (
+                  <Typography variant="caption" sx={{ fontSize: '0.55rem', color: 'text.secondary' }}>
+                    {info.predbName}
+                  </Typography>
+                )}
+              </Box>
+              <Tooltip title="移除">
+                <IconButton
+                  size="small"
+                  onClick={() => {
+                    const dbId = effectiveDbIds.find(id => {
+                      const node = Object.values(nodes).find(n => n.type === 'hospital' && n.dbConnectionId === id && n.name === info.hospitalName);
+                      return node?.dbConnectionId;
+                    });
+                    if (dbId) {
+                      unbindDbFromTab(activeTabId, dbId);
+                      // 同步更新 treeStore（让树中的勾选状态同步）
+                      const updated = (tabDbIds[activeTabId] || []).filter(id => id !== dbId);
+                      useTreeStore.getState().setSelectedDbIds(updated);
+                    }
+                  }}
+                  sx={{ p: 0.25, ml: 0.5 }}
+                >
+                  <CloseIcon sx={{ fontSize: 12, color: '#f87171' }} />
+                </IconButton>
+              </Tooltip>
+            </Box>
+          ))}
+        </Box>
+      </Popover>
 
       {/* 脚本列表对话框 */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="sm" fullWidth>
         <DialogTitle>打开脚本</DialogTitle>
         <DialogContent dividers sx={{ minHeight: 300 }}>
           {/* 分类筛选 */}
-          <Box sx={{ display: 'flex', gap: 0.5, mb: 1, flexWrap: 'wrap' }}>
+          <Box sx={{ display: 'flex', gap: 0.5, mb: 1, flexWrap: 'wrap', alignItems: 'center' }}>
             <Chip
               label="全部"
               size="small"
-              color={!scriptFilterCat ? 'primary' : 'default'}
-              onClick={() => setScriptFilterCat('')}
-              variant={!scriptFilterCat ? 'filled' : 'outlined'}
+              color={!scriptFilterCat && !scriptFilterProject ? 'primary' : 'default'}
+              onClick={() => { setScriptFilterCat(''); setScriptFilterProject(''); }}
+              variant={!scriptFilterCat && !scriptFilterProject ? 'filled' : 'outlined'}
               sx={{ fontSize: '0.7rem' }}
             />
             {SCRIPT_CATEGORIES.filter(Boolean).map(cat => (
@@ -479,8 +547,20 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ onExecute, onStop, isExec
                 label={cat}
                 size="small"
                 color={scriptFilterCat === cat ? 'primary' : 'default'}
-                onClick={() => setScriptFilterCat(cat)}
+                onClick={() => setScriptFilterCat(scriptFilterCat === cat ? '' : cat)}
                 variant={scriptFilterCat === cat ? 'filled' : 'outlined'}
+                sx={{ fontSize: '0.7rem' }}
+              />
+            ))}
+            <Box sx={{ width: 1, height: 20, borderLeft: '1px solid', borderColor: 'divider', mx: 0.5 }} />
+            {platforms.map(p => (
+              <Chip
+                key={p.id}
+                label={p.name}
+                size="small"
+                color={scriptFilterProject === p.id ? 'primary' : 'default'}
+                onClick={() => setScriptFilterProject(scriptFilterProject === p.id ? '' : p.id)}
+                variant={scriptFilterProject === p.id ? 'filled' : 'outlined'}
                 sx={{ fontSize: '0.7rem' }}
               />
             ))}
@@ -493,6 +573,7 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ onExecute, onStop, isExec
             <List dense>
               {scripts
                 .filter(s => !scriptFilterCat || s.category === scriptFilterCat)
+                .filter(s => !scriptFilterProject || s.projectId === scriptFilterProject)
                 .map((s) => (
                 <ListItem
                   key={s.id}
@@ -519,6 +600,15 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ onExecute, onStop, isExec
                             sx={{ fontSize: '0.6rem', height: 18 }}
                           />
                         )}
+                        {s.projectId && platforms.find(p => p.id === s.projectId) && (
+                          <Chip
+                            label={platforms.find(p => p.id === s.projectId)!.name}
+                            size="small"
+                            variant="outlined"
+                            color="success"
+                            sx={{ fontSize: '0.6rem', height: 18 }}
+                          />
+                        )}
                       </Box>
                     }
                     secondary={s.description || s.sql_preview || '无描述'}
@@ -540,12 +630,14 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ onExecute, onStop, isExec
         <DialogTitle>保存脚本</DialogTitle>
         <DialogContent dividers sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
           <TextField
+            key={`name-${saveDialogOpen}`}
             label="脚本名称"
             value={saveName}
             onChange={(e) => setSaveName(e.target.value)}
             size="small"
             fullWidth
             required
+            autoFocus
           />
           <FormControl size="small" fullWidth>
             <InputLabel>分类（可选）</InputLabel>
@@ -557,6 +649,19 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ onExecute, onStop, isExec
               <MenuItem value="">未分类</MenuItem>
               {SCRIPT_CATEGORIES.filter(Boolean).map(cat => (
                 <MenuItem key={cat} value={cat}>{cat}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl size="small" fullWidth>
+            <InputLabel>关联项目（可选）</InputLabel>
+            <Select
+              value={saveProjectId}
+              label="关联项目（可选）"
+              onChange={(e) => setSaveProjectId(e.target.value)}
+            >
+              <MenuItem value="">未关联</MenuItem>
+              {platforms.map(p => (
+                <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>
               ))}
             </Select>
           </FormControl>
@@ -596,7 +701,7 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ onExecute, onStop, isExec
               border: '1px solid',
               borderColor: 'divider',
               borderRadius: 1,
-              bgcolor: '#F5F5F5',
+              bgcolor: 'background.default',
             }}
           >
             <List dense disablePadding>

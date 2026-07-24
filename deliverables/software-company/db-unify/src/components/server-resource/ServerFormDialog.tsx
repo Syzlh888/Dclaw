@@ -28,11 +28,14 @@ interface Props {
   open: boolean;
   server?: any;
   loading?: boolean;
+  presetProjectId?: string;
+  presetEngineeringId?: string;
+  presetApplicationId?: string;
   onClose: () => void;
   onSave: (data: any) => void;
 }
 
-const ServerFormDialog: React.FC<Props> = ({ open, server, loading, onClose, onSave }) => {
+const ServerFormDialog: React.FC<Props> = ({ open, server, loading, presetProjectId, presetEngineeringId, presetApplicationId, onClose, onSave }) => {
   const projects = useProjectStore(s => s.projects);
   const allEngineerings = useProjectStore(s => s.engineerings);
   const allApplications = useProjectStore(s => s.applications);
@@ -109,11 +112,11 @@ const ServerFormDialog: React.FC<Props> = ({ open, server, loading, onClose, onS
         // 初始化访问管理字段
         setAccessList(server.accessList && server.accessList.length > 0 ? server.accessList : []);
       } else {
-        setForm({});
+        setForm({ applicationId: presetApplicationId || '' });
         setCredentials([]);
         setIpList([{ ip: '', type: '局域', port: undefined, mappedIp: '' }]);
-        setSelectedProjectId('');
-        setSelectedEngId('');
+        setSelectedProjectId(presetProjectId || '');
+        setSelectedEngId(presetEngineeringId || '');
         setAccessList([]);
       }
       setRevealedCreds(new Set());

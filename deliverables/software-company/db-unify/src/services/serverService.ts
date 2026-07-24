@@ -57,6 +57,24 @@ export async function deleteServer(id: string) {
   return res.json();
 }
 
+// Reorder servers (batch update sortOrder)
+export async function reorderServers(items: { id: string; sortOrder: number }[]) {
+  const res = await apiFetch(`${BASE}/reorder`, {
+    method: 'PUT',
+    body: JSON.stringify({ items }),
+  });
+  return res.json();
+}
+
+// Update single server sortOrder
+export async function updateServerSortOrder(id: string, sortOrder: number) {
+  const res = await apiFetch(`${BASE}/${id}/sort-order`, {
+    method: 'PUT',
+    body: JSON.stringify({ sortOrder }),
+  });
+  return res.json();
+}
+
 export async function decryptServerPasswords(id: string, verifyPassword: string) {
   const res = await apiFetch(`${BASE}/${id}/decrypt`, {
     method: 'POST',
@@ -89,6 +107,24 @@ export async function decryptPasswordHistory(serverId: string, verifyPassword: s
     method: 'POST', body: JSON.stringify({ verifyPassword, fieldName }),
   });
   return res.json();
+}
+
+// All db instances across all servers (with server name)
+export async function fetchAllDbInstances() {
+  const res = await apiFetch(`${BASE}/db-instances/all`);
+  const data = await res.json();
+  return data.dbInstances || [];
+}
+
+// Decrypt a db instance credential (for connection referencing)
+export async function decryptDbInstanceCredential(instanceId: string, credentialIndex: number) {
+  const res = await apiFetch(`${BASE}/db-instances/decrypt-credential`, {
+    method: 'POST',
+    body: JSON.stringify({ instanceId, credentialIndex }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || '解密凭据失败');
+  return data as { username: string; password: string; schema: string; connectionName: string };
 }
 
 // DB instances
@@ -315,10 +351,10 @@ export async function checkDictUsage(type: 'os' | 'serverLocation', name: string
 }
 
 // Decrypt credential password
-export async function decryptCredentialPassword(serverId: string, credentialIndex: number, verifyPassword: string) {
+export async function decryptCredentialPassword(serverId: string, credentialIndex: number, verifyPassword: string, instanceType?: string, instanceId?: string) {
   const res = await apiFetch(`${BASE}/${serverId}/decrypt-credential`, {
     method: 'POST',
-    body: JSON.stringify({ verifyPassword, credentialIndex }),
+    body: JSON.stringify({ verifyPassword, credentialIndex, instanceType, instanceId }),
   });
   return res.json();
 }

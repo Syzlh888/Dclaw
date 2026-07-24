@@ -1,14 +1,18 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
-  Dialog, DialogTitle, DialogContent, DialogActions,
   Button, Typography, Box, Table, TableBody, TableCell, TableContainer,
-  TableHead, TableRow, Alert, LinearProgress, Chip, Divider, Tabs, Tab,
+  TableHead, TableRow, Alert, Chip, Tabs, Tab, Paper, IconButton, Tooltip,
 } from '@mui/material';
-import FileUploadIcon from '@mui/icons-material/FileUpload';
-import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ErrorIcon from '@mui/icons-material/Error';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import * as XLSX from 'xlsx';
 import { importServers, getTemplateDownloadUrl } from '../../services/serverService';
+import { apiFetch } from '../../services/apiClient';
 import { useServerStore } from '../../stores/serverStore';
+import ImportDialogShell from '../common/ImportDialogShell';
+import ImportDropzone from '../common/ImportDropzone';
 
 interface Props {
   open: boolean;
@@ -26,13 +30,14 @@ const STRIP_BOOL_FIELDS = new Set(['encrypted']);
 const SRV_COLUMN_MAP: Record<string, string> = {
   '服务器名称': 'name',         '服务器类型': 'serverType',
   '操作系统':   'os',           'MAC地址':   'macAddress',
-  '内网IP':     'internalIp',    '外网IP':     'externalIp',
-  '公网IP':     'publicIp',      '跨网访问IP': 'crossNetworkIp',
+  'IP地址':     'ipAddress',    'IP类型':     'ipType',
+  '映射端口':   'mappedPort',   '映射IP':     'mappedIp',
   '带宽(Mbps)': 'bandwidthMbps',
   'CPU核数':    'cpuCores',      '内存(GB)':   'memoryGB',
   '系统盘(GB)': 'systemDiskGB',  '数据盘(GB)': 'dataDiskGB',
   '存储类型':   'storageType',
-  '用户名':     'username',      '密码':       'password',
+  '凭据用户名1': 'credUsername1', '凭据密码1':   'credPassword1',
+  '凭据用户名2': 'credUsername2', '凭据密码2':   'credPassword2',
   '堡垒机地址':   'bastionHost',    '堡垒机端口':   'bastionPort',
   '堡垒机用户名': 'bastionUsername', '堡垒机密码':   'bastionPassword',
   'VPN信息':      'vpnInfo',
@@ -44,7 +49,7 @@ const SRV_COLUMN_MAP: Record<string, string> = {
 /** 数据库实例 Sheet 列映射 */
 const DB_COLUMN_MAP: Record<string, string> = {
   '服务器名称': 'serverName',
-  '数据库类型': 'dbType', '版本': 'version', '数据库名': 'dbName',
+  '数据库类型': 'dbType', '版本': 'version', '数据库名': 'dbName', 'Schema': 'schema',
   '端口': 'port', '用户名': 'username', '密码': 'password',
   '内网IP': 'internalIp', '外网IP': 'externalIp',
   '是否集群': 'isCluster', '集群其他IP': 'clusterIps',
@@ -85,6 +90,8 @@ interface SheetData {
   columnMap: Record<string, string>;
   requiredCols: Set<string>;
 }
+
+const steps = ['上传文件', '预览校验', '确认导入'];
 
 /** 解析单个 Sheet */
 function parseSheet(ws: XLSX.WorkSheet, sheetName: string): SheetData | null {
@@ -163,25 +170,51 @@ function normalizeField(key: string, raw: any): any {
 }
 
 const ServerImportDialog: React.FC<Props> = ({ open, onClose }) => {
+  const [activeStep, setActiveStep] = useState(0);
+  const [fileName, setFileName] = useState('');
   const [sheets, setSheets] = useState<SheetData[]>([]);
   const [activeSheetIdx, setActiveSheetIdx] = useState(0);
   const [importing, setImporting] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [errMsg, setErrMsg] = useState('');
   const loadServers = useServerStore(s => s.loadServers);
-  const fileRef = useRef<HTMLInputElement>(null);
+  const [downloading, setDownloading] = useState(false);
+
+  const handleDownloadTemplate = useCallback(async () => {
+    setDownloading(true);
+    try {
+      const res = await apiFetch(getTemplateDownloadUrl());
+      if (!res.ok) throw new Error('下载模板失败');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = '服务器资源导入模板.xlsx';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err: any) {
+      setErrMsg(err.message || '模板下载失败');
+    } finally {
+      setDownloading(false);
+    }
+  }, []);
 
   const reset = useCallback(() => {
+    setActiveStep(0);
+    setFileName('');
     setSheets([]);
     setActiveSheetIdx(0);
     setResult(null);
     setErrMsg('');
   }, []);
 
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    reset();
+  // ---- 步骤 1：上传并解析文件 ----
+  const handleFileSelected = useCallback((file: File) => {
+    setFileName(file.name);
+    setErrMsg('');
+    setResult(null);
     const reader = new FileReader();
     reader.onload = (ev) => {
       try {
@@ -199,20 +232,43 @@ const ServerImportDialog: React.FC<Props> = ({ open, onClose }) => {
           return;
         }
         setSheets(parsedSheets);
+        setActiveSheetIdx(0);
+        setActiveStep(1);
       } catch (err: any) {
         setErrMsg('文件解析失败: ' + (err.message || '未知错误'));
       }
     };
     reader.readAsBinaryString(file);
-  };
+  }, []);
 
   /** 构建导入负载 */
   const buildPayload = useCallback(() => {
     const payload: any = { servers: [] };
     for (const sheet of sheets) {
       const items = sheet.rows.map(r => {
-        const { _row, ...fields } = r;
-        return { ...fields, row: _row };
+        const { _row, ipAddress, ipType, mappedPort, mappedIp,
+          credUsername1, credPassword1, credUsername2, credPassword2,
+          ...fields } = r;
+        const item: any = { ...fields, row: _row };
+
+        // 拆解 IP 信息 → ips 数组
+        if (ipAddress || ipType || mappedPort || mappedIp) {
+          item.ips = [{
+            ip: ipAddress || '',
+            type: ipType || '局域',
+            port: mappedPort != null && mappedPort !== '' ? Number(mappedPort) : undefined,
+            mappedIp: mappedIp || '',
+          }];
+        }
+
+        // 拆解凭据 → credentials 数组
+        const creds: any[] = [];
+        if (credUsername1) creds.push({ username: credUsername1, password: credPassword1 || '' });
+        if (credUsername2) creds.push({ username: credUsername2, password: credPassword2 || '' });
+        if (creds.length > 0) item.credentials = creds;
+
+        // 不再以服务器资源原有的 username/password 方式存储，统一用 credentials
+        return item;
       });
       if (sheet.sheetName.includes('数据库')) {
         payload.dbInstances = items;
@@ -229,22 +285,31 @@ const ServerImportDialog: React.FC<Props> = ({ open, onClose }) => {
     return payload;
   }, [sheets]);
 
+  // ---- 步骤 2/3：确认导入 ----
   const handleImport = async () => {
     if (sheets.length === 0) return;
     setImporting(true);
+    setErrMsg('');
     try {
       const payload = buildPayload();
       const res = await importServers(payload);
       setResult(res);
+      setActiveStep(2);
       if (res.success > 0) await loadServers();
     } catch (err: any) {
       setResult({ error: err.message });
+      setActiveStep(2);
     }
     setImporting(false);
   };
 
   const totalRows = sheets.reduce((sum, s) => sum + s.rows.length, 0);
   const activeSheet = sheets[activeSheetIdx];
+
+  const handleClose = () => {
+    reset();
+    onClose();
+  };
 
   /** 渲染预览表格 */
   const renderPreviewTable = (sheet: SheetData) => {
@@ -254,29 +319,36 @@ const ServerImportDialog: React.FC<Props> = ({ open, onClose }) => {
     const effectiveRequired = isServerSheet ? sheet.requiredCols : new Set<string>();
 
     return (
-      <TableContainer sx={{ maxHeight: 320 }}>
+      <TableContainer component={Paper} variant="outlined" sx={{ maxHeight: 320 }}>
         <Table size="small" stickyHeader>
           <TableHead>
             <TableRow>
-              <TableCell sx={{ fontWeight: 600, fontSize: '0.7rem', bgcolor: '#f5f5f5', width: 40 }}>#</TableCell>
-              {sheet.headers.map(h => (
-                <TableCell key={h} sx={{ fontWeight: 600, fontSize: '0.7rem', bgcolor: '#f5f5f5' }}>
+              <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', py: 0.75, width: 40 }}>#</TableCell>
+              {sheet.headers.map((h) => (
+                <TableCell key={h} sx={{ fontWeight: 600, fontSize: '0.75rem', py: 0.75 }}>
                   {h}
-                  {effectiveRequired.has(h) && <span style={{ color: 'red', marginLeft: 2 }}>*</span>}
+                  {effectiveRequired.has(h) && <span style={{ color: '#f44336', marginLeft: 2 }}>*</span>}
                 </TableCell>
               ))}
             </TableRow>
           </TableHead>
           <TableBody>
             {previewRows.map((r, i) => (
-              <TableRow key={i} sx={{ '&:nth-of-type(even)': { bgcolor: '#fafafa' } }}>
-                <TableCell sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>{r._row}</TableCell>
+              <TableRow key={i} sx={{ '&:hover': { bgcolor: 'action.hover' } }}>
+                <TableCell sx={{ fontSize: '0.75rem', py: 0.5, color: 'text.secondary' }}>{r._row}</TableCell>
                 {sheet.headers.map((h, j) => {
                   const key = sheet.columnMap[h] || h;
                   const val = key === 'tags' && Array.isArray(r[key]) ? r[key].join(', ') : String(r[key] ?? '');
                   return (
-                    <TableCell key={j} sx={{ fontSize: '0.72rem', maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-                      title={String(r[key] ?? '')}>
+                    <TableCell
+                      key={j}
+                      sx={{
+                        fontSize: '0.75rem', py: 0.5,
+                        maxWidth: 140, overflow: 'hidden',
+                        textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      }}
+                      title={String(r[key] ?? '')}
+                    >
                       {val}
                     </TableCell>
                   );
@@ -289,84 +361,189 @@ const ServerImportDialog: React.FC<Props> = ({ open, onClose }) => {
     );
   };
 
+  // 底部按钮栏（按步骤切换）
+  const renderActions = () => {
+    if (activeStep === 0) {
+      return (
+        <Button onClick={handleClose} size="small" sx={{ textTransform: 'none' }}>取消</Button>
+      );
+    }
+    if (activeStep === 1) {
+      return (
+        <>
+          <Button onClick={() => setActiveStep(0)} size="small" sx={{ textTransform: 'none' }}>
+            上一步
+          </Button>
+          <Button
+            variant="contained"
+            size="small"
+            onClick={handleImport}
+            disabled={sheets.length === 0 || importing}
+            sx={{ textTransform: 'none' }}
+          >
+            {importing ? '导入中...' : `确认导入 ${totalRows} 条`}
+          </Button>
+        </>
+      );
+    }
+    return (
+      <>
+        <Button
+          onClick={reset}
+          size="small"
+          startIcon={<RefreshIcon sx={{ fontSize: 16 }} />}
+          sx={{ textTransform: 'none' }}
+        >
+          重新导入
+        </Button>
+        <Button variant="contained" size="small" onClick={handleClose} sx={{ textTransform: 'none' }}>
+          完成
+        </Button>
+      </>
+    );
+  };
+
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
-      <DialogTitle sx={{ fontWeight: 600, fontSize: '1rem' }}>导入服务器资源</DialogTitle>
-      <DialogContent>
-        {/* 操作指引 */}
-        <Alert severity="info" sx={{ mb: 2 }}>
-          请先「下载模板」，模板包含5个Sheet（服务器资源、数据库实例、应用实例、API实例、中间件实例），按格式填写数据后导入。各Sheet通过"服务器名称"自动关联。
-        </Alert>
+    <ImportDialogShell
+      open={open}
+      onClose={handleClose}
+      title="批量导入服务器资源"
+      icon={<CloudUploadIcon sx={{ fontSize: 20 }} />}
+      steps={steps}
+      activeStep={activeStep}
+      error={errMsg}
+      onErrorClose={() => setErrMsg('')}
+      loading={importing}
+      maxWidth="lg"
+      actions={renderActions()}
+    >
+      {/* 步骤 0：上传文件 */}
+      {activeStep === 0 && (
+        <ImportDropzone
+          accept={['.xlsx', '.xls']}
+          hint="支持 .xlsx、.xls 格式的服务器资源导入模板（多 Sheet）"
+          downloadLabel="下载模板"
+          downloading={downloading}
+          onFileSelected={handleFileSelected}
+          onDownloadTemplate={handleDownloadTemplate}
+          templateInfo={
+            <>
+              • 模板包含 5 个 Sheet：服务器资源、数据库实例、应用实例、API 实例、中间件实例<br />
+              • 各 Sheet 通过「服务器名称」字段自动关联<br />
+              • 服务器资源必填列：服务器名称、内网IP<br />
+              • 数据库实例必填列：服务器名称、数据库类型、数据库名、端口<br />
+              • 应用实例必填列：服务器名称、应用名称、URL<br />
+              • API 实例必填列：服务器名称、API 地址、所属应用<br />
+              • 中间件实例必填列：服务器名称、名称、类型<br />
+              • 点击「下载模板」获取带示例的 xlsx 文件
+            </>
+          }
+        />
+      )}
 
-        <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap', alignItems: 'center' }}>
-          <Button variant="outlined" size="small" startIcon={<CloudDownloadIcon />}
-            href={getTemplateDownloadUrl()} target="_blank">
-            下载导入模板
-          </Button>
-          <Button variant="contained" size="small" startIcon={<FileUploadIcon />}
-            onClick={() => fileRef.current?.click()} component="span">
-            选择文件
-          </Button>
-          <Chip label="支持 .xlsx / .xls" size="small" variant="outlined" sx={{ alignSelf: 'center' }} />
-        </Box>
-        <input type="file" ref={fileRef} hidden accept=".xlsx,.xls" onChange={handleFile} />
-
-        {importing && <LinearProgress sx={{ mb: 1 }} />}
-
-        {/* 错误提示 */}
-        {errMsg && <Alert severity="error" sx={{ mb: 1 }}>{errMsg}</Alert>}
-
-        {/* 结果提示 */}
-        {result && (
-          <Alert severity={result.error ? 'error' : 'success'} sx={{ mb: 1 }}>
-            {result.error
-              ? `导入失败: ${result.error}`
-              : `导入完成: 成功 ${result.success} 条, 失败 ${result.failed} 条 (共 ${result.total} 条)`}
-          </Alert>
-        )}
-
-        {/* 多Sheet Tab 预览 */}
-        {sheets.length > 0 && (
-          <Box>
-            <Divider sx={{ mb: 1.5 }} />
-            <Typography variant="subtitle2" sx={{ mb: 1 }}>
-              数据预览（共 {sheets.length} 个Sheet，{totalRows} 条数据）
+      {/* 步骤 1：预览校验 */}
+      {activeStep === 1 && sheets.length > 0 && (
+        <>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5, flexWrap: 'wrap' }}>
+            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
+              文件：{fileName} · 共 {sheets.length} 个 Sheet · {totalRows} 条数据
             </Typography>
-            <Tabs
-              value={activeSheetIdx}
-              onChange={(_, v) => setActiveSheetIdx(v)}
-              variant="scrollable"
-              scrollButtons="auto"
-              sx={{ mb: 1, minHeight: 36 }}
-            >
-              {sheets.map((s, i) => (
-                <Tab
-                  key={i}
-                  label={`${s.sheetName} (${s.rows.length}条)`}
-                  sx={{ minHeight: 36, py: 0.5, fontSize: '0.8rem', textTransform: 'none' }}
-                />
-              ))}
-            </Tabs>
-            {activeSheet && (
-              <>
-                <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
-                  显示前 10 条 · {activeSheet.headers.length} 列 · 共 {activeSheet.rows.length} 条数据
-                </Typography>
-                {renderPreviewTable(activeSheet)}
-              </>
-            )}
+            <Chip
+              icon={<CheckCircleIcon sx={{ fontSize: 14 }} />}
+              label={`${totalRows} 条待导入`}
+              size="small"
+              color={totalRows > 0 ? 'success' : 'default'}
+              variant="outlined"
+              sx={{ fontSize: '0.7rem', height: 22 }}
+            />
+            <Box sx={{ flex: 1 }} />
+            <Tooltip title="重新选择文件">
+              <IconButton size="small" onClick={reset}>
+                <RefreshIcon sx={{ fontSize: 16 }} />
+              </IconButton>
+            </Tooltip>
           </Box>
-        )}
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={() => { reset(); onClose(); }} size="small">关闭</Button>
-        {sheets.length > 0 && !result && (
-          <Button variant="contained" size="small" onClick={handleImport} disabled={importing}>
-            确认导入全部 ({totalRows} 条)
-          </Button>
-        )}
-      </DialogActions>
-    </Dialog>
+
+          {/* 多 Sheet Tab 切换 */}
+          <Tabs
+            value={activeSheetIdx}
+            onChange={(_, v) => setActiveSheetIdx(v)}
+            variant="scrollable"
+            scrollButtons="auto"
+            sx={{
+              mb: 1.5, minHeight: 32,
+              borderBottom: 1, borderColor: 'divider',
+              '& .MuiTab-root': {
+                minHeight: 32, py: 0.5, fontSize: '0.75rem', textTransform: 'none',
+              },
+            }}
+          >
+            {sheets.map((s, i) => (
+              <Tab key={i} label={`${s.sheetName} (${s.rows.length})`} />
+            ))}
+          </Tabs>
+
+          {activeSheet && (
+            <>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ mb: 0.75, display: 'block', fontSize: '0.72rem' }}
+              >
+                预览前 10 条 · {activeSheet.headers.length} 列 · 共 {activeSheet.rows.length} 条数据
+              </Typography>
+              {renderPreviewTable(activeSheet)}
+            </>
+          )}
+        </>
+      )}
+
+      {/* 步骤 2：导入结果 */}
+      {activeStep === 2 && result && (
+        <Box>
+          {result.error ? (
+            <Alert severity="error" sx={{ fontSize: '0.8rem' }}>
+              导入失败：{result.error}
+            </Alert>
+          ) : (
+            <>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                <Chip
+                  icon={<CheckCircleIcon sx={{ fontSize: 14 }} />}
+                  label={`成功 ${result.success} 条`}
+                  size="small"
+                  color={result.success > 0 ? 'success' : 'default'}
+                  variant="filled"
+                  sx={{ fontSize: '0.75rem' }}
+                />
+                <Chip
+                  icon={<ErrorIcon sx={{ fontSize: 14 }} />}
+                  label={`失败 ${result.failed} 条`}
+                  size="small"
+                  color={result.failed > 0 ? 'error' : 'default'}
+                  variant="filled"
+                  sx={{ fontSize: '0.75rem' }}
+                />
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                  共 {result.total} 条
+                </Typography>
+              </Box>
+
+              {result.failed > 0 && (
+                <Alert severity="warning" sx={{ fontSize: '0.8rem' }}>
+                  部分数据导入失败，请检查后重新导入
+                </Alert>
+              )}
+              {result.failed === 0 && result.success > 0 && (
+                <Alert severity="success" sx={{ fontSize: '0.8rem' }}>
+                  全部数据已成功导入
+                </Alert>
+              )}
+            </>
+          )}
+        </Box>
+      )}
+    </ImportDialogShell>
   );
 };
 

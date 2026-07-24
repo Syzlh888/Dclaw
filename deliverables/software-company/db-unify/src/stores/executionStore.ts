@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import type { ExecutionTask, ExecutionConfig } from '../types/execution';
 import { ExecutionStatus } from '../types/execution';
 import { nanoid } from 'nanoid';
+import { useConnectionStore } from './connectionStore';
 
 interface ExecutionStats {
   totalCount: number;
@@ -22,6 +23,10 @@ interface ExecutionState {
   config: ExecutionConfig;
   currentExecutionId: string | null;
   executionStats: ExecutionStats;
+  /** 当前执行的 SQL（只保留最新一次） */
+  currentSql: string;
+  /** 当前执行涉及的连接信息 */
+  currentConnections: { id: string; hospitalName: string; preDbTypeName: string; schema?: string }[];
 
   startExecution: (sql: string, dbConnections: { id: string; hospitalName: string; preDbTypeName: string }[]) => void;
   updateTask: (taskId: string, partial: Partial<ExecutionTask>) => void;
@@ -42,9 +47,18 @@ export const useExecutionStore = create<ExecutionState>((set) => ({
   },
   currentExecutionId: null,
   executionStats: getPersistedStats(),
+  currentSql: '',
+  currentConnections: [],
 
   startExecution: (sql, dbConnections) => {
     const executionId = nanoid(8);
+    // 收集连接的实际 schema 信息
+    const connections = useConnectionStore.getState?.()?.connections || {};
+    const enriched = dbConnections.map(c => ({
+      ...c,
+      schema: connections[c.id]?.schema || '',
+    }));
+
     const tasks: ExecutionTask[] = dbConnections.map((conn) => ({
       id: conn.id, // 用 connectionId 作为 taskId，确保前后端一致
       sql,
@@ -56,7 +70,7 @@ export const useExecutionStore = create<ExecutionState>((set) => ({
       retryCount: 0,
     }));
 
-    set({ tasks, currentExecutionId: executionId });
+    set({ tasks, currentSql: sql, currentConnections: enriched, currentExecutionId: executionId });
   },
 
   updateTask: (taskId, partial) => {

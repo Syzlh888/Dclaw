@@ -139,13 +139,13 @@ const QueryChartPanel: React.FC<Props> = ({
           flexWrap: 'wrap',
           alignItems: 'center',
           p: 2,
-          bgcolor: '#fafafa',
+          bgcolor: 'background.paper',
           borderRadius: 1,
           border: '1px solid',
           borderColor: 'divider',
         }}
       >
-        <Typography variant="subtitle2" sx={{ mr: 1, fontWeight: 600, color: '#1a237e' }}>
+        <Typography variant="subtitle2" sx={{ mr: 1, fontWeight: 600, color: 'text.primary' }}>
           图表配置
         </Typography>
 
@@ -189,7 +189,7 @@ const QueryChartPanel: React.FC<Props> = ({
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          bgcolor: '#fafafa',
+          bgcolor: 'background.paper',
           borderRadius: 1,
           border: '1px solid',
           borderColor: 'divider',

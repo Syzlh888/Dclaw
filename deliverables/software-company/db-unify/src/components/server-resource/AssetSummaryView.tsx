@@ -40,9 +40,9 @@ const AssetSummaryView: React.FC = () => {
 
       {/* 统计卡片 */}
       <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
-        <StatCard icon={<StorageIcon />} label="服务器总数" value={summary?.totalServers || 0} color="#1565C0" />
-        <StatCard icon={<DnsIcon />} label="数据库实例" value={summary?.totalDbInstances || 0} color="#2E7D32" />
-        <StatCard icon={<AppsIcon />} label="应用实例" value={summary?.totalAppInstances || 0} color="#ED6C02" />
+        <StatCard icon={<StorageIcon />} label="服务器总数" value={summary?.totalServers || 0} color="primary.dark" />
+        <StatCard icon={<DnsIcon />} label="数据库实例" value={summary?.totalDbInstances || 0} color="success.main" />
+        <StatCard icon={<AppsIcon />} label="应用实例" value={summary?.totalAppInstances || 0} color="warning.main" />
       </Box>
 
       {/* 维度切换 */}

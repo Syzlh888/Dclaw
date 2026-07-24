@@ -39,6 +39,7 @@ export interface PortInfo {
   type?: string;
   serviceName: string;
   notes?: string;
+  ip?: string;
 }
 
 /** 数据库实例（服务器子资源） */
@@ -65,6 +66,7 @@ export interface AppInstance {
   id: string;
   serverId: string;
   name: string;
+  ip?: string;
   port?: number;
   contactPerson?: string;
   contactPhone?: string;
@@ -81,6 +83,7 @@ export interface ApiInstance {
   serverId: string;
   apiAddress: string;
   port?: number;
+  ip?: string;
   applicationName: string;
   encrypted: boolean;
   encryptionMethod: string;
@@ -94,6 +97,7 @@ export interface MiddlewareInstance {
   id: string;
   serverId: string;
   name: string;
+  ip?: string;
   port?: number;
   type: string;
   version?: string;
@@ -165,6 +169,7 @@ export interface ServerHost {
   deployedContent?: string;
   accessList?: AccessLinkage[];
   linkedConnectionIds: string[];
+  sortOrder?: number;
   createdAt: string;
   updatedAt: string;
 }

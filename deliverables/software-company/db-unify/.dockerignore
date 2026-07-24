@@ -1,0 +1,15 @@
+# DClaw Docker 构建忽略
+node_modules/
+.git/
+.gitignore
+data/
+logs/
+dist/
+release2/
+*.exe
+*.log
+*.md
+.vscode/
+.idea/
+__pycache__/
+*.pyc

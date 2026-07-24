@@ -2,5 +2,6 @@
   "autoBackupEnabled": false,
   "backupIntervalHours": 24,
   "backupPath": "",
-  "maxBackupCount": 10
+  "maxBackupCount": 10,
+  "lastManualBackupPath": "D:\\"
 }

@@ -18,6 +18,46 @@ import {
 const router = Router();
 
 /**
+ * 检测 SQL 语句是否已包含 LIMIT / TOP / FETCH / ROWNUM 子句
+ * 用于判断是否需要自动追加分页
+ */
+function sqlHasLimit(sql) {
+  const upper = sql.toUpperCase();
+  // MySQL/PostgreSQL/SQLite: LIMIT
+  if (/\bLIMIT\s+\d+/i.test(sql)) return true;
+  // SQL Server: SELECT TOP N / OFFSET ... FETCH
+  if (/\bSELECT\s+TOP\s+\d+/i.test(sql)) return true;
+  if (/\bFETCH\s+(FIRST|NEXT)\s+\d+/i.test(sql)) return true;
+  // Oracle: ROWNUM <= N
+  if (/\bROWNUM\s*<[=]?\s*\d+/i.test(sql)) return true;
+  return false;
+}
+
+/**
+ * 判断 SQL 是否为可追加 LIMIT 的 SELECT 查询
+ * 排除 DDL、写操作、已含 LIMIT 的查询
+ */
+function canAppendLimit(sql) {
+  if (!sql || !sql.trim()) return false;
+  const upper = sql.trim().toUpperCase();
+  // 必须先以 SELECT / WITH 开头
+  if (!/^(SELECT|WITH)\b/i.test(upper)) return false;
+  // 不能已含 LIMIT
+  if (sqlHasLimit(sql)) return false;
+  return true;
+}
+
+/**
+ * 为 SELECT 语句追加 LIMIT ? OFFSET ? 包装（兼容多数据库语法）
+ * 默认使用 LIMIT/OFFSET 语法（MySQL/PostgreSQL/SQLite/SQL Server 2012+）
+ * @returns {string} 包装后的 SQL
+ */
+function appendPageLimit(sql, pageSize, offset) {
+  const clean = sql.trim().replace(/;+\s*$/, ''); // 移除末尾分号
+  return `${clean} LIMIT ${Number(pageSize)} OFFSET ${Number(offset)}`;
+}
+
+/**
  * POST /api/execute
  * 启动批量 SQL 执行，通过 SSE 流式返回实时进度
  *
@@ -31,16 +71,18 @@ const router = Router();
  *     continueOnError: boolean,     // 失败后继续（默认 true）
  *     maxRetries: number,           // 重试次数（默认 1）
  *     readOnlyMode: boolean         // 只读模式（默认 true）
- *   }
+ *   },
+ *   pageSize?: number,              // 每批行数（默认不限制，指定后自动追加 LIMIT）
+ *   offset?: number                 // 偏移量（默认 0，配合 pageSize 使用）
  * }
  *
  * SSE 事件：
- * - progress: { taskId, connectionId, hospitalName, status, duration, errorMessage, rowCount, columns }
+ * - progress: { taskId, connectionId, hospitalName, status, duration, errorMessage, rowCount, columns, rows, totalRows, truncated, hasMore, totalLoaded }
  * - complete: { executionId, summary: { total, success, failed, timeout, totalDuration } }
  * - error: { message }
  */
 router.post('/', async (req, res) => {
-  const { sql, connectionIds, config = {} } = req.body;
+  const { sql, connectionIds, config = {}, pageSize, offset = 0 } = req.body;
 
   // 参数校验
   if (!sql || !sql.trim()) {
@@ -58,7 +100,16 @@ router.post('/', async (req, res) => {
     readOnlyMode = true,
   } = config;
 
-  // SQL 校验
+  // ─── 分页参数处理 ───
+  const effectivePageSize = pageSize && Number(pageSize) > 0 ? Number(pageSize) : 0;
+  const effectiveOffset = Number(offset) || 0;
+  // 需要用分页包装的 SQL（首次执行或 loadMore）
+  const needsPagination = effectivePageSize > 0 && canAppendLimit(sql);
+  const execSql = needsPagination
+    ? appendPageLimit(sql, effectivePageSize, effectiveOffset)
+    : sql;
+
+  // SQL 校验（使用原始 SQL，不校验 LIMIT 包装后的）
   const validation = validateSql(sql, { readOnlyMode });
   if (!validation.valid) {
     return res.status(400).json({ error: validation.errors.join('; ') });
@@ -106,7 +157,7 @@ router.post('/', async (req, res) => {
     config_json: JSON.stringify({ concurrency, timeoutMs, continueOnError, maxRetries }),
     executed_at: new Date().toISOString(),
   };
-  insert('executionHistory', historyRecord);
+  await insert('executionHistory', historyRecord);
 
   // Abort 检测
   let aborted = false;
@@ -123,9 +174,9 @@ router.post('/', async (req, res) => {
   }));
 
   // 获得连接信息及其所属连接实例名
-  const hospitals = getAll('hospitals');
-  const predbTypes = getAll('predbTypes');
-  const districts = getAll('districts');
+  const hospitals = await getAll('hospitals');
+  const predbTypes = await getAll('predbTypes');
+  const districts = await getAll('districts');
 
   for (const task of tasks) {
     const hospital = hospitals.find((h) => h.connection_id === task.connectionId);
@@ -166,7 +217,7 @@ router.post('/', async (req, res) => {
       timestamp: Date.now(),
     });
 
-    const conn = getById('connections', task.connectionId);
+    const conn = await getById('connections', task.connectionId);
     if (!conn) {
       const duration = Date.now() - taskStart;
       failedCount++;
@@ -188,27 +239,34 @@ router.post('/', async (req, res) => {
 
     try {
       // 建立连接（传入 schema 以自动设置 search_path）
+      const effectiveSchema = conn.schema_name || conn.schema || '';
+      console.log(`[execute] conn=${conn.id} name=${conn.name} driver=${conn.driver} schema="${effectiveSchema}"`);
       dbClient = await createDbConnection({
         driver: conn.driver,
         host: conn.host,
         port: conn.port,
         username: conn.username,
         password,
-        database: conn.database_name,
-        schema: conn.schema_name || '',
+        database: conn.database_name || conn.database || '',
+        schema: effectiveSchema,
         customDriverId: conn.custom_driver_id || undefined,
       });
 
       // 执行查询
-      const result = await executeQuery(dbClient, conn.driver, sql, timeoutMs, conn.custom_driver_id || undefined);
+      const result = await executeQuery(dbClient, conn.driver, execSql, timeoutMs, conn.custom_driver_id || undefined);
 
       const duration = Date.now() - taskStart;
       successCount++;
 
-      // 限制返回行数，避免前端渲染卡死
-      const MAX_ROWS = 500;
-      const truncated = result.rows.length > MAX_ROWS;
-      const limitedRows = result.rows.slice(0, MAX_ROWS);
+      const resultRowCount = result.rows.length;
+      // 分页模式下：返回行数等于 pageSize 说明可能还有更多数据
+      const hasMore = needsPagination ? (resultRowCount >= effectivePageSize) : false;
+      const totalLoaded = needsPagination
+        ? (effectiveOffset + resultRowCount)
+        : resultRowCount;
+      // 非分页模式：仍保留原来 500 行截断逻辑
+      const shouldTruncate = !needsPagination && resultRowCount > 500;
+      const limitedRows = shouldTruncate ? result.rows.slice(0, 500) : result.rows;
 
       sendSSE('progress', {
         taskId: task.id,
@@ -217,16 +275,18 @@ router.post('/', async (req, res) => {
         predbTypeName: task.predbTypeName,
         status: 'success',
         duration,
-        rowCount: result.rows.length,
+        rowCount: resultRowCount,
         columns: result.columns,
         rows: limitedRows,
-        totalRows: result.rows.length,
-        truncated,
+        totalRows: resultRowCount,
+        truncated: shouldTruncate,
+        hasMore,
+        totalLoaded,
         timestamp: Date.now(),
       });
 
       // 更新连接状态为在线
-      update('connections', task.connectionId, { status: 'online' });
+      await update('connections', task.connectionId, { status: 'online' });
     } catch (err) {
       const duration = Date.now() - taskStart;
       const isTimeout = err.message && err.message.includes('超时');
@@ -258,7 +318,7 @@ router.post('/', async (req, res) => {
       }
 
       // 更新连接状态
-      update('connections', task.connectionId, { status: 'error' });
+      await update('connections', task.connectionId, { status: 'error' });
     } finally {
       if (dbClient) {
         await closeConnection(dbClient, conn.driver, conn.custom_driver_id || undefined).catch(() => {});
@@ -293,7 +353,7 @@ router.post('/', async (req, res) => {
     const totalDuration = Date.now() - executionStart;
 
     // 更新执行历史
-    update('executionHistory', executionId, {
+    await update('executionHistory', executionId, {
       success_count: successCount,
       failed_count: failedCount,
       timeout_count: timeoutCount,

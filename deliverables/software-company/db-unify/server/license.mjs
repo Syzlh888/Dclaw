@@ -15,7 +15,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __dirname = path.dirname(
+  typeof import.meta !== 'undefined' && import.meta.url
+    ? fileURLToPath(import.meta.url)
+    : __filename
+);
 
 // 内嵌公钥（由 keygen 工具生成后替换此处）
 const PUBLIC_KEY_PEM = `-----BEGIN PUBLIC KEY-----

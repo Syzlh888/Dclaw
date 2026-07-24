@@ -66,6 +66,16 @@ const ServerDetailPanel: React.FC<Props> = ({ onEdit, onDelete }) => {
     ? Object.values(connections).filter(c => c.serverId === server.id || server.linkedConnectionIds?.includes(c.id))
     : [];
 
+  // 服务器自身 IP 列表（不含数据库实例 IP）
+  const serverIps = (() => {
+    const ips = (server?.ips || []).map((ie: any) => ie.ip).filter(Boolean);
+    if (server?.internalIp) ips.push(server.internalIp);
+    if (server?.externalIp) ips.push(server.externalIp);
+    if (server?.publicIp) ips.push(server.publicIp);
+    if (server?.crossNetworkIp) ips.push(server.crossNetworkIp);
+    return [...new Set(ips)];
+  })();
+
   // 拉取全局访问条目
   useEffect(() => {
     apiFetch('/api/access')
@@ -181,7 +191,7 @@ const ServerDetailPanel: React.FC<Props> = ({ onEdit, onDelete }) => {
   return (
     <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       {/* 上半部分：主机信息 */}
-      <Box sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider', bgcolor: '#FAFAFA' }}>
+      <Box sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider', bgcolor: 'background.default' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Box>
@@ -246,7 +256,7 @@ const ServerDetailPanel: React.FC<Props> = ({ onEdit, onDelete }) => {
               <Typography variant="caption" color="text.secondary">
                 {al.type === '堡垒机' ? '堡垒机' : 'VPN'}:
               </Typography>
-              <Typography variant="body2" sx={{ ml: '2px', color: '#1565C0' }}>
+              <Typography variant="body2" sx={{ ml: '2px', color: 'primary.dark' }}>
                 {al.address}
               </Typography>
               <Typography variant="body2" sx={{ ml: '2px' }}>
@@ -255,7 +265,7 @@ const ServerDetailPanel: React.FC<Props> = ({ onEdit, onDelete }) => {
               {al.pwdKey ? (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0, ml: 0.5 }}>
                   <Typography sx={{
-                    fontFamily: 'monospace', fontSize: '0.75rem',
+                    fontFamily: 'monospace', fontSize: '0.65rem',
                     userSelect: isRevealed ? 'text' : 'none',
                     letterSpacing: isRevealed ? '0' : '2px',
                     color: isRevealed ? 'text.primary' : 'text.disabled',
@@ -277,20 +287,20 @@ const ServerDetailPanel: React.FC<Props> = ({ onEdit, onDelete }) => {
 
       {/* 下半部分：Tab 页 */}
       <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ minHeight: 36, borderBottom: '1px solid', borderColor: 'divider', px: 2 }}>
-        <Tab label={`数据库 (${dbInstances.length})`} sx={{ minHeight: 36, textTransform: 'none', fontSize: '0.8rem' }} />
-        <Tab label={`应用 (${appInstances.length})`} sx={{ minHeight: 36, textTransform: 'none', fontSize: '0.8rem' }} />
-        <Tab label={`API (${apiInstances.length})`} sx={{ minHeight: 36, textTransform: 'none', fontSize: '0.8rem' }} />
-        <Tab label={`中间件 (${midInstances.length})`} sx={{ minHeight: 36, textTransform: 'none', fontSize: '0.8rem' }} />
-        <Tab label={`端口 (${ports.length})`} sx={{ minHeight: 36, textTransform: 'none', fontSize: '0.8rem' }} />
-        <Tab label={`关联连接 (${linkedConnections.length})`} sx={{ minHeight: 36, textTransform: 'none', fontSize: '0.8rem' }} />
+        <Tab label={`数据库 (${dbInstances.length})`} sx={{ minHeight: 36, textTransform: 'none', fontSize: '0.7rem' }} />
+        <Tab label={`应用 (${appInstances.length})`} sx={{ minHeight: 36, textTransform: 'none', fontSize: '0.7rem' }} />
+        <Tab label={`API (${apiInstances.length})`} sx={{ minHeight: 36, textTransform: 'none', fontSize: '0.7rem' }} />
+        <Tab label={`中间件 (${midInstances.length})`} sx={{ minHeight: 36, textTransform: 'none', fontSize: '0.7rem' }} />
+        <Tab label={`端口 (${ports.length})`} sx={{ minHeight: 36, textTransform: 'none', fontSize: '0.7rem' }} />
+        <Tab label={`关联连接 (${linkedConnections.length})`} sx={{ minHeight: 36, textTransform: 'none', fontSize: '0.7rem' }} />
       </Tabs>
 
       <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
-        {tab === 0 && <DbInstanceTab serverId={server.id} instances={dbInstances} ports={ports} serverIps={(() => { const ips = (server.ips || []).map(ie => ie.ip).filter(Boolean); if (server.internalIp) ips.push(server.internalIp); if (server.externalIp) ips.push(server.externalIp); if (server.publicIp) ips.push(server.publicIp); if (server.crossNetworkIp) ips.push(server.crossNetworkIp); return [...new Set(ips)]; })()} />}
-        {tab === 1 && <AppInstanceTab serverId={server.id} instances={appInstances} ports={ports} />}
-        {tab === 2 && <ApiManagementTab serverId={server.id} instances={apiInstances} appInstances={appInstances} />}
-        {tab === 3 && <MiddlewareTab serverId={server.id} instances={midInstances} ports={ports} />}
-        {tab === 4 && <PortInfoTab serverId={server.id} ports={ports} />}
+        {tab === 0 && <DbInstanceTab serverId={server.id} instances={dbInstances} ports={ports} serverIps={serverIps} />}
+        {tab === 1 && <AppInstanceTab serverId={server.id} instances={appInstances} ports={ports} serverIps={serverIps} />}
+        {tab === 2 && <ApiManagementTab serverId={server.id} instances={apiInstances} appInstances={appInstances} serverIps={serverIps} />}
+        {tab === 3 && <MiddlewareTab serverId={server.id} instances={midInstances} ports={ports} serverIps={serverIps} />}
+        {tab === 4 && <PortInfoTab serverId={server.id} ports={ports} serverIps={serverIps.map(ip => ({ ip }))} initialIp={server.internalIp} />}
         {tab === 5 && (
           <Box>
             <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1.5 }}>已关联的数据库连接 ({linkedConnections.length})</Typography>
@@ -302,20 +312,20 @@ const ServerDetailPanel: React.FC<Props> = ({ onEdit, onDelete }) => {
               <TableContainer>
                 <Table size="small">
                   <TableHead><TableRow>
-                    <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>连接名称</TableCell>
-                    <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>驱动</TableCell>
-                    <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>主机:端口</TableCell>
-                    <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>数据库</TableCell>
-                    <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>状态</TableCell>
-                    <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>操作</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.65rem' }}>连接名称</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.65rem' }}>驱动</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.65rem' }}>主机:端口</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.65rem' }}>数据库</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.65rem' }}>状态</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.65rem' }}>操作</TableCell>
                   </TableRow></TableHead>
                   <TableBody>
                     {linkedConnections.map(c => (
                       <TableRow key={c.id}>
-                        <TableCell sx={{ fontSize: '0.8rem' }}>{c.name}</TableCell>
+                        <TableCell sx={{ fontSize: '0.7rem' }}>{c.name}</TableCell>
                         <TableCell><Chip label={c.driver} size="small" sx={{ fontSize: '0.65rem' }} /></TableCell>
-                        <TableCell sx={{ fontSize: '0.8rem' }}>{c.host}:{c.port}</TableCell>
-                        <TableCell sx={{ fontSize: '0.8rem' }}>{c.database || '-'}</TableCell>
+                        <TableCell sx={{ fontSize: '0.7rem' }}>{c.host}:{c.port}</TableCell>
+                        <TableCell sx={{ fontSize: '0.7rem' }}>{c.database || '-'}</TableCell>
                         <TableCell>
                           <Chip label={c.status} size="small" color={c.status === 'online' ? 'success' : 'default'} sx={{ fontSize: '0.65rem', height: 20 }} />
                         </TableCell>

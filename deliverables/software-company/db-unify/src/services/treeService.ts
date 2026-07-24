@@ -17,6 +17,7 @@ export async function createNode(params: {
   parentId: string;
   name: string;
   connectionId?: string;
+  parentType?: 'platform' | 'predb_type' | 'district';
 }) {
   let url: string;
   let body: any = { name: params.name };
@@ -36,7 +37,10 @@ export async function createNode(params: {
       break;
     case 'hospital':
       url = `${API_BASE}/hospitals`;
-      body.district_id = params.parentId;
+      // 允许挂到三种父类型下：district / predb_type / platform（由外部传入正确字段）
+      if (params.parentType === 'platform') body.platform_id = params.parentId;
+      else if (params.parentType === 'predb_type') body.predb_type_id = params.parentId;
+      else body.district_id = params.parentId;
       if (params.connectionId) body.connection_id = params.connectionId;
       break;
     default:
@@ -183,5 +187,27 @@ export async function reorderNodes(params: {
   if (!response.ok) {
     const err = await response.json().catch(() => ({ error: '排序更新失败' }));
     throw new Error(err.error || '排序更新失败');
+  }
+}
+
+/** 移动 Hospital（连接实例）到新的父节点，可同时更新新父节点下的兄弟顺序 */
+export async function moveHospital(params: {
+  hospitalId: string;
+  parentType: 'platform' | 'predb_type' | 'district';
+  parentId: string;
+  siblingIds?: string[];
+}): Promise<void> {
+  const response = await fetch(`${API_BASE}/hospitals/${encodeURIComponent(params.hospitalId)}/move`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      parent_type: params.parentType,
+      parent_id: params.parentId,
+      sibling_ids: params.siblingIds,
+    }),
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({ error: '移动失败' }));
+    throw new Error(err.error || '移动失败');
   }
 }

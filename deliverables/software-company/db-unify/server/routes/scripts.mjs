@@ -12,8 +12,8 @@ const router = Router();
  * GET /api/scripts
  * 获取所有脚本列表（不含 sql_text 以减小响应体积）
  */
-router.get('/', (_req, res) => {
-  const scripts = getAll('sqlScripts')
+router.get('/', async (_req, res) => {
+  const scripts = await getAll('sqlScripts')
     .map(({ sql_text, ...rest }) => ({ ...rest, sql_preview: sql_text?.slice(0, 100) || '' }))
     .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
   res.json({ scripts });
@@ -23,8 +23,8 @@ router.get('/', (_req, res) => {
  * GET /api/scripts/:id
  * 获取单个脚本（含完整 sql_text）
  */
-router.get('/:id', (req, res) => {
-  const script = getById('sqlScripts', req.params.id);
+router.get('/:id', async (req, res) => {
+  const script = await getById('sqlScripts', req.params.id);
   if (!script) {
     return res.status(404).json({ error: '脚本不存在' });
   }
@@ -35,8 +35,8 @@ router.get('/:id', (req, res) => {
  * POST /api/scripts
  * 保存新脚本
  */
-router.post('/', (req, res) => {
-  const { name, description, sql_text } = req.body;
+router.post('/', async (req, res) => {
+  const { name, description, sql_text, projectId } = req.body;
 
   if (!name || !sql_text) {
     return res.status(400).json({ error: '脚本名称和 SQL 内容不能为空' });
@@ -48,12 +48,13 @@ router.post('/', (req, res) => {
     id,
     name,
     description: description || '',
+    projectId: projectId || '',
     sql_text,
     created_at: now,
     updated_at: now,
   };
 
-  insert('sqlScripts', script);
+  await insert('sqlScripts', script);
   res.status(201).json(script);
 });
 
@@ -61,19 +62,20 @@ router.post('/', (req, res) => {
  * PUT /api/scripts/:id
  * 更新已有脚本
  */
-router.put('/:id', (req, res) => {
-  const existing = getById('sqlScripts', req.params.id);
+router.put('/:id', async (req, res) => {
+  const existing = await getById('sqlScripts', req.params.id);
   if (!existing) {
     return res.status(404).json({ error: '脚本不存在' });
   }
 
-  const { name, description, sql_text } = req.body;
+  const { name, description, sql_text, projectId } = req.body;
   const partial = {};
   if (name !== undefined) partial.name = name;
   if (description !== undefined) partial.description = description;
   if (sql_text !== undefined) partial.sql_text = sql_text;
+  if (projectId !== undefined) partial.projectId = projectId;
 
-  const updated = update('sqlScripts', req.params.id, partial);
+  const updated = await update('sqlScripts', req.params.id, partial);
   res.json(updated);
 });
 
@@ -81,13 +83,13 @@ router.put('/:id', (req, res) => {
  * DELETE /api/scripts/:id
  * 删除脚本
  */
-router.delete('/:id', (req, res) => {
-  const existing = getById('sqlScripts', req.params.id);
+router.delete('/:id', async (req, res) => {
+  const existing = await getById('sqlScripts', req.params.id);
   if (!existing) {
     return res.status(404).json({ error: '脚本不存在' });
   }
 
-  remove('sqlScripts', req.params.id);
+  await remove('sqlScripts', req.params.id);
   res.json({ success: true });
 });
 

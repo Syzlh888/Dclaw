@@ -1,12 +1,10 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
-  Dialog, DialogTitle, DialogContent, DialogActions,
   Button, Box, Typography, Chip, IconButton, Tooltip,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Paper, Alert, LinearProgress, Stepper, Step, StepLabel,
+  Paper, Alert,
 } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import DownloadIcon from '@mui/icons-material/Download';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorIcon from '@mui/icons-material/Error';
@@ -17,6 +15,8 @@ import { bulkImportConnections, downloadImportTemplate } from '../../services/co
 import type { BulkImportItem, BulkImportResult } from '../../services/connectionApiService';
 import { useConnectionStore } from '../../stores/connectionStore';
 import { useTreeStore } from '../../stores/treeStore';
+import ImportDialogShell from '../common/ImportDialogShell';
+import ImportDropzone from '../common/ImportDropzone';
 
 interface BulkImportDialogProps {
   open: boolean;
@@ -24,6 +24,9 @@ interface BulkImportDialogProps {
 }
 
 const VALID_DRIVERS = ['mysql', 'postgresql', 'oracle', 'sqlserver', 'custom'];
+// 允许用户填写自定义驱动名称的场景（如 "highgo", "瀚高" 等），这些会由服务端自动映射到 custom + 驱动ID
+const CUSTOM_DRIVER_ALIASES = ['highgo', '瀚高', 'high godb', 'hgdb', 'kingbase', '金仓', 'gaussdb', '高斯', 'gauss',
+  'opengauss', 'dameng', '达梦', 'shentong', '神通', 'tdsql', 'oceanbase', 'oceanbase mysql', 'gbase', 'dm8', 'dm7'];
 
 /** 解析后的导入行 */
 interface ParsedRow extends BulkImportItem {
@@ -46,6 +49,7 @@ const FIELD_MAP: Record<string, keyof BulkImportItem> = {
   '业务模块': 'predb_type', '模块': 'predb_type',
   '区域节点': 'district', '区域': 'district', '节点': 'district',
   '连接实例名称': 'hospital_name', '实例名': 'hospital_name',
+  '自定义驱动名称': 'customDriverName', '自定义驱动': 'customDriverName', '驱动名称': 'customDriverName',
 };
 
 const REQUIRED_FIELDS: (keyof BulkImportItem)[] = ['name', 'driver', 'host', 'port', 'username', 'password'];
@@ -61,13 +65,9 @@ const BulkImportDialog: React.FC<BulkImportDialogProps> = ({ open, onClose }) =>
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState<BulkImportResult | null>(null);
   const [error, setError] = useState('');
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // ---- 步骤 1：上传并解析文件 ----
-  const handleFileSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  const handleFileSelected = useCallback(async (file: File) => {
     setFileName(file.name);
     setError('');
     setImportResult(null);
@@ -116,7 +116,6 @@ const BulkImportDialog: React.FC<BulkImportDialogProps> = ({ open, onClose }) =>
         rawRows = XLSX.utils.sheet_to_json(ws, { defval: '' }) as Record<string, string>[];
         // 对 Excel 的表头也做归一化处理
         if (rawRows.length > 0) {
-          const oldKeys = Object.keys(rawRows[0]);
           const normalized: Record<string, string>[] = [];
           for (const row of rawRows) {
             const newRow: Record<string, string> = {};
@@ -177,9 +176,14 @@ const BulkImportDialog: React.FC<BulkImportDialogProps> = ({ open, onClose }) =>
           }
         }
 
-        // 校验驱动类型
-        if (item.driver && !VALID_DRIVERS.includes(item.driver.toLowerCase())) {
-          errors.push(`驱动类型 "${item.driver}" 无效，支持: ${VALID_DRIVERS.join(', ')}`);
+        // 校验驱动类型：标准类型 + 已知自定义驱动别名均通过
+        if (item.driver) {
+          const driverLower = item.driver.toLowerCase();
+          const isStandard = VALID_DRIVERS.includes(driverLower);
+          const isKnownAlias = CUSTOM_DRIVER_ALIASES.some((a) => driverLower.includes(a) || a.includes(driverLower));
+          if (!isStandard && !isKnownAlias) {
+            errors.push(`驱动类型 "${item.driver}" 无效，支持: ${VALID_DRIVERS.join(', ')} 及自定义驱动名称（如 highgo、kingbase 等）`);
+          }
         }
 
         // 校验端口
@@ -225,6 +229,7 @@ const BulkImportDialog: React.FC<BulkImportDialogProps> = ({ open, onClose }) =>
         password: r.password,
         database: r.database || '',
         schema: r.schema || '',
+        customDriverName: r.customDriverName || '',
         platform: r.platform || '',
         predb_type: r.predb_type || '',
         district: r.district || '',
@@ -260,277 +265,242 @@ const BulkImportDialog: React.FC<BulkImportDialogProps> = ({ open, onClose }) =>
     setFileName('');
     setImportResult(null);
     setError('');
-    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const validCount = parsedRows.filter((r) => r._valid).length;
   const invalidCount = parsedRows.filter((r) => !r._valid).length;
 
+  // 底部按钮栏（按步骤切换）
+  const renderActions = () => {
+    if (activeStep === 0) {
+      return (
+        <Button onClick={onClose} size="small" sx={{ textTransform: 'none' }}>取消</Button>
+      );
+    }
+    if (activeStep === 1) {
+      return (
+        <>
+          <Button onClick={() => setActiveStep(0)} size="small" sx={{ textTransform: 'none' }}>
+            上一步
+          </Button>
+          <Button
+            variant="contained"
+            size="small"
+            onClick={handleImport}
+            disabled={validCount === 0 || importing}
+            sx={{ textTransform: 'none' }}
+          >
+            {importing ? '导入中...' : `确认导入 ${validCount} 条`}
+          </Button>
+        </>
+      );
+    }
+    return (
+      <>
+        <Button onClick={handleReset} size="small" startIcon={<RefreshIcon sx={{ fontSize: 16 }} />} sx={{ textTransform: 'none' }}>
+          重新导入
+        </Button>
+        <Button variant="contained" size="small" onClick={onClose} sx={{ textTransform: 'none' }}>
+          完成
+        </Button>
+      </>
+    );
+  };
+
   return (
-    <Dialog open={open} onClose={onClose} maxWidth={false} fullWidth PaperProps={{ sx: { maxWidth: 540 } }}>
-      <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <CloudUploadIcon color="primary" />
-          批量导入数据库连接
-        </Box>
-      </DialogTitle>
+    <ImportDialogShell
+      open={open}
+      onClose={onClose}
+      title="批量导入数据库连接"
+      icon={<CloudUploadIcon sx={{ fontSize: 20 }} />}
+      steps={steps}
+      activeStep={activeStep}
+      error={error}
+      onErrorClose={() => setError('')}
+      loading={importing}
+      maxWidth="lg"
+      actions={renderActions()}
+    >
+      {/* 步骤 0：上传文件 */}
+      {activeStep === 0 && (
+        <ImportDropzone
+          accept={['.csv', '.xlsx', '.xls']}
+          hint="支持 .csv、.xlsx、.xls 格式的数据库连接配置文件"
+          downloadLabel="下载模板"
+          onFileSelected={handleFileSelected}
+          onDownloadTemplate={handleDownloadTemplate}
+          templateInfo={
+            <>
+              • 必填列：连接名称、驱动类型、主机地址、端口、用户名、密码<br />
+              • 可选列：数据库名、Schema、自定义驱动名称、项目、业务模块、区域节点、连接实例名称<br />
+              • 层级说明：填写项目→业务模块→区域节点后，若层级不存在将自动创建，并自动关联到左侧树<br />
+              • 驱动类型：mysql、postgresql、oracle、sqlserver、custom<br />
+              • 自定义驱动：当驱动类型为 custom 时，可填写「自定义驱动名称」列指定已安装的驱动（如 瀚高、金仓 等）<br />
+              • 端口：1-65535 之间的数字<br />
+              • 点击「下载模板」获取带示例的 CSV 文件
+            </>
+          }
+        />
+      )}
 
-      <DialogContent dividers>
-        {/* 步骤指示 */}
-        <Stepper activeStep={activeStep} sx={{ mb: 3 }}>
-          {steps.map((label) => (
-            <Step key={label}>
-              <StepLabel>{label}</StepLabel>
-            </Step>
-          ))}
-        </Stepper>
-
-        {/* 错误提示 */}
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
-            {error}
-          </Alert>
-        )}
-
-        {/* 步骤 0：上传文件 */}
-        {activeStep === 0 && (
-          <Box sx={{ textAlign: 'center', py: 6 }}>
-            <CloudUploadIcon sx={{ fontSize: 48, color: 'action.disabled', mb: 2 }} />
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              支持 .csv、.xlsx、.xls 格式的数据库连接配置文件
+      {/* 步骤 1：预览校验 */}
+      {activeStep === 1 && parsedRows.length > 0 && (
+        <>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5, flexWrap: 'wrap' }}>
+            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
+              文件：{fileName} · 共 {parsedRows.length} 行
             </Typography>
-
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".csv,.xlsx,.xls"
-              style={{ display: 'none' }}
-              onChange={handleFileSelect}
+            <Chip
+              icon={<CheckCircleIcon sx={{ fontSize: 14 }} />}
+              label={`${validCount} 行通过`}
+              size="small"
+              color={validCount > 0 ? 'success' : 'default'}
+              variant="outlined"
+              sx={{ fontSize: '0.7rem', height: 22 }}
             />
-            <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
-              <Button
-                variant="contained"
-                startIcon={<CloudUploadIcon />}
-                onClick={() => fileInputRef.current?.click()}
-                sx={{ textTransform: 'none' }}
-              >
-                选择文件
-              </Button>
-              <Button
-                variant="outlined"
-                startIcon={<DownloadIcon />}
-                onClick={handleDownloadTemplate}
-                sx={{ textTransform: 'none' }}
-              >
-                下载模板
-              </Button>
-            </Box>
-
-            <Paper variant="outlined" sx={{ mt: 3, p: 1.5, textAlign: 'left', bgcolor: 'grey.50' }}>
-              <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
-                模板说明
-              </Typography>
-              <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
-                • 必填列：连接名称、驱动类型、主机地址、端口、用户名、密码<br />
-                • 可选列：数据库名、Schema、项目、业务模块、区域节点、连接实例名称<br />
-                • 层级说明：填写项目→业务模块→区域节点后，若层级不存在将自动创建，并自动关联到左侧树<br />
-                • 驱动类型：mysql、postgresql、oracle、sqlserver<br />
-                • 端口：1-65535 之间的数字<br />
-                • 点击「下载模板」获取带示例的 CSV 文件
-              </Typography>
-            </Paper>
-          </Box>
-        )}
-
-        {/* 步骤 1：预览校验 */}
-        {activeStep === 1 && parsedRows.length > 0 && (
-          <>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-              <Typography variant="body2" color="text.secondary">
-                文件：{fileName} | 共 {parsedRows.length} 行
-              </Typography>
+            {invalidCount > 0 && (
               <Chip
-                icon={<CheckCircleIcon />}
-                label={`${validCount} 行通过`}
+                icon={<ErrorIcon sx={{ fontSize: 14 }} />}
+                label={`${invalidCount} 行失败`}
                 size="small"
-                color={validCount > 0 ? 'success' : 'default'}
+                color="error"
                 variant="outlined"
-                sx={{ fontSize: '0.7rem' }}
+                sx={{ fontSize: '0.7rem', height: 22 }}
               />
-              {invalidCount > 0 && (
-                <Chip
-                  icon={<ErrorIcon />}
-                  label={`${invalidCount} 行失败`}
-                  size="small"
-                  color="error"
-                  variant="outlined"
-                  sx={{ fontSize: '0.7rem' }}
-                />
-              )}
-              <Box sx={{ flex: 1 }} />
-              <Tooltip title="重新选择文件">
-                <IconButton size="small" onClick={handleReset}>
-                  <RefreshIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="删除无效行">
-                <IconButton
-                  size="small"
-                  onClick={() => setParsedRows(parsedRows.filter((r) => r._valid))}
-                  disabled={invalidCount === 0}
-                >
-                  <DeleteIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            </Box>
-
-            <TableContainer component={Paper} variant="outlined" sx={{ maxHeight: 320 }}>
-              <Table size="small" stickyHeader>
-                <TableHead>
-                  <TableRow>
-                    <TableCell sx={{ fontSize: '0.75rem', fontWeight: 600, py: 0.75 }}>#</TableCell>
-                    <TableCell sx={{ fontSize: '0.75rem', fontWeight: 600, py: 0.75 }}>名称</TableCell>
-                    <TableCell sx={{ fontSize: '0.75rem', fontWeight: 600, py: 0.75 }}>驱动</TableCell>
-                    <TableCell sx={{ fontSize: '0.75rem', fontWeight: 600, py: 0.75 }}>主机:端口</TableCell>
-                    <TableCell sx={{ fontSize: '0.75rem', fontWeight: 600, py: 0.75 }}>数据库</TableCell>
-                    <TableCell sx={{ fontSize: '0.75rem', fontWeight: 600, py: 0.75 }}>层级路径</TableCell>
-                    <TableCell sx={{ fontSize: '0.75rem', fontWeight: 600, py: 0.75 }}>状态</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {parsedRows.map((row, i) => (
-                    <TableRow
-                      key={i}
-                      sx={{
-                        bgcolor: row._valid ? 'transparent' : 'error.50',
-                        '&:hover': { bgcolor: row._valid ? 'action.hover' : 'error.100' },
-                      }}
-                    >
-                      <TableCell sx={{ fontSize: '0.75rem', py: 0.5 }}>{row._row}</TableCell>
-                      <TableCell sx={{ fontSize: '0.75rem', py: 0.5 }}>{row.name || '-'}</TableCell>
-                      <TableCell sx={{ fontSize: '0.75rem', py: 0.5 }}>
-                        {row.driver ? (
-                          <Chip label={row.driver} size="small" variant="outlined" sx={{ fontSize: '0.65rem', height: 18 }} />
-                        ) : '-'}
-                      </TableCell>
-                      <TableCell sx={{ fontSize: '0.75rem', py: 0.5, fontFamily: 'monospace' }}>
-                        {row.host ? `${row.host}:${row.port || '-'}` : '-'}
-                      </TableCell>
-                      <TableCell sx={{ fontSize: '0.75rem', py: 0.5 }}>{row.database || '-'}</TableCell>
-                      <TableCell sx={{ fontSize: '0.75rem', py: 0.5, color: 'text.secondary' }}>
-                        {row.platform || row.predb_type || row.district
-                          ? [row.platform, row.predb_type, row.district].filter(Boolean).join(' > ')
-                          : '-'}
-                      </TableCell>
-                      <TableCell sx={{ fontSize: '0.75rem', py: 0.5 }}>
-                        {row._valid ? (
-                          <CheckCircleIcon sx={{ fontSize: 16, color: 'success.main' }} />
-                        ) : (
-                          <Tooltip title={row._errors.join('；')}>
-                            <ErrorIcon sx={{ fontSize: 16, color: 'error.main' }} />
-                          </Tooltip>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </>
-        )}
-
-        {/* 步骤 2：导入结果 */}
-        {activeStep === 2 && importResult && (
-          <Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-              <Chip
-                icon={<CheckCircleIcon />}
-                label={`成功 ${importResult.success} 条`}
-                color={importResult.success > 0 ? 'success' : 'default'}
-                variant="filled"
-              />
-              <Chip
-                icon={<ErrorIcon />}
-                label={`失败 ${importResult.failed} 条`}
-                color={importResult.failed > 0 ? 'error' : 'default'}
-                variant="filled"
-              />
-            </Box>
-
-            {importResult.failed > 0 && (
-              <Alert severity="warning" sx={{ mb: 2, fontSize: '0.8rem' }}>
-                部分连接导入失败，请检查以下记录并修正后重新导入
-              </Alert>
             )}
-
-            <TableContainer component={Paper} variant="outlined" sx={{ maxHeight: 300 }}>
-              <Table size="small" stickyHeader>
-                <TableHead>
-                  <TableRow>
-                    <TableCell sx={{ fontSize: '0.75rem', fontWeight: 600, py: 0.75 }}>行号</TableCell>
-                    <TableCell sx={{ fontSize: '0.75rem', fontWeight: 600, py: 0.75 }}>名称</TableCell>
-                    <TableCell sx={{ fontSize: '0.75rem', fontWeight: 600, py: 0.75 }}>结果</TableCell>
-                    <TableCell sx={{ fontSize: '0.75rem', fontWeight: 600, py: 0.75 }}>详情</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {importResult.results.map((r, i) => (
-                    <TableRow key={i}>
-                      <TableCell sx={{ fontSize: '0.75rem', py: 0.5 }}>{r.row}</TableCell>
-                      <TableCell sx={{ fontSize: '0.75rem', py: 0.5 }}>{r.name}</TableCell>
-                      <TableCell sx={{ fontSize: '0.75rem', py: 0.5 }}>
-                        {r.status === 'created' ? (
-                          <Chip label="已创建" size="small" color="success" variant="outlined" sx={{ fontSize: '0.65rem' }} />
-                        ) : (
-                          <Chip label="失败" size="small" color="error" variant="outlined" sx={{ fontSize: '0.65rem' }} />
-                        )}
-                      </TableCell>
-                      <TableCell sx={{ fontSize: '0.75rem', py: 0.5, color: r.status === 'failed' ? 'error.main' : 'text.secondary' }}>
-                        {r.error || '-'}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
+            <Box sx={{ flex: 1 }} />
+            <Tooltip title="重新选择文件">
+              <IconButton size="small" onClick={handleReset}>
+                <RefreshIcon sx={{ fontSize: 16 }} />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="删除无效行">
+              <IconButton
+                size="small"
+                onClick={() => setParsedRows(parsedRows.filter((r) => r._valid))}
+                disabled={invalidCount === 0}
+              >
+                <DeleteIcon sx={{ fontSize: 16 }} />
+              </IconButton>
+            </Tooltip>
           </Box>
-        )}
 
-        {/* 导入中进度 */}
-        {importing && <LinearProgress sx={{ mt: 2 }} />}
-      </DialogContent>
+          <TableContainer component={Paper} variant="outlined" sx={{ maxHeight: 340 }}>
+            <Table size="small" stickyHeader>
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontSize: '0.75rem', fontWeight: 600, py: 0.75 }}>#</TableCell>
+                  <TableCell sx={{ fontSize: '0.75rem', fontWeight: 600, py: 0.75 }}>名称</TableCell>
+                  <TableCell sx={{ fontSize: '0.75rem', fontWeight: 600, py: 0.75 }}>驱动</TableCell>
+                  <TableCell sx={{ fontSize: '0.75rem', fontWeight: 600, py: 0.75 }}>主机:端口</TableCell>
+                  <TableCell sx={{ fontSize: '0.75rem', fontWeight: 600, py: 0.75 }}>数据库</TableCell>
+                  <TableCell sx={{ fontSize: '0.75rem', fontWeight: 600, py: 0.75 }}>层级路径</TableCell>
+                  <TableCell sx={{ fontSize: '0.75rem', fontWeight: 600, py: 0.75 }}>状态</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {parsedRows.map((row, i) => (
+                  <TableRow
+                    key={i}
+                    sx={{
+                      bgcolor: row._valid ? 'transparent' : 'error.light',
+                      '&:hover': { bgcolor: row._valid ? 'action.hover' : 'error.light' },
+                    }}
+                  >
+                    <TableCell sx={{ fontSize: '0.75rem', py: 0.5 }}>{row._row}</TableCell>
+                    <TableCell sx={{ fontSize: '0.75rem', py: 0.5 }}>{row.name || '-'}</TableCell>
+                    <TableCell sx={{ fontSize: '0.75rem', py: 0.5 }}>
+                      {row.driver ? (
+                        <Chip label={row.driver} size="small" variant="outlined" sx={{ fontSize: '0.65rem', height: 18 }} />
+                      ) : '-'}
+                    </TableCell>
+                    <TableCell sx={{ fontSize: '0.75rem', py: 0.5, fontFamily: 'monospace' }}>
+                      {row.host ? `${row.host}:${row.port || '-'}` : '-'}
+                    </TableCell>
+                    <TableCell sx={{ fontSize: '0.75rem', py: 0.5 }}>{row.database || '-'}</TableCell>
+                    <TableCell sx={{ fontSize: '0.75rem', py: 0.5, color: 'text.secondary' }}>
+                      {row.platform || row.predb_type || row.district
+                        ? [row.platform, row.predb_type, row.district].filter(Boolean).join(' > ')
+                        : '-'}
+                    </TableCell>
+                    <TableCell sx={{ fontSize: '0.75rem', py: 0.5 }}>
+                      {row._valid ? (
+                        <CheckCircleIcon sx={{ fontSize: 16, color: 'success.main' }} />
+                      ) : (
+                        <Tooltip title={row._errors.join('；')}>
+                          <ErrorIcon sx={{ fontSize: 16, color: 'error.main' }} />
+                        </Tooltip>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </>
+      )}
 
-      <DialogActions>
-        {activeStep === 0 && (
-          <Button onClick={onClose} sx={{ textTransform: 'none' }}>取消</Button>
-        )}
-        {activeStep === 1 && (
-          <>
-            <Button onClick={() => setActiveStep(0)} sx={{ textTransform: 'none' }}>
-              返回
-            </Button>
-            <Button
-              variant="contained"
-              onClick={handleImport}
-              disabled={validCount === 0 || importing}
-              sx={{ textTransform: 'none' }}
-            >
-              {importing ? '导入中...' : `导入 ${validCount} 条`}
-            </Button>
-          </>
-        )}
-        {activeStep === 2 && (
-          <>
-            <Button onClick={handleReset} sx={{ textTransform: 'none' }} startIcon={<RefreshIcon />}>
-              重新导入
-            </Button>
-            <Button variant="contained" onClick={onClose} sx={{ textTransform: 'none' }}>
-              完成
-            </Button>
-          </>
-        )}
-      </DialogActions>
-    </Dialog>
+      {/* 步骤 2：导入结果 */}
+      {activeStep === 2 && importResult && (
+        <Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+            <Chip
+              icon={<CheckCircleIcon sx={{ fontSize: 14 }} />}
+              label={`成功 ${importResult.success} 条`}
+              size="small"
+              color={importResult.success > 0 ? 'success' : 'default'}
+              variant="filled"
+              sx={{ fontSize: '0.75rem' }}
+            />
+            <Chip
+              icon={<ErrorIcon sx={{ fontSize: 14 }} />}
+              label={`失败 ${importResult.failed} 条`}
+              size="small"
+              color={importResult.failed > 0 ? 'error' : 'default'}
+              variant="filled"
+              sx={{ fontSize: '0.75rem' }}
+            />
+          </Box>
+
+          {importResult.failed > 0 && (
+            <Alert severity="warning" sx={{ mb: 1.5, fontSize: '0.8rem' }}>
+              部分连接导入失败，请检查以下记录并修正后重新导入
+            </Alert>
+          )}
+
+          <TableContainer component={Paper} variant="outlined" sx={{ maxHeight: 320 }}>
+            <Table size="small" stickyHeader>
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontSize: '0.75rem', fontWeight: 600, py: 0.75 }}>行号</TableCell>
+                  <TableCell sx={{ fontSize: '0.75rem', fontWeight: 600, py: 0.75 }}>名称</TableCell>
+                  <TableCell sx={{ fontSize: '0.75rem', fontWeight: 600, py: 0.75 }}>结果</TableCell>
+                  <TableCell sx={{ fontSize: '0.75rem', fontWeight: 600, py: 0.75 }}>详情</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {importResult.results.map((r, i) => (
+                  <TableRow key={i}>
+                    <TableCell sx={{ fontSize: '0.75rem', py: 0.5 }}>{r.row}</TableCell>
+                    <TableCell sx={{ fontSize: '0.75rem', py: 0.5 }}>{r.name}</TableCell>
+                    <TableCell sx={{ fontSize: '0.75rem', py: 0.5 }}>
+                      {r.status === 'created' ? (
+                        <Chip label="已创建" size="small" color="success" variant="outlined" sx={{ fontSize: '0.65rem', height: 18 }} />
+                      ) : (
+                        <Chip label="失败" size="small" color="error" variant="outlined" sx={{ fontSize: '0.65rem', height: 18 }} />
+                      )}
+                    </TableCell>
+                    <TableCell sx={{ fontSize: '0.75rem', py: 0.5, color: r.status === 'failed' ? 'error.main' : 'text.secondary' }}>
+                      {r.error || '-'}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Box>
+      )}
+    </ImportDialogShell>
   );
 };
 

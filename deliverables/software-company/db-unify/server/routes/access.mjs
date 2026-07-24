@@ -37,9 +37,9 @@ function sanitize(a) {
 }
 
 /** 记录密码修改历史（使用 access-{id} 作为标识） */
-function recordHistory(accessId, fieldName, changedBy, encryptedPassword) {
+async function recordHistory(accessId, fieldName, changedBy, encryptedPassword) {
   const hId = nanoid(8);
-  insert('passwordHistory', {
+  await insert('passwordHistory', {
     id: hId,
     server_id: `access-${accessId}`,
     field_name: fieldName,
@@ -50,20 +50,20 @@ function recordHistory(accessId, fieldName, changedBy, encryptedPassword) {
 }
 
 // ========= 获取全部 =========
-router.get('/', (_req, res) => {
-  const entries = getAll('access_entries').map(sanitize);
+router.get('/', async (_req, res) => {
+  const entries = (await getAll('access_entries')).map(sanitize);
   res.json({ entries });
 });
 
 // ========= 获取单个 =========
-router.get('/:id', (req, res) => {
-  const entry = getById('access_entries', req.params.id);
+router.get('/:id', async (req, res) => {
+  const entry = await getById('access_entries', req.params.id);
   if (!entry) return res.status(404).json({ error: '访问条目不存在' });
   res.json(sanitize(entry));
 });
 
 // ========= 新增 =========
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const { type, address, provider, username, password, credentials, notes } = req.body;
   if (!type || !address) return res.status(400).json({ error: '类型和地址不能为空' });
 
@@ -98,13 +98,13 @@ router.post('/', (req, res) => {
     credentials: credsJson,
     notes: notes || '',
   };
-  insert('access_entries', entry);
+  await insert('access_entries', entry);
   res.status(201).json(sanitize(entry));
 });
 
 // ========= 更新 =========
-router.put('/:id', (req, res) => {
-  const existing = getById('access_entries', req.params.id);
+router.put('/:id', async (req, res) => {
+  const existing = await getById('access_entries', req.params.id);
   if (!existing) return res.status(404).json({ error: '访问条目不存在' });
 
   const body = req.body;
@@ -155,17 +155,17 @@ router.put('/:id', (req, res) => {
     }
   }
 
-  const result = update('access_entries', req.params.id, partial);
+  const result = await update('access_entries', req.params.id, partial);
   res.json(sanitize(result));
 });
 
 // ========= 删除 =========
-router.delete('/:id', (req, res) => {
-  const existing = getById('access_entries', req.params.id);
+router.delete('/:id', async (req, res) => {
+  const existing = await getById('access_entries', req.params.id);
   if (!existing) return res.status(404).json({ error: '访问条目不存在' });
-  remove('access_entries', req.params.id);
+  await remove('access_entries', req.params.id);
   // 清理关联的密码历史
-  removeWhere('passwordHistory', h => h.server_id === `access-${req.params.id}`);
+  await removeWhere('passwordHistory', h => h.server_id === `access-${req.params.id}`);
   res.json({ success: true });
 });
 
@@ -175,7 +175,7 @@ router.post('/:id/decrypt-credential', async (req, res) => {
   if (!verifyPassword) return res.status(400).json({ error: '请输入验证密码' });
   if (credentialIndex === undefined || credentialIndex === null) return res.status(400).json({ error: '请指定凭据索引' });
 
-  const configs = getAll('systemConfig');
+  const configs = await getAll('systemConfig');
   const config = configs.length > 0 ? configs[0] : {};
   if (!config.secondary_password_hash) {
     return res.status(400).json({ error: '尚未设置二次验证密码，请先在系统设置中设置' });
@@ -184,7 +184,7 @@ router.post('/:id/decrypt-credential', async (req, res) => {
   const match = await bcrypt.compare(verifyPassword, config.secondary_password_hash);
   if (!match) return res.status(401).json({ error: '二次验证密码错误' });
 
-  const entry = getById('access_entries', req.params.id);
+  const entry = await getById('access_entries', req.params.id);
   if (!entry) return res.status(404).json({ error: '访问条目不存在' });
 
   let credentials = [];
@@ -205,8 +205,8 @@ router.post('/:id/decrypt-credential', async (req, res) => {
 });
 
 // ========= 密码历史 =========
-router.get('/:id/password-history', (req, res) => {
-  const items = query('passwordHistory', h => h.server_id === `access-${req.params.id}`);
+router.get('/:id/password-history', async (req, res) => {
+  const items = await query('passwordHistory', h => h.server_id === `access-${req.params.id}`);
   items.sort((a, b) => new Date(b.changed_at) - new Date(a.changed_at));
   res.json({ history: items });
 });
@@ -216,7 +216,7 @@ router.post('/:id/password-history/decrypt', async (req, res) => {
   const { verifyPassword } = req.body;
   if (!verifyPassword) return res.status(400).json({ error: '请输入二次验证密码' });
 
-  const configs = getAll('systemConfig');
+  const configs = await getAll('systemConfig');
   const config = configs.length > 0 ? configs[0] : {};
   if (!config.secondary_password_hash) {
     return res.status(400).json({ error: '尚未设置二次验证密码' });
@@ -225,7 +225,7 @@ router.post('/:id/password-history/decrypt', async (req, res) => {
   const match = await bcrypt.compare(verifyPassword, config.secondary_password_hash);
   if (!match) return res.status(401).json({ error: '二次验证密码错误' });
 
-  const items = query('passwordHistory', h => h.server_id === `access-${req.params.id}`);
+  const items = await query('passwordHistory', h => h.server_id === `access-${req.params.id}`);
   items.sort((a, b) => new Date(b.changed_at) - new Date(a.changed_at));
 
   const decrypted = items.map(item => ({

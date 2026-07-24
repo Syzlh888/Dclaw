@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, IconButton, Tooltip, Button } from '@mui/material';
+import { Box, Typography, IconButton, Tooltip, Button, Menu, MenuItem, ListItemIcon, ListItemText, Divider } from '@mui/material';
 import StorageIcon from '@mui/icons-material/Storage';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
@@ -23,6 +23,13 @@ import ConnectionDialog from '../connection/ConnectionDialog';
 import DriverManager from '../driver/DriverManager';
 import SystemConfigDialog from '../server-resource/SystemConfigDialog';
 import AccessManagementDialog from '../server-resource/AccessManagementDialog';
+import UserManagementDialog from '../settings/UserManagementDialog';
+import RoleManagementDialog from '../settings/RoleManagementDialog';
+import ProfileDialog from '../settings/ProfileDialog';
+import GroupIcon from '@mui/icons-material/Group';
+import ShieldIcon from '@mui/icons-material/Shield';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 
 const SCALE_STEPS = [0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.35, 1.5];
 
@@ -45,6 +52,10 @@ const AppHeader: React.FC<Props> = ({ mainView, onNavigate, onToggleAI }) => {
   const [driverDialogOpen, setDriverDialogOpen] = useState(false);
   const [configDialogOpen, setConfigDialogOpen] = useState(false);
   const [accessDialogOpen, setAccessDialogOpen] = useState(false);
+  const [userMgmtOpen, setUserMgmtOpen] = useState(false);
+  const [roleMgmtOpen, setRoleMgmtOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [settingsAnchor, setSettingsAnchor] = useState<null | HTMLElement>(null);
 
   useEffect(() => {
     loadDrivers();
@@ -68,16 +79,16 @@ const AppHeader: React.FC<Props> = ({ mainView, onNavigate, onToggleAI }) => {
 
   return (
     <Box
-      sx={{
+      sx={(theme) => ({
         height: 48,
         display: 'flex',
         alignItems: 'center',
         px: 2,
-        bgcolor: 'primary.main',
+        bgcolor: theme.palette.mode === 'dark' ? '#1a1d23' : '#0d47a1',
         color: 'white',
         flexShrink: 0,
         boxShadow: 1,
-      }}
+      })}
     >
       {/* Logo */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -190,6 +201,7 @@ const AppHeader: React.FC<Props> = ({ mainView, onNavigate, onToggleAI }) => {
               borderColor: 'rgba(255,255,255,0.4)',
               textTransform: 'none',
               mr: 0.5,
+              display: 'none', // 已迁移至左侧树顶部工具栏，此入口隐藏
               '&:hover': { borderColor: 'white', bgcolor: 'rgba(255,255,255,0.1)' },
             }}
           >
@@ -286,6 +298,32 @@ const AppHeader: React.FC<Props> = ({ mainView, onNavigate, onToggleAI }) => {
           <HelpOutlineIcon />
         </IconButton>
       </Tooltip>
+      <Tooltip title="设置">
+        <IconButton onClick={(e) => setSettingsAnchor(e.currentTarget)} sx={{ color: 'white', ml: 0.5 }} size="small">
+          <ManageAccountsIcon />
+        </IconButton>
+      </Tooltip>
+      <Menu
+        anchorEl={settingsAnchor}
+        open={!!settingsAnchor}
+        onClose={() => setSettingsAnchor(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <MenuItem onClick={() => { setProfileOpen(true); setSettingsAnchor(null); }}>
+          <ListItemIcon><AccountCircleIcon fontSize="small" /></ListItemIcon>
+          <ListItemText primary="个人资料" secondary={authUser?.username || undefined} />
+        </MenuItem>
+        <Divider />
+        <MenuItem onClick={() => { setUserMgmtOpen(true); setSettingsAnchor(null); }}>
+          <ListItemIcon><GroupIcon fontSize="small" /></ListItemIcon>
+          <ListItemText primary="用户管理" />
+        </MenuItem>
+        <MenuItem onClick={() => { setRoleMgmtOpen(true); setSettingsAnchor(null); }}>
+          <ListItemIcon><ShieldIcon fontSize="small" /></ListItemIcon>
+          <ListItemText primary="角色与权限" />
+        </MenuItem>
+      </Menu>
       {authUser && (
         <Tooltip title="退出登录">
           <IconButton onClick={logout} sx={{ color: 'white', ml: 0.5 }} size="small">
@@ -301,6 +339,9 @@ const AppHeader: React.FC<Props> = ({ mainView, onNavigate, onToggleAI }) => {
       <DriverManager open={driverDialogOpen} onClose={() => setDriverDialogOpen(false)} />
       <SystemConfigDialog open={configDialogOpen} onClose={() => setConfigDialogOpen(false)} />
       <AccessManagementDialog open={accessDialogOpen} onClose={() => setAccessDialogOpen(false)} />
+      <UserManagementDialog open={userMgmtOpen} onClose={() => setUserMgmtOpen(false)} />
+      <RoleManagementDialog open={roleMgmtOpen} onClose={() => setRoleMgmtOpen(false)} />
+      <ProfileDialog open={profileOpen} onClose={() => setProfileOpen(false)} />
     </Box>
   );
 };

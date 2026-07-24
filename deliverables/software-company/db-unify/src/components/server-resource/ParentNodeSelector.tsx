@@ -30,6 +30,7 @@ interface ParentNodeSelectorProps {
   open: boolean;
   onClose: () => void;
   onSelect: (parentNodeId: string) => void;
+  onSkip?: () => void;
 }
 
 interface TreeNodeItemProps {
@@ -52,7 +53,7 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({ nodeId, level, selectedId, 
 
   const hasChildren = node.childrenIds && node.childrenIds.length > 0;
   const isSelected = selectedId === nodeId;
-  const canSelect = node.type === TreeNodeType.District;
+  const canSelect = true; // 允许挂载到任意节点
 
   // 图标选择
   const getIcon = () => {
@@ -147,7 +148,7 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({ nodeId, level, selectedId, 
  * 父节点选择对话框
  * 用于选择数据库实例同步到连接管理时的父节点位置
  */
-const ParentNodeSelector: React.FC<ParentNodeSelectorProps> = ({ open, onClose, onSelect }) => {
+const ParentNodeSelector: React.FC<ParentNodeSelectorProps> = ({ open, onClose, onSelect, onSkip }) => {
   const nodes = useTreeStore((s) => s.nodes);
   const rootNodeIds = useTreeStore((s) => s.rootNodeIds);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -221,7 +222,7 @@ const ParentNodeSelector: React.FC<ParentNodeSelectorProps> = ({ open, onClose, 
             maxHeight: 300,
             overflow: 'auto',
             p: 1,
-            bgcolor: 'grey.50',
+            bgcolor: 'action.hover',
           }}
         >
           <List disablePadding>
@@ -249,6 +250,7 @@ const ParentNodeSelector: React.FC<ParentNodeSelectorProps> = ({ open, onClose, 
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose}>取消</Button>
+        {onSkip && <Button onClick={() => { onSkip(); handleClose(); }} color="warning">跳过</Button>}
         <Button
           onClick={handleSelect}
           variant="contained"

@@ -37,10 +37,10 @@ const ShortcutsDialog: React.FC<ShortcutsDialogProps> = ({ open, onClose }) => {
                       fontSize: '0.75rem',
                       fontWeight: 600,
                       color: 'text.primary',
-                      bgcolor: 'grey.100',
+                      bgcolor: 'action.hover',
                       borderRadius: 0.5,
                       border: '1px solid',
-                      borderColor: 'grey.300',
+                      borderColor: 'divider',
                       fontFamily: 'monospace',
                     }}
                   >

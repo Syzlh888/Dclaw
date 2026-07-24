@@ -1,8 +1,9 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import { ThemeProvider, CssBaseline } from '@mui/material';
 import { createAppTheme } from './theme';
 import { ThemeModeContext } from './contexts/ThemeModeContext';
+import { useEditorStore } from './stores/editorStore';
 import App from './App';
 import './index.css';
 
@@ -26,6 +27,18 @@ const Root: React.FC = () => {
       return next;
     });
   }, []);
+
+  // 同步 data-theme 属性到 <html>（用于 CSS 选择器）
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', mode);
+  }, [mode]);
+
+  // 同步 Monaco 编辑器主题跟随应用主题
+  useEffect(() => {
+    const editorTheme = mode === 'dark' ? 'vs-dark' : 'vs';
+    const store = useEditorStore.getState();
+    store.setEditorTheme(editorTheme);
+  }, [mode]);
 
   const handleSetScale = useCallback((s: number) => {
     setScale(s);

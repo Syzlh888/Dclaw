@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
   Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Button, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Alert,
-  TextField, Chip,
+  TextField, Chip, Autocomplete, useTheme,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -23,11 +23,13 @@ interface Props {
   serverId: string;
   instances: AppInstance[];
   ports: PortInfo[];
+  serverIps: string[];
 }
 
 interface CredField { username: string; password: string; notes: string }
 
-export default function AppInstanceTab({ serverId, instances, ports }: Props) {
+export default function AppInstanceTab({ serverId, instances, ports, serverIps }: Props) {
+  const theme = useTheme();
   const add = useServerStore(s => s.addAppInstance);
   const upd = useServerStore(s => s.updateAppInstance);
   const del = useServerStore(s => s.deleteAppInstance);
@@ -70,7 +72,7 @@ export default function AppInstanceTab({ serverId, instances, ports }: Props) {
   const openAdd = () => { setEditItem(null); resetForm(); setOpen(true); };
   const openEdit = (item: AppInstance) => {
     setEditItem(item);
-    setForm({ ...item, password: '******' });
+    setForm({ ...item, ip: item.ip || '', password: '******' });
     if (item.credentials && item.credentials.length > 0) {
       setCredentials(item.credentials.map((c: any) => ({ username: c.username, password: c.password && c.password !== '******' ? '******' : (c.password || ''), notes: c.notes || '' })));
     } else if (item.username) {
@@ -84,37 +86,15 @@ export default function AppInstanceTab({ serverId, instances, ports }: Props) {
 
   const handleSave = async () => {
     const validCreds = credentials.filter(c => c.username.trim()).map(c => ({ username: c.username, password: c.password, notes: c.notes }));
-    const data: any = { ...form, credentials: validCreds, notes: validCreds[0]?.notes || form.notes || '' };
+    const data: any = { ...form, ip: form.ip || '', credentials: validCreds, notes: validCreds[0]?.notes || form.notes || '' };
     setSaveError('');
     try {
       if (editItem) {
         await upd(serverId, editItem.id, data);
-        // 编辑时同步端口信息：根据原端口号匹配并更新
-        if (form.port && editItem.port) {
-          const matchedPort = ports.find(p => p.port === editItem.port);
-          if (matchedPort) {
-            updatePort(serverId, matchedPort.id, {
-              port: form.port,
-              protocol: 'TCP',
-              type: '应用',
-              serviceName: form.name || editItem.name,
-              notes: form.notes || '',
-            });
-          }
-        }
       } else {
         await add(serverId, data);
-        // 新增时自动同步关键信息到端口管理
-        if (form.port) {
-          addPort(serverId, {
-            port: form.port,
-            protocol: 'TCP',
-            type: '应用',
-            serviceName: form.name || 'unknown',
-            notes: form.notes || '',
-          });
-        }
       }
+      // 端口记录同步由后端统一处理
       setOpen(false);
     } catch (err: any) {
       const msg = err?.response?.data?.error || err?.message || '保存失败';
@@ -245,6 +225,7 @@ export default function AppInstanceTab({ serverId, instances, ports }: Props) {
       ) : (
         <TableContainer><Table size="small">
           <TableHead><TableRow>
+            <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>IP</TableCell>
             <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>名称</TableCell>
             <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>端口</TableCell>
             <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>URL</TableCell>
@@ -264,23 +245,24 @@ export default function AppInstanceTab({ serverId, instances, ports }: Props) {
                 const isRevealed = decryptedCache.has(pwdKey) && revealedPwds.has(pwdKey);
                 return (
                   <TableRow key={pwdKey}>
-                    {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: '0.8rem' }}>{a.name}</TableCell>}
-                    {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: '0.8rem' }}>{a.port || '-'}</TableCell>}
-                    {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: '0.8rem' }}><a href={a.url} target="_blank" rel="noreferrer" style={{ color: '#1565C0' }}>{a.url}</a></TableCell>}
-                    <TableCell sx={{ fontSize: '0.8rem' }}>{cred.username || '-'}</TableCell>
-                    <TableCell sx={{ fontSize: '0.85rem' }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3, flexWrap: 'nowrap' }}>
-                        <Typography sx={{ fontFamily: 'monospace', fontSize: '0.85rem', minWidth: 90, userSelect: isRevealed ? 'text' : 'none', letterSpacing: isRevealed ? '0' : '2px' }}>
+                    {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: '0.7rem' }}>{a.ip || '-'}</TableCell>}
+                    {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: '0.7rem' }}>{a.name}</TableCell>}
+                    {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: '0.7rem' }}>{a.port || '-'}</TableCell>}
+                    {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: '0.7rem' }}><a href={a.url} target="_blank" rel="noreferrer" style={{ color: theme.palette.primary.dark }}>{a.url}</a></TableCell>}
+                    <TableCell sx={{ fontSize: '0.7rem' }}>{cred.username || '-'}</TableCell>
+                    <TableCell sx={{ fontSize: '0.75rem' }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3, flexWrap: 'nowrap' }}>
+                            <Typography sx={{ fontFamily: 'monospace', fontSize: '0.75rem', minWidth: 90, userSelect: isRevealed ? 'text' : 'none', letterSpacing: isRevealed ? '0' : '2px' }}>
                           {getDisplayPassword(pwdKey, cred.password || '')}
                         </Typography>
                         <Tooltip title="复制密码">
                           <IconButton size="small" onClick={() => handleCopyPassword(pwdKey, cred._index, cred.username || '')}>
-                            <ContentCopyIcon sx={{ fontSize: 15, color: '#1976d2' }} />
+                            <ContentCopyIcon sx={{ fontSize: 15, color: 'primary.main' }} />
                           </IconButton>
                         </Tooltip>
                         <Tooltip title="修改密码">
                           <IconButton size="small" onClick={() => openPwdChange(a, ci, cred.username || '')}>
-                            <LockResetIcon sx={{ fontSize: 15, color: '#ed6c02' }} />
+                            <LockResetIcon sx={{ fontSize: 15, color: 'warning.main' }} />
                           </IconButton>
                         </Tooltip>
                         <Tooltip title={isRevealed ? '隐藏密码' : '查看密码（需二次验证）'}>
@@ -302,9 +284,9 @@ export default function AppInstanceTab({ serverId, instances, ports }: Props) {
                         )}
                       </Box>
                     </TableCell>
-                    {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: '0.8rem' }}>{a.contactPerson || '-'}</TableCell>}
-                    {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: '0.8rem' }}>{a.contactPhone || '-'}</TableCell>}
-                    <TableCell sx={{ fontSize: '0.8rem', maxWidth: 120 }}>{(cred as any).notes || a.notes || '-'}</TableCell>
+                    {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: '0.7rem' }}>{a.contactPerson || '-'}</TableCell>}
+                    {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: '0.7rem' }}>{a.contactPhone || '-'}</TableCell>}
+                    <TableCell sx={{ fontSize: '0.7rem', maxWidth: 120 }}>{(cred as any).notes || a.notes || '-'}</TableCell>
                     {ci === 0 && (
                       <TableCell rowSpan={credCount} sx={{ verticalAlign: 'middle', textAlign: 'center' }}>
                         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
@@ -312,10 +294,7 @@ export default function AppInstanceTab({ serverId, instances, ports }: Props) {
                           <Tooltip title="删除"><IconButton size="small" onClick={() => {
                             if (!confirm('确认删除？')) return;
                             del(serverId, a.id);
-                            if (a.port) {
-                              const matchedPort = ports.find(p => p.port === a.port);
-                              if (matchedPort) deletePort(serverId, matchedPort.id);
-                            }
+                            // 端口记录同步由后端自动清理
                           }} sx={{ color: 'error.main' }}><DeleteIcon sx={{ fontSize: 16 }} /></IconButton></Tooltip>
                         </Box>
                       </TableCell>
@@ -334,15 +313,18 @@ export default function AppInstanceTab({ serverId, instances, ports }: Props) {
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
             {saveError && <Alert severity="error">{saveError}</Alert>}
-            {/* 第一行：应用名称 | 端口 | 负责人 | 联系电话 */}
+            {/* 第一行：应用名称 | IP | 端口 | 负责人 */}
             <Box sx={{ display: 'flex', gap: 2 }}>
               <TextField size="small" label="应用名称" value={form.name || ''} onChange={e => setForm({ ...form, name: e.target.value })} sx={{ flex: 2 }} />
+              <Autocomplete freeSolo options={serverIps} inputValue={form.ip || ''} onInputChange={(_, v) => setForm({ ...form, ip: v })} sx={{ flex: 1 }} renderInput={params => <TextField {...params} size="small" label="IP" />} />
               <TextField size="small" label="端口" type="number" value={form.port || ''} onChange={e => setForm({ ...form, port: Number(e.target.value) || '' })} sx={{ flex: 1 }} />
               <TextField size="small" label="负责人" value={form.contactPerson || ''} onChange={e => setForm({ ...form, contactPerson: e.target.value })} sx={{ flex: 1 }} />
+            </Box>
+            {/* 第二行：URL | 联系电话 */}
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <TextField size="small" label="URL" value={form.url || ''} onChange={e => setForm({ ...form, url: e.target.value })} sx={{ flex: 2 }} />
               <TextField size="small" label="联系电话" value={form.contactPhone || ''} onChange={e => setForm({ ...form, contactPhone: e.target.value })} sx={{ flex: 1 }} />
             </Box>
-            {/* 第二行：URL */}
-            <TextField size="small" label="URL" value={form.url || ''} onChange={e => setForm({ ...form, url: e.target.value })} fullWidth />
 
             {/* 用户凭据 */}
             <Box>

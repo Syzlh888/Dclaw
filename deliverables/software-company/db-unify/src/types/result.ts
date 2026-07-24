@@ -11,6 +11,10 @@ export interface QueryResult {
   rows: ResultRow[];
   totalRows: number;
   truncated?: boolean;
+  /** 是否还有更多数据（分页模式） */
+  hasMore?: boolean;
+  /** 已加载的总行数（分页模式） */
+  totalLoaded?: number;
 }
 
 export interface ResultRow {

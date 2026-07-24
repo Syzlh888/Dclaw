@@ -30,6 +30,7 @@ interface GroupState {
   createGroup: (name: string, dbConnectionIds: string[]) => string;
   deleteGroup: (id: string) => void;
   renameGroup: (id: string, name: string) => void;
+  updateGroupDbIds: (id: string, dbConnectionIds: string[]) => void;
   setActiveGroup: (id: string | null) => void;
   getActiveDbIds: () => string[];
 }
@@ -63,6 +64,12 @@ export const useGroupStore = create<GroupState>((set, get) => ({
 
   renameGroup: (id, name) => {
     const groups = get().groups.map(g => g.id === id ? { ...g, name } : g);
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(groups)); } catch { /* 持久化失败 */ }
+    set({ groups });
+  },
+
+  updateGroupDbIds: (id: string, dbConnectionIds: string[]) => {
+    const groups = get().groups.map(g => g.id === id ? { ...g, dbConnectionIds: [...new Set(dbConnectionIds)] } : g);
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(groups)); } catch { /* 持久化失败 */ }
     set({ groups });
   },

@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { Box, Checkbox, Typography, Tooltip, IconButton, Collapse } from '@mui/material';
+import { Box, Checkbox, Typography, Tooltip, IconButton, Collapse, Snackbar, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material';
 import FolderIcon from '@mui/icons-material/Folder';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
@@ -11,15 +11,26 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import SchemaIcon from '@mui/icons-material/Schema';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
+import CableIcon from '@mui/icons-material/Cable';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import WifiTetheringIcon from '@mui/icons-material/WifiTethering';
+import BorderColorIcon from '@mui/icons-material/BorderColor';
+import ContentPasteIcon from '@mui/icons-material/ContentPaste';
+import SyncIcon from '@mui/icons-material/Sync';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { TreeNodeType, CheckState } from '../../types/tree';
 import type { TreeNode } from '../../types/tree';
 import { useConnectionStore } from '../../stores/connectionStore';
 import { useTreeStore } from '../../stores/treeStore';
 import { ConnectionStatus } from '../../types/connection';
 import { getCheckCount } from '../../utils/treeUtils';
+import { apiFetch } from '../../services/apiClient';
+import { fetchMetadata } from '../../services/metadataService';
+import ContextMenu from '../common/ContextMenu';
+import type { ContextMenuItemDef } from '../common/ContextMenu';
 import MetadataBrowser from './MetadataBrowser';
+import { ConnectionIcon } from './DbIcons';
 
 interface TreeNodeComponentProps {
   node: TreeNode;
@@ -28,8 +39,8 @@ interface TreeNodeComponentProps {
   onToggleExpand: (nodeId: string) => void;
   /** Callback when the ➕ add-connection button is clicked on a District node */
   onAddConnection?: (nodeId: string, nodeName: string) => void;
-  /** Callback when add-child button is clicked */
-  onAddChild?: (nodeId: string) => void;
+  /** Callback when add-child button is clicked. kind='folder' 新增子分组, kind='connection' 新增连接 */
+  onAddChild?: (nodeId: string, kind: 'folder' | 'connection') => void;
   /** Callback when edit button is clicked */
   onEditNode?: (nodeId: string) => void;
   /** Callback when delete button is clicked */
@@ -37,7 +48,7 @@ interface TreeNodeComponentProps {
   /** Callback when copy button is clicked (for Hospital nodes) */
   onCopyNode?: (nodeId: string) => void;
   /** Callback when a node is reordered (dragged & dropped) over this node */
-  onReorder?: (dragId: string, dropId: string, position: 'before' | 'after') => void;
+  onReorder?: (dragId: string, dropId: string, position: 'before' | 'after' | 'inside') => void;
 }
 
 const TreeNodeComponent: React.FC<TreeNodeComponentProps> = ({
@@ -54,7 +65,7 @@ const TreeNodeComponent: React.FC<TreeNodeComponentProps> = ({
 }) => {
   const [hovered, setHovered] = useState(false);
   const [showMetadata, setShowMetadata] = useState(false);
-  const [dragOverPos, setDragOverPos] = useState<'before' | 'after' | null>(null);
+  const [dragOverPos, setDragOverPos] = useState<'before' | 'after' | 'inside' | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const rowRef = useRef<HTMLDivElement>(null);
   const dragEnterCountRef = useRef(0);
@@ -62,27 +73,36 @@ const TreeNodeComponent: React.FC<TreeNodeComponentProps> = ({
   const connection = node.dbConnectionId ? connections[node.dbConnectionId] : undefined;
   const isHospital = node.type === TreeNodeType.Hospital;
 
+  // ─── 右键菜单状态 ───
+  const [ctxAnchor, setCtxAnchor] = useState<{ left: number; top: number } | null>(null);
+  const [snackOpen, setSnackOpen] = useState(false);
+  const [snackMsg, setSnackMsg] = useState('');
+
+  // ─── "新增" 下拉菜单锚点（非 Hospital 节点） ───
+  const [addMenuAnchor, setAddMenuAnchor] = useState<HTMLElement | null>(null);
+
   const level = getLevel(node, nodes);
-  const indentPx = level * 20;
+  const indentPx = level * 12;
 
   const getIcon = () => {
     switch (node.type) {
       case TreeNodeType.Platform:
-        return <StorageIcon sx={{ fontSize: 18, color: 'primary.main' }} />;
+        return <StorageIcon sx={{ fontSize: 18, color: '#4DB8E6' }} />; // DBeaver 数据蓝
       case TreeNodeType.PreDbType:
         return node.expanded ? (
-          <FolderOpenIcon sx={{ fontSize: 18, color: '#FFA726' }} />
+          <FolderOpenIcon sx={{ fontSize: 18, color: '#DAAA4E' }} /> // DBeaver 金色
         ) : (
-          <FolderIcon sx={{ fontSize: 18, color: '#FFA726' }} />
+          <FolderIcon sx={{ fontSize: 18, color: '#DAAA4E' }} /> // DBeaver 金色
         );
       case TreeNodeType.District:
         return node.expanded ? (
-          <FolderOpenIcon sx={{ fontSize: 18, color: '#66BB6A' }} />
+          <FolderOpenIcon sx={{ fontSize: 18, color: '#6BBF5A' }} /> // DBeaver 柔和绿
         ) : (
-          <FolderIcon sx={{ fontSize: 18, color: '#66BB6A' }} />
+          <FolderIcon sx={{ fontSize: 18, color: '#6BBF5A' }} /> // DBeaver 柔和绿
         );
       case TreeNodeType.Hospital:
-        return <LocalHospitalIcon sx={{ fontSize: 18, color: '#EF5350' }} />;
+        // 数据库连接图标：DBeaver 风格三层堆叠柱体（蓝色）
+        return <ConnectionIcon size={16} />;
       default:
         return <FolderIcon sx={{ fontSize: 18 }} />;
     }
@@ -110,7 +130,7 @@ const TreeNodeComponent: React.FC<TreeNodeComponentProps> = ({
     // 实例节点（第3/4层）在名称后追加用户名
     const displayName =
       isHospital && connection
-        ? `${node.name} (${connection.username})`
+        ? `${node.name} (${connection.schema || connection.username})`
         : node.name;
 
     if (node.highlightText) {
@@ -143,7 +163,118 @@ const TreeNodeComponent: React.FC<TreeNodeComponentProps> = ({
   const canDelete = true;
   const canCopy = node.type === TreeNodeType.Hospital;
 
-  // ---- 拖拽排序 ----
+  // ─── 右键菜单处理 ───
+  const handleContextMenu = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      // 只对连接节点（Hospital）显示右键菜单
+      if (!isHospital) return;
+      setCtxAnchor({ left: e.clientX, top: e.clientY });
+    },
+    [isHospital],
+  );
+
+  const handleCloseContextMenu = useCallback(() => {
+    setCtxAnchor(null);
+  }, []);
+
+  /** 测试连接 */
+  const handleTestConnection = useCallback(async () => {
+    if (!connection) return;
+    try {
+      const resp = await apiFetch(`/api/connections/${connection.id}/test`, {
+        method: 'POST',
+      });
+      if (resp.ok) {
+        useConnectionStore.getState().updateConnection(connection.id, {
+          status: ConnectionStatus.Online,
+        } as any);
+        setSnackMsg(`连接 "${connection.name}" 测试成功`);
+      } else {
+        useConnectionStore.getState().updateConnection(connection.id, {
+          status: ConnectionStatus.Error,
+        } as any);
+        setSnackMsg(`连接 "${connection.name}" 测试失败`);
+      }
+    } catch {
+      useConnectionStore.getState().updateConnection(connection.id, {
+        status: ConnectionStatus.Offline,
+      } as any);
+      setSnackMsg(`连接 "${connection.name}" 测试失败（网络错误）`);
+    }
+    setSnackOpen(true);
+  }, [connection]);
+
+  /** 复制连接信息到剪贴板 */
+  const handleCopyConnectionInfo = useCallback(() => {
+    if (!connection) return;
+    const text = `${connection.host}:${connection.port}/${connection.database}`;
+    navigator.clipboard.writeText(text).then(
+      () => {
+        setSnackMsg(`已复制: ${text}`);
+        setSnackOpen(true);
+      },
+      () => {
+        setSnackMsg('复制失败');
+        setSnackOpen(true);
+      },
+    );
+  }, [connection]);
+
+  /** 刷新元数据（重新加载后刷新 MetadataBrowser） */
+  const handleRefreshMetadata = useCallback(async () => {
+    if (!connection) return;
+    try {
+      await fetchMetadata(connection.id, connection.schema);
+      setSnackMsg(`元数据已刷新`);
+      setSnackOpen(true);
+      // 触发元数据重新显示（强制更新）
+      setShowMetadata(false);
+      setTimeout(() => setShowMetadata(true), 0);
+    } catch (err: any) {
+      setSnackMsg(`刷新元数据失败: ${err.message}`);
+      setSnackOpen(true);
+    }
+  }, [connection]);
+
+  // ─── 构建 Hospital 右键菜单项 ───
+  const hospitalCtxItems: ContextMenuItemDef[] = [
+    {
+      label: '测试连接',
+      icon: <WifiTetheringIcon sx={{ fontSize: 15 }} />,
+      onClick: handleTestConnection,
+    },
+    {
+      label: '编辑连接',
+      icon: <BorderColorIcon sx={{ fontSize: 15 }} />,
+      onClick: () => onEditNode?.(node.id),
+    },
+    {
+      label: '复制连接（创建副本）',
+      icon: <ContentPasteIcon sx={{ fontSize: 15 }} />,
+      onClick: () => onCopyNode?.(node.id),
+    },
+    {
+      label: '复制连接信息到剪贴板',
+      icon: <ContentPasteIcon sx={{ fontSize: 15 }} />,
+      onClick: handleCopyConnectionInfo,
+    },
+    {
+      label: '刷新元数据',
+      icon: <SyncIcon sx={{ fontSize: 15 }} />,
+      onClick: handleRefreshMetadata,
+    },
+    {
+      label: '删除连接',
+      icon: <DeleteOutlineIcon sx={{ fontSize: 15 }} />,
+      onClick: () => onDeleteNode?.(node.id),
+      danger: true,
+      divider: true,
+    },
+  ];
+
+  // ─── 拖拽排序 ───
   const handleDragStart = useCallback((e: React.DragEvent) => {
     e.dataTransfer.setData('text/plain', node.id);
     e.dataTransfer.effectAllowed = 'move';
@@ -164,14 +295,22 @@ const TreeNodeComponent: React.FC<TreeNodeComponentProps> = ({
     }
   }, []);
 
-  /** 根据鼠标 Y 坐标判断放置位置 */
+  /** 根据鼠标 Y 坐标判断放置位置：上 1/4 → before, 下 1/4 → after, 中间 1/2 → inside(仅非 Hospital) */
   const updateDragPosition = useCallback((clientY: number) => {
     if (rowRef.current) {
       const rect = rowRef.current.getBoundingClientRect();
-      const midY = rect.top + rect.height / 2;
-      setDragOverPos(clientY < midY ? 'before' : 'after');
+      const relY = clientY - rect.top;
+      const h = rect.height;
+      if (!isHospital && relY > h * 0.25 && relY < h * 0.75) {
+        // 中间区域 → 放入该节点内部（作为其新的子节点）
+        setDragOverPos('inside');
+      } else if (relY < h / 2) {
+        setDragOverPos('before');
+      } else {
+        setDragOverPos('after');
+      }
     }
-  }, []);
+  }, [isHospital]);
 
   const handleDragEnter = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -231,18 +370,27 @@ const TreeNodeComponent: React.FC<TreeNodeComponentProps> = ({
         sx={{
           display: 'flex',
           alignItems: 'center',
-          py: 0.25,
+          py: 0.15,
+          minHeight: 22,
           pl: `${indentPx}px`,
           pr: 1,
           '&:hover': { bgcolor: 'action.hover' },
           cursor: 'pointer',
           userSelect: 'none',
-          transition: 'opacity 0.15s',
+          transition: 'opacity 0.15s, background-color 0.1s',
           position: 'relative',
           minWidth: 'max-content',
+          // 拖拽到中间时高亮整行（表示"放入该节点内"）
+          ...(dragOverPos === 'inside' && {
+            bgcolor: 'primary.main',
+            color: 'common.white',
+            outline: '1px dashed #06b6d4',
+            outlineOffset: '-1px',
+          }),
         }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
+        onContextMenu={handleContextMenu}
       >
         {node.childrenIds.length > 0 || isHospital ? (
           <Box
@@ -311,22 +459,6 @@ const TreeNodeComponent: React.FC<TreeNodeComponentProps> = ({
           </Tooltip>
         )}
 
-        {/* Metadata toggle button - Hospital nodes */}
-        {isHospital && connection && (
-          <Tooltip title={showMetadata ? '收起表结构' : '浏览表结构'}>
-            <IconButton
-              size="small"
-              sx={{ p: 0.25, ml: 0.25 }}
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowMetadata(!showMetadata);
-              }}
-            >
-              <SchemaIcon sx={{ fontSize: 14, color: showMetadata ? 'primary.main' : 'text.disabled' }} />
-            </IconButton>
-          </Tooltip>
-        )}
-
         {/* Drag handle - visible on hover for reordering */}
         {onReorder && (
           <Box
@@ -363,7 +495,7 @@ const TreeNodeComponent: React.FC<TreeNodeComponentProps> = ({
                 sx={{ p: 0.25 }}
                 onClick={(e) => {
                   e.stopPropagation();
-                  onAddChild(node.id);
+                  setAddMenuAnchor(e.currentTarget);
                 }}
               >
                 <AddIcon sx={{ fontSize: 14 }} />
@@ -422,9 +554,61 @@ const TreeNodeComponent: React.FC<TreeNodeComponentProps> = ({
       {/* Metadata browser - below hospital nodes */}
       {isHospital && connection && showMetadata && (
         <Collapse in={showMetadata} timeout="auto">
-          <MetadataBrowser connection={connection} />
+          <MetadataBrowser connection={connection} baseIndentPx={indentPx + 20} />
         </Collapse>
       )}
+
+      {/* ─── "新增" 下拉菜单（非 Hospital 节点） ─── */}
+      <Menu
+        anchorEl={addMenuAnchor}
+        open={Boolean(addMenuAnchor)}
+        onClose={() => setAddMenuAnchor(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        MenuListProps={{ dense: true, sx: { py: 0.25 } }}
+        slotProps={{ paper: { sx: { minWidth: 140, borderRadius: 1 } } }}
+      >
+        <MenuItem
+          onClick={() => {
+            setAddMenuAnchor(null);
+            onAddChild?.(node.id, 'folder');
+          }}
+          sx={{ minHeight: 26, py: 0.3, fontSize: '0.72rem' }}
+        >
+          <ListItemIcon sx={{ minWidth: 24 }}>
+            <FolderIcon sx={{ fontSize: 15, color: '#DAAA4E' }} />
+          </ListItemIcon>
+          <ListItemText primaryTypographyProps={{ fontSize: '0.72rem' }}>新增分组</ListItemText>
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            setAddMenuAnchor(null);
+            onAddChild?.(node.id, 'connection');
+          }}
+          sx={{ minHeight: 26, py: 0.3, fontSize: '0.72rem' }}
+        >
+          <ListItemIcon sx={{ minWidth: 24 }}>
+            <ConnectionIcon size={13} />
+          </ListItemIcon>
+          <ListItemText primaryTypographyProps={{ fontSize: '0.72rem' }}>新增连接</ListItemText>
+        </MenuItem>
+      </Menu>
+
+      {/* ─── 右键菜单 ─── */}
+      <ContextMenu
+        anchorPosition={ctxAnchor}
+        onClose={handleCloseContextMenu}
+        items={hospitalCtxItems}
+      />
+
+      {/* ─── 操作反馈 Snackbar ─── */}
+      <Snackbar
+        open={snackOpen}
+        autoHideDuration={2500}
+        onClose={() => setSnackOpen(false)}
+        message={snackMsg}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      />
     </>
   );
 };

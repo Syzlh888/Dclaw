@@ -41,13 +41,29 @@ public class HgdbBridge {
             System.exit(1);
         }
 
-        // 如果命令行未提供 --pass，则从 stdin 第一行读取密码（更安全）
+        // stdin 全程用同一个 BufferedReader（避免 Scanner 内部缓冲导致的读取阻塞）
+        // 密码在首行，SQL 在后续行，__EXIT__ 表示退出
+        java.io.BufferedReader stdin;
+        try {
+            stdin = new java.io.BufferedReader(
+                new java.io.InputStreamReader(System.in, "UTF-8")
+            );
+        } catch (java.io.UnsupportedEncodingException e) {
+            System.err.println("ERROR: UTF-8 not supported: " + e.getMessage());
+            System.exit(1);
+            return; // 编译器不知道 exit 会终止
+        }
+
+        // 如果命令行未提供 --pass，则从 stdin 第一行读取密码
         if (password == null) {
             try {
-                Scanner passwordScanner = new Scanner(System.in, "UTF-8");
-                if (passwordScanner.hasNextLine()) {
-                    password = passwordScanner.nextLine();
+                System.err.println("[Java] Waiting password from stdin...");
+                password = stdin.readLine();
+                if (password == null) {
+                    System.err.println("ERROR: stdin closed before password received");
+                    System.exit(1);
                 }
+                System.err.println("[Java] Password received (" + password.length() + " chars)");
             } catch (Exception e) {
                 System.err.println("ERROR: Failed to read password from stdin: " + e.getMessage());
                 System.exit(1);
@@ -60,19 +76,25 @@ public class HgdbBridge {
         }
         
         try {
+            System.err.println("[Java] Loading driver: " + driverClass);
             Class.forName(driverClass);
+            System.err.println("[Java] Driver loaded");
             // 设置 JDBC 登录超时（15秒），防止连接无响应时无限挂起
             DriverManager.setLoginTimeout(15);
             // URL 编码数据库名，防止特殊字符破坏 JDBC URL
             String encodedDb = URLEncoder.encode(database, StandardCharsets.UTF_8.toString());
             String url = urlPrefix + "://" + host + ":" + port + "/" + encodedDb;
+            System.err.println("[Java] Connecting to: " + url + " as user=" + user);
+            long t0 = System.currentTimeMillis();
             conn = DriverManager.getConnection(url, user, password != null ? password : "");
+            long elapsed = System.currentTimeMillis() - t0;
+            System.err.println("[Java] Connected in " + elapsed + "ms");
             DriverManager.setLoginTimeout(0); // 恢复默认
             
             System.out.println("READY");
             System.out.flush();
             
-            Scanner scanner = new Scanner(System.in, "UTF-8");
+            Scanner scanner = new Scanner(stdin);
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine().trim();
                 

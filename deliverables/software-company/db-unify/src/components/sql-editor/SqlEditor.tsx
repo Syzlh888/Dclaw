@@ -34,6 +34,7 @@ const SqlEditor: React.FC<SqlEditorProps> = ({ onExecute }) => {
   const readOnlyMode = useEditorStore((s) => s.readOnlyMode);
   const editorTheme = useEditorStore((s) => s.editorTheme);
   const fontSize = useEditorStore((s) => s.fontSize);
+  const setSelectedSql = useEditorStore((s) => s.setSelectedSql);
   const editorRef = useRef<any>(null);
   const [zoomReady, setZoomReady] = useState(false);
 
@@ -67,8 +68,58 @@ const SqlEditor: React.FC<SqlEditorProps> = ({ onExecute }) => {
 
   const fb = useMemo(() => fallbackStyle[editorTheme], [editorTheme]);
 
-  /** 在 Monaco 加载后、编辑器创建前注册补全 Provider（空依赖：通过 metadataCacheRef 访问最新缓存） */
+  /** 在 Monaco 加载后、编辑器创建前注册补全 Provider 和自定义暗色主题 */
   const handleBeforeMount = useCallback((monaco: any) => {
+    // ====== DBeaver 风格自定义暗色主题 ======
+    monaco.editor.defineTheme('dc-dark', {
+      base: 'vs-dark',
+      inherit: true,
+      rules: [
+        // DBeaver 语法高亮色
+        { token: 'keyword', foreground: '#DAAA4E' },      // SELECT, FROM, WHERE 等关键字 → 金橙色
+        { token: 'string', foreground: '#6A8759' },       // 字符串 → 绿色
+        { token: 'number', foreground: '#6897BB' },       // 数字 → 蓝色
+        { token: 'type', foreground: '#4DB8E6' },         // 类型 → 数据蓝
+        { token: 'function', foreground: '#DCDCAA' },     // 函数 → 浅黄
+        { token: 'comment', foreground: '#6A9955', fontStyle: 'italic' },  // 注释 → 绿色斜体
+        { token: 'identifier', foreground: '#A9D4E3' },   // 标识符 → 浅青
+        { token: 'delimiter', foreground: '#BBBBBB' },    // 分隔符 → 主文字色
+        { token: 'operator', foreground: '#D4D4D4' },     // 运算符 → 浅灰
+        { token: 'variable', foreground: '#9CDCFE' },     // 变量 → 淡蓝
+        { token: 'attribute', foreground: '#A9C6D9' },    // 属性 → 浅灰蓝
+      ],
+      colors: {
+        'editor.background': '#2B2B2B',                    // DBeaver 主背景
+        'editor.foreground': '#BBBBBB',                    // 主文字色
+        'editor.lineHighlightBackground': '#3C3F4180',     // 当前行高亮
+        'editor.selectionBackground': '#3C3F41',           // 选中背景
+        'editor.inactiveSelectionBackground': '#3C3F4166',
+        'editor.selectionHighlightBackground': '#3C3F4199',
+        'editorCursor.foreground': '#DAAA4E',              // 光标金色
+        'editorLineNumber.foreground': '#555555',          // 行号
+        'editorLineNumber.activeForeground': '#BBBBBB',    // 当前行号
+        'editor.separator': '#4B4B4B',                     // 分割线
+        'editorRuler.foreground': '#4B4B4B',
+        'editorWidget.background': '#2B2B2B',
+        'editorWidget.border': '#4B4B4B',
+        'editorSuggestWidget.background': '#2B2B2B',
+        'editorSuggestWidget.border': '#4B4B4B',
+        'editorSuggestWidget.selectedBackground': '#3C3F41',
+        'input.background': '#3C3F41',
+        'input.foreground': '#BBBBBB',
+        'input.border': '#4B4B4B',
+        'scrollbarSlider.background': '#4B4B4B80',
+        'scrollbarSlider.hoverBackground': '#4B4B4B',
+        'scrollbarSlider.activeBackground': '#5A5A5A',
+        'editorBracketMatch.background': '#3C3F4180',
+        'editorBracketMatch.border': '#DAAA4E80',
+      },
+    });
+
+    // 当当前是暗色主题时切换到 dc-dark
+    if (editorTheme === 'vs-dark') {
+      monaco.editor.setTheme('dc-dark');
+    }
     // ====== 统一的智能补全 Provider（列名 + 表名） ======
     monaco.languages.registerCompletionItemProvider('sql', {
       provideCompletionItems: (model: any, position: any) => {
@@ -142,13 +193,86 @@ const SqlEditor: React.FC<SqlEditorProps> = ({ onExecute }) => {
   const handleEditorMount = useCallback((editor: any, _monaco: any) => {
     editorRef.current = editor;
 
+    // 确保右键菜单可用（Monaco 默认开启，此处显式设置以防被父级 CSS/事件影响）
+    editor.updateOptions({ contextmenu: true });
+
     // Register Ctrl+Enter to execute
     editor.addAction({
       id: 'execute-sql',
-      label: 'Execute SQL',
+      label: '执行 SQL (Ctrl+Enter)',
       keybindings: [/* KeyMod.CtrlCmd */ 2048 | /* KeyCode.Enter */ 3],
+      contextMenuGroupId: '1_dc_execute',
+      contextMenuOrder: 1,
       run: () => {
         onExecute();
+      },
+    });
+
+    // 执行选中语句
+    editor.addAction({
+      id: 'execute-selected-sql',
+      label: '执行选中语句',
+      contextMenuGroupId: '1_dc_execute',
+      contextMenuOrder: 2,
+      precondition: 'editorHasSelection',
+      run: (ed: any) => {
+        const sel = ed.getSelection();
+        const model = ed.getModel();
+        if (sel && model && !sel.isEmpty()) {
+          const selected = model.getValueInRange(sel);
+          setSelectedSql(selected);
+          // 等待 store 更新后执行（onExecute 会读 selectedSql）
+          setTimeout(() => onExecute(), 0);
+        }
+      },
+    });
+
+    // 格式化 SQL
+    editor.addAction({
+      id: 'format-sql',
+      label: '格式化 SQL (Shift+Alt+F)',
+      keybindings: [/* Shift */ 1024 | /* Alt */ 512 | /* F */ 36],
+      contextMenuGroupId: '2_dc_edit',
+      contextMenuOrder: 1,
+      run: () => {
+        window.dispatchEvent(new CustomEvent('dc:format-sql'));
+      },
+    });
+
+    // 切换行注释
+    editor.addAction({
+      id: 'toggle-line-comment',
+      label: '切换行注释 (Ctrl+/)',
+      keybindings: [/* KeyMod.CtrlCmd */ 2048 | /* Slash */ 85],
+      contextMenuGroupId: '2_dc_edit',
+      contextMenuOrder: 2,
+      run: (ed: any) => {
+        ed.trigger('keyboard', 'editor.action.commentLine', null);
+      },
+    });
+
+    // 复制 SQL 全文到剪贴板
+    editor.addAction({
+      id: 'copy-all-sql',
+      label: '复制全部 SQL 到剪贴板',
+      contextMenuGroupId: '3_dc_copy',
+      contextMenuOrder: 1,
+      run: (ed: any) => {
+        const val = ed.getValue();
+        if (val) {
+          navigator.clipboard.writeText(val).catch(() => {});
+        }
+      },
+    });
+
+    // 清空编辑器
+    editor.addAction({
+      id: 'clear-editor',
+      label: '清空编辑器',
+      contextMenuGroupId: '9_dc_danger',
+      contextMenuOrder: 1,
+      run: (ed: any) => {
+        ed.setValue('');
       },
     });
 
@@ -167,6 +291,18 @@ const SqlEditor: React.FC<SqlEditorProps> = ({ onExecute }) => {
             editor.trigger('Keyboard', 'editor.action.triggerSuggest', {});
           }
         }, 100);
+      }
+    });
+
+    // 监听选中文本变化，用于"执行选中语句"
+    editor.onDidChangeCursorSelection((e: any) => {
+      const selection = editor.getSelection();
+      const model = editor.getModel();
+      if (selection && model && !selection.isEmpty()) {
+        const selected = model.getValueInRange(selection);
+        setSelectedSql(selected);
+      } else {
+        setSelectedSql('');
       }
     });
 
@@ -223,7 +359,7 @@ const SqlEditor: React.FC<SqlEditorProps> = ({ onExecute }) => {
         <MonacoEditor
           height="100%"
           language="sql"
-          theme={editorTheme}
+          theme={editorTheme === 'vs-dark' ? 'dc-dark' : editorTheme}
           value={sql}
           onChange={handleChange}
           beforeMount={handleBeforeMount}

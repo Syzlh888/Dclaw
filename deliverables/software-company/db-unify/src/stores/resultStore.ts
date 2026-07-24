@@ -10,6 +10,8 @@ interface ResultState {
   pinnedResults: Record<string, QueryResult>;
 
   setResult: (dbConnectionId: string, result: QueryResult) => void;
+  /** 追加行到已有结果（用于分页加载更多） */
+  appendRows: (dbConnectionId: string, columns: string[], rows: ResultRow[], meta?: { hasMore?: boolean; totalLoaded?: number }) => void;
   aggregate: () => void;
   compare: (sources: string[]) => AggregatedResult | null;
   reset: () => void;
@@ -30,6 +32,35 @@ export const useResultStore = create<ResultState>((set, get) => ({
       results: { ...state.results, [dbConnectionId]: result },
     }));
     // 每次写入结果后都自动重新聚合，确保所有库的结果都被合并
+    get().aggregate();
+  },
+
+  appendRows: (dbConnectionId, columns, newRows, meta) => {
+    set((state) => {
+      const existing = state.results[dbConnectionId];
+      if (!existing) {
+        // 没有已有结果，直接创建
+        const newResult: QueryResult = {
+          dbConnectionId,
+          sourceLabel: dbConnectionId,
+          columns,
+          rows: newRows,
+          totalRows: newRows.length,
+          hasMore: meta?.hasMore ?? false,
+          totalLoaded: meta?.totalLoaded ?? newRows.length,
+        };
+        return { results: { ...state.results, [dbConnectionId]: newResult } };
+      }
+      const updated: QueryResult = {
+        ...existing,
+        rows: [...existing.rows, ...newRows],
+        totalRows: existing.totalRows + newRows.length,
+        hasMore: meta?.hasMore ?? false,
+        totalLoaded: meta?.totalLoaded ?? (existing.totalLoaded || existing.rows.length) + newRows.length,
+      };
+      return { results: { ...state.results, [dbConnectionId]: updated } };
+    });
+    // 追加后重新聚合
     get().aggregate();
   },
 

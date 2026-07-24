@@ -25,6 +25,7 @@ export async function fetchScript(id: string): Promise<SqlScript> {
 export async function saveScript(params: {
   name: string;
   description?: string;
+  projectId?: string;
   sql_text: string;
 }): Promise<SqlScript> {
   const res = await fetch(API_BASE, {

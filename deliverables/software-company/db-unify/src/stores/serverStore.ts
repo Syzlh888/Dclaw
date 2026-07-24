@@ -56,6 +56,9 @@ interface ServerState {
   // 密码历史
   passwordHistory: Record<string, PasswordHistory[]>;
   loadPasswordHistory: (serverId: string) => Promise<void>;
+
+  // 排序
+  reorderServers: (items: { id: string; sortOrder: number }[]) => Promise<void>;
 }
 
 export const useServerStore = create<ServerState>((set, get) => ({
@@ -137,6 +140,20 @@ export const useServerStore = create<ServerState>((set, get) => ({
       const apiInstances = (sub.apiInstances || []).map(mapApiInstFromApi);
       const midInstances = (sub.midInstances || []).map(mapMidInstFromApi);
       const ports = (sub.ports || []).map(mapPortFromApi);
+
+      // 自动回填端口 IP：从数据库/应用/API/中间件实例的 IP 补全
+      (ports as any[]).forEach((p: any) => {
+        if (!p.ip) {
+          const dbMatch: any = (dbInstances as any[]).find((d: any) => d.port === p.port || d.dbName === p.serviceName);
+          if (dbMatch) { p.ip = dbMatch.internalIp || dbMatch.externalIp || ''; return; }
+          const appMatch: any = (appInstances as any[]).find((a: any) => a.port === p.port || a.name === p.serviceName);
+          if (appMatch) { p.ip = appMatch.ip || ''; return; }
+          const midMatch: any = (midInstances as any[]).find((m: any) => m.port === p.port || m.name === p.serviceName);
+          if (midMatch) { p.ip = midMatch.ip || ''; return; }
+          const apiMatch: any = (apiInstances as any[]).find((a: any) => a.port === p.port);
+          if (apiMatch) { p.ip = apiMatch.ip || ''; }
+        }
+      });
 
       set({
         dbInstances: { ...get().dbInstances, [id]: dbInstances },
@@ -250,6 +267,23 @@ export const useServerStore = create<ServerState>((set, get) => ({
       console.error('加载密码历史失败:', err);
     }
   },
+
+  reorderServers: async (items) => {
+    await api.reorderServers(items);
+    // 更新本地 serverMap 的 sortOrder
+    const map = { ...get().serverMap };
+    const servers = get().servers.map((s) => {
+      const found = items.find((it) => it.id === s.id);
+      if (found) {
+        const updated = { ...s, sortOrder: found.sortOrder };
+        map[s.id] = updated;
+        return updated;
+      }
+      return s;
+    });
+    servers.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+    set({ servers, serverMap: map });
+  },
 }));
 
 function mapServerFromApi(s: any): ServerHost {
@@ -287,6 +321,7 @@ function mapServerFromApi(s: any): ServerHost {
     tags: s.tags || [],
     notes: s.notes || '',
     linkedConnectionIds: s.linked_connection_ids || [],
+    sortOrder: s.sort_order ?? s.sortOrder,
     createdAt: s.created_at || '',
     updatedAt: s.updated_at || '',
   };
@@ -325,6 +360,7 @@ function mapAppInstFromApi(a: any): AppInstance {
     id: a.id,
     serverId: a.server_id || '',
     name: a.name || '',
+    ip: a.ip || '',
     port: a.port != null ? Number(a.port) : undefined,
     contactPerson: a.contact_person || '',
     contactPhone: a.contact_phone || '',
@@ -345,6 +381,7 @@ function mapMidInstFromApi(m: any): MiddlewareInstance {
     id: m.id,
     serverId: m.server_id || '',
     name: m.name || '',
+    ip: m.ip || '',
     port: m.port != null ? Number(m.port) : undefined,
     type: m.type || '',
     version: m.version || '',
@@ -363,6 +400,7 @@ function mapApiInstFromApi(a: any): ApiInstance {
     serverId: a.server_id || '',
     apiAddress: a.api_address || '',
     port: a.port != null ? Number(a.port) : undefined,
+    ip: a.ip || '',
     applicationName: a.application_name || '',
     encrypted: a.encrypted === 1 || a.encrypted === true,
     encryptionMethod: a.encryption_method || '',
@@ -381,5 +419,6 @@ function mapPortFromApi(p: any): PortInfo {
     type: p.type || '',
     serviceName: p.service_name || '',
     notes: p.notes || '',
+    ip: p.ip || '',
   };
 }

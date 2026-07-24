@@ -7,20 +7,39 @@ import { getAll, insert, update, remove } from '../database.mjs';
 
 const router = Router();
 
-function getConfig() {
-  const configs = getAll('systemConfig');
+async function getConfig() {
+  const configs = await getAll('systemConfig');
   return configs.length > 0 ? configs[0] : {};
 }
 
-function setConfig(partial) {
-  const configs = getAll('systemConfig');
+/**
+ * 读取系统配置项(带默认值)。
+ * 已知默认值:
+ *   - auth.mode: 'single'  (登录模式: single | multi)
+ */
+export function getSystemConfig(key, defaultValue) {
+  const cfg = getConfig();
+  const DEFAULTS = {
+    'auth.mode': 'single',
+  };
+  const fallback = defaultValue !== undefined ? defaultValue : DEFAULTS[key];
+  if (cfg == null) return fallback;
+  // 支持点号 key 直存,或作为对象字段
+  if (Object.prototype.hasOwnProperty.call(cfg, key) && cfg[key] !== undefined && cfg[key] !== null) {
+    return cfg[key];
+  }
+  return fallback;
+}
+
+async function setConfig(partial) {
+  const configs = await getAll('systemConfig');
   if (configs.length > 0) {
     const updated = { ...configs[0], ...partial, updated_at: new Date().toISOString() };
-    update('systemConfig', configs[0].id, partial);
+    await update('systemConfig', configs[0].id, partial);
     return updated;
   }
   const newConfig = { id: 'default', ...partial, created_at: new Date().toISOString(), updated_at: new Date().toISOString() };
-  insert('systemConfig', newConfig);
+  await insert('systemConfig', newConfig);
   return newConfig;
 }
 
@@ -99,10 +118,10 @@ router.put('/server-location-dict', (req, res) => {
 });
 
 // ===== 字典引用检查 =====
-router.post('/check-dict-usage', (req, res) => {
+router.post('/check-dict-usage', async (req, res) => {
   const { type, name } = req.body;
   if (!type || !name) return res.status(400).json({ error: '缺少 type 或 name 参数' });
-  const servers = getAll('servers');
+  const servers = await getAll('servers');
   let usingServers = [];
   if (type === 'os') {
     usingServers = servers.filter(s => s.os === name);

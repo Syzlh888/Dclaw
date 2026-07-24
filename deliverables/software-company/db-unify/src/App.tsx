@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Box, Tabs, Tab, Snackbar, Alert, CircularProgress } from '@mui/material';
+import { Box, Tabs, Tab, Snackbar, Alert } from '@mui/material';
 
 import AppHeader from './components/layout/AppHeader';
 import AppSidebar from './components/layout/AppSidebar';
@@ -9,11 +9,11 @@ import EditorToolbar from './components/sql-editor/EditorToolbar';
 import ExecutionPanel from './components/execution/ExecutionPanel';
 import ResultTabs from './components/results/ResultTabs';
 import HistoryPanel from './components/history/HistoryPanel';
+import SqlViewPanel from './components/history/SqlViewPanel';
 import ServerResourceView from './components/server-resource/ServerResourceView';
 import ResizableHandle from './components/layout/ResizableHandle';
 import ShortcutsDialog from './components/layout/ShortcutsDialog';
 import LoginPage from './components/auth/LoginPage';
-import ActivationPage from './components/auth/ActivationPage';
 import ComprehensiveQueryView from './components/server-resource/ComprehensiveQueryView';
 import { useTreeStore } from './stores/treeStore';
 import { useConnectionStore } from './stores/connectionStore';
@@ -22,22 +22,6 @@ import { useExecutionStore } from './stores/executionStore';
 import { useResultStore } from './stores/resultStore';
 import { useAuthStore } from './stores/authStore';
 import { useExecution } from './hooks/useExecution';
-
-/** 授权状态接口 */
-export interface LicenseStatus {
-  status: 'activated' | 'trial' | 'trial_available' | 'trial_expired' | 'unknown';
-  activated: boolean;
-  isPermanent: boolean;
-  expiryDate: string | null;
-  activatedAt?: string;
-  daysLeft: number | null;
-  trialStart?: string;
-  trialEnd?: string;
-  remainingMs?: number;
-  hoursLeft?: number;
-  minsLeft?: number;
-  statusText: string;
-}
 
 /** Error boundary wrapper */
 class ErrorBoundary extends React.Component<
@@ -56,7 +40,7 @@ class ErrorBoundary extends React.Component<
         <Box
           sx={{
             p: 3, textAlign: 'center', color: 'error.main',
-            bgcolor: '#FFF5F5', height: '100%',
+            bgcolor: 'error.light', height: '100%',
             display: 'flex', flexDirection: 'column',
             alignItems: 'center', justifyContent: 'center',
           }}
@@ -77,9 +61,10 @@ class ErrorBoundary extends React.Component<
 const App: React.FC = () => {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const checkAuth = useAuthStore((s) => s.checkAuth);
-  // 开发环境：跳过激活页和登录页，直接进入主界面
+  // 开发环境：跳过登录页，依靠 refresh() 兜底为 admin
+  // 生产环境：强制登录
   const isDev = import.meta.env.DEV;
-  const authRequired = isDev ? false : (import.meta.env.PROD || !!import.meta.env.VITE_FORCE_AUTH);
+  const requireLogin = import.meta.env.PROD && !import.meta.env.VITE_DISABLE_AUTH;
 
   const loadTree = useTreeStore((s) => s.loadTree);
   const loadConnections = useConnectionStore((s) => s.loadConnections);
@@ -90,15 +75,7 @@ const App: React.FC = () => {
 
   const [bottomTab, setBottomTab] = useState(0);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
-  const [mainView, setMainView] = useState<'sql-editor' | 'server-resource' | 'comprehensive-query'>('sql-editor');  // Electron 激活状态（null=检测中，true/false 兼容旧逻辑）
-  // 开发环境直接激活
-  const [electronActivated, setElectronActivated] = useState<boolean | null>(isDev ? true : null);
-  // 完整授权状态（含试用信息）
-  const [licenseStatus, setLicenseStatus] = useState<LicenseStatus | null>(null);
-  const isElectron = !isDev && typeof window !== 'undefined' && (
-    !!(window as any).electronAPI ||
-    navigator.userAgent.toLowerCase().includes('electron')
-  );
+  const [mainView, setMainView] = useState<'sql-editor' | 'server-resource' | 'comprehensive-query'>('sql-editor');
 
   const [notify, setNotify] = useState<{ message: string; severity: 'success' | 'info' | 'warning' | 'error' } | null>(null);
 
@@ -138,16 +115,15 @@ const App: React.FC = () => {
   const selectedDbId = useResultStore((s) => s.selectedDbId);
   useEffect(() => { if (selectedDbId) setBottomTab(1); }, [selectedDbId]);
 
-  // 数据加载（激活或试用中才加载）
+  // 数据加载
   useEffect(() => {
-    if (!isElectron || electronActivated === true || (licenseStatus?.status === 'trial')) {
-      loadTree();
-      const timer = setTimeout(() => loadConnections(), 100);
-      return () => clearTimeout(timer);
-    }
-  }, [loadTree, loadConnections, isElectron, electronActivated, licenseStatus?.status]);
+    if (requireLogin && !isAuthenticated) return;
+    loadTree();
+    const timer = setTimeout(() => loadConnections(), 100);
+    return () => clearTimeout(timer);
+  }, [loadTree, loadConnections, requireLogin, isAuthenticated]);
 
-  // 切换到 SQL 编辑器时，刷新连接和树数据（确保服务器资源中新增的实例已同步）
+  // 切换到 SQL 编辑器时，刷新连接和树数据
   useEffect(() => {
     if (mainView === 'sql-editor') {
       loadTree();
@@ -183,74 +159,20 @@ const App: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Health check（激活或试用中才启动）
+  // Health check
   useEffect(() => {
-    if (isElectron && electronActivated !== true && licenseStatus?.status !== 'trial') return;
+    if (requireLogin && !isAuthenticated) return;
     startHealthCheck();
     return () => stopHealthCheck();
-  }, [startHealthCheck, stopHealthCheck, isElectron, electronActivated, licenseStatus?.status]);
+  }, [startHealthCheck, stopHealthCheck, requireLogin, isAuthenticated]);
 
-  useEffect(() => { checkAuth(); }, [checkAuth]);
-
-  // Electron 激活状态检测（含试用）
   useEffect(() => {
-    if (!isElectron) { setElectronActivated(true); return; }
-    const api = (window as any).electronAPI;
-    if (!api || typeof api.checkLicense !== 'function') {
-      console.warn('[DClaw] electronAPI 未注入');
-      setElectronActivated(false);
-      return;
+    checkAuth();
+    // 开发环境单机模式兜底: 让后端 /me 返回 admin
+    if (isDev) {
+      useAuthStore.getState().refresh().catch(() => {});
     }
-    api.checkLicense().then((status: LicenseStatus) => {
-      setLicenseStatus(status);
-      if (status.status === 'activated' || status.status === 'trial') {
-        setElectronActivated(true);
-      } else {
-        // trial_available / trial_expired / unknown → 显示激活页
-        setElectronActivated(false);
-      }
-    }).catch(() => {
-      setElectronActivated(false);
-    });
-  }, [isElectron]);
-
-  /** 激活成功回调 */
-  const handleActivationSuccess = useCallback(() => {
-    // 激活成功后重新获取完整状态
-    const api = (window as any).electronAPI;
-    if (api?.getLicenseStatus) {
-      api.getLicenseStatus().then((status: LicenseStatus) => {
-        setLicenseStatus(status);
-        setElectronActivated(true);
-      });
-    } else {
-      setElectronActivated(true);
-    }
-  }, []);
-
-  /** 试用回调（用户点击"暂不注册，试用24h"） */
-  const handleStartTrial = useCallback(async () => {
-    const api = (window as any).electronAPI;
-    if (api?.startTrial) {
-      const result = await api.startTrial();
-      if (result.success) {
-        handleActivationSuccess();
-      }
-    }
-  }, [handleActivationSuccess]);
-
-  /** 从主界面跳转到激活页（重新激活） */
-  const handleShowActivation = useCallback(() => {
-    setElectronActivated(false);
-  }, []);
-
-  // 计算当前视图：activation 页面 / loading / main
-  let view: 'activation' | 'loading' | 'main' = 'main';
-  if (isElectron && electronActivated === null) {
-    view = 'loading';
-  } else if (isElectron && electronActivated === false) {
-    view = 'activation';
-  }
+  }, [checkAuth, isDev]);
 
   // Global notify listener
   useEffect(() => {
@@ -259,100 +181,92 @@ const App: React.FC = () => {
     return () => window.removeEventListener('dc:notify', handler);
   }, []);
 
-  // 非 Electron 未登录 → 登录页
-  if (!isElectron && authRequired && !isAuthenticated) return <LoginPage />;
+  // 生产环境未登录 → 登录页
+  if (requireLogin && !isAuthenticated) return <LoginPage />;
 
   return (
     <ErrorBoundary name="App">
-      {view === 'activation' ? (
-        <ActivationPage onActivated={handleActivationSuccess} onStartTrial={handleStartTrial} licenseStatus={licenseStatus} />
-      ) : view === 'loading' ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-          <CircularProgress />
-        </Box>
-      ) : (
-        /* ===== 主应用界面 ===== */
-        <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-          <ErrorBoundary key="hdr" name="Header">
-            <AppHeader mainView={mainView} onNavigate={setMainView} />
-          </ErrorBoundary>
+      <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <ErrorBoundary key="hdr" name="Header">
+          <AppHeader mainView={mainView} onNavigate={setMainView} />
+        </ErrorBoundary>
 
-          {mainView === 'server-resource' ? (
-            <Box sx={{ flex: 1, overflow: 'hidden' }}>
-              <ErrorBoundary key="srv" name="服务器资源">
-                <ServerResourceView />
+        {mainView === 'server-resource' ? (
+          <Box sx={{ flex: 1, overflow: 'hidden' }}>
+            <ErrorBoundary key="srv" name="服务器资源">
+              <ServerResourceView />
+            </ErrorBoundary>
+          </Box>
+        ) : mainView === 'comprehensive-query' ? (
+          <Box sx={{ flex: 1, overflow: 'hidden' }}>
+            <ErrorBoundary key="query" name="综合查询">
+              <ComprehensiveQueryView onBack={() => setMainView('server-resource')} />
+            </ErrorBoundary>
+          </Box>
+        ) : (
+          <>
+            <Box sx={{ flex: 1, display: 'flex', overflow: 'hidden', bgcolor: 'background.default' }}>
+              <ErrorBoundary key="sbar" name="侧边栏">
+                <AppSidebar width={sidebarWidth} onWidthChange={handleSidebarWidthChange} />
               </ErrorBoundary>
-            </Box>
-          ) : mainView === 'comprehensive-query' ? (
-            <Box sx={{ flex: 1, overflow: 'hidden' }}>
-              <ErrorBoundary key="query" name="综合查询">
-                <ComprehensiveQueryView onBack={() => setMainView('server-resource')} />
-              </ErrorBoundary>
-            </Box>
-          ) : (
-            <>
-              <Box sx={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-                <ErrorBoundary key="sbar" name="侧边栏">
-                  <AppSidebar width={sidebarWidth} onWidthChange={handleSidebarWidthChange} />
-                </ErrorBoundary>
 
-                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
-                  <Box sx={{ height: sqlEditorHeight, display: 'flex', flexDirection: 'column', px: 1.5, pt: 1.5, overflow: 'hidden' }}>
-                    <ErrorBoundary key="etb" name="工具栏">
-                      <EditorToolbar onExecute={handleExecute} onStop={handleStop} isExecuting={isExecuting} />
-                    </ErrorBoundary>
-                    <ErrorBoundary key="sqle" name="SQL编辑器">
-                      <Box sx={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
-                        <React.Suspense fallback={
-                          <Box sx={{ display:'flex',alignItems:'center',justifyContent:'center',height:'100%',color:'text.secondary',fontSize:'0.85rem' }}>
-                            编辑器加载中...
-                          </Box>
-                        }>
-                          <SqlEditor onExecute={handleExecute} />
-                        </React.Suspense>
-                      </Box>
-                    </ErrorBoundary>
+              <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0, bgcolor: 'background.default' }}>
+                <Box sx={{ height: sqlEditorHeight, display: 'flex', flexDirection: 'column', px: 1.5, pt: 1.5, overflow: 'hidden' }}>
+                  <ErrorBoundary key="etb" name="工具栏">
+                    <EditorToolbar onExecute={handleExecute} onStop={handleStop} isExecuting={isExecuting} />
+                  </ErrorBoundary>
+                  <ErrorBoundary key="sqle" name="SQL编辑器">
+                    <Box sx={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
+                      <React.Suspense fallback={
+                        <Box sx={{ display:'flex',alignItems:'center',justifyContent:'center',height:'100%',color:'text.secondary',fontSize:'0.85rem' }}>
+                          编辑器加载中...
+                        </Box>
+                      }>
+                        <SqlEditor onExecute={handleExecute} />
+                      </React.Suspense>
+                    </Box>
+                  </ErrorBoundary>
+                </Box>
+
+                <ResizableHandle direction="horizontal" onResize={handleSqlEditorHeightChange}
+                  style={{ marginLeft: 8, marginRight: 8, borderRadius: 2 }} />
+
+                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', borderTop: '2px solid', borderColor: 'divider' }}>
+                  <Box sx={{ display: 'flex', borderBottom: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
+                    <Tabs value={bottomTab} onChange={(_, v) => setBottomTab(v)} sx={{ minHeight: 32 }}>
+                      <Tab label={`执行状态${tasks.length > 0 ? ` (${tasks.length})` : ''}`} sx={{ minHeight: 32, textTransform: 'none', fontSize: '0.8rem' }} />
+                      <Tab label="查询结果" sx={{ minHeight: 32, textTransform: 'none', fontSize: '0.8rem' }} />
+                      <Tab label="SQL查看" sx={{ minHeight: 32, textTransform: 'none', fontSize: '0.8rem' }} />
+                      <Tab label="执行历史" sx={{ minHeight: 32, textTransform: 'none', fontSize: '0.8rem' }} />
+                    </Tabs>
                   </Box>
-
-                  <ResizableHandle direction="horizontal" onResize={handleSqlEditorHeightChange}
-                    style={{ marginLeft: 8, marginRight: 8, borderRadius: 2 }} />
-
-                  <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', borderTop: '2px solid', borderColor: 'divider' }}>
-                    <Box sx={{ display: 'flex', borderBottom: '1px solid', borderColor: 'divider', bgcolor: '#FAFAFA' }}>
-                      <Tabs value={bottomTab} onChange={(_, v) => setBottomTab(v)} sx={{ minHeight: 32 }}>
-                        <Tab label={`执行状态${tasks.length > 0 ? ` (${tasks.length})` : ''}`} sx={{ minHeight: 32, textTransform: 'none', fontSize: '0.8rem' }} />
-                        <Tab label="查询结果" sx={{ minHeight: 32, textTransform: 'none', fontSize: '0.8rem' }} />
-                        <Tab label="执行历史" sx={{ minHeight: 32, textTransform: 'none', fontSize: '0.8rem' }} />
-                      </Tabs>
-                    </Box>
-                    <Box sx={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', p: 1, minHeight: 0 }}>
-                      {bottomTab === 0 && <ErrorBoundary key="exec" name="执行面板"><ExecutionPanel /></ErrorBoundary>}
-                      {bottomTab === 1 && <ErrorBoundary key="res" name="查询结果"><ResultTabs /></ErrorBoundary>}
-                      {bottomTab === 2 && <ErrorBoundary key="hist" name="执行历史"><HistoryPanel /></ErrorBoundary>}
-                    </Box>
+                  <Box sx={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', p: 1, minHeight: 0 }}>
+                    {bottomTab === 0 && <ErrorBoundary key="exec" name="执行面板"><ExecutionPanel /></ErrorBoundary>}
+                    {bottomTab === 1 && <ErrorBoundary key="res" name="查询结果"><ResultTabs /></ErrorBoundary>}
+                    {bottomTab === 2 && <ErrorBoundary key="sqlview" name="SQL查看"><SqlViewPanel /></ErrorBoundary>}
+                    {bottomTab === 3 && <ErrorBoundary key="hist" name="执行历史"><HistoryPanel /></ErrorBoundary>}
                   </Box>
                 </Box>
               </Box>
+            </Box>
 
-              <ErrorBoundary key="stbar" name="状态栏">
-                <StatusBar licenseStatus={licenseStatus} isElectron={isElectron} onShowActivation={handleShowActivation} />
-              </ErrorBoundary>
-            </>
-          )}
+            <ErrorBoundary key="stbar" name="状态栏">
+              <StatusBar />
+            </ErrorBoundary>
+          </>
+        )}
 
-          <ShortcutsDialog open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
+        <ShortcutsDialog open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
 
-          <Snackbar open={!!notify} autoHideDuration={4000} onClose={() => setNotify(null)}
-            anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
-            {notify ? (
-              <Alert onClose={() => setNotify(null)} severity={notify.severity} variant="filled" sx={{ width: '100%' }}>
-                {notify.message}
-              </Alert>
-            ) : undefined}
-          </Snackbar>
-
-        </Box>
-      )}
+        <Snackbar open={!!notify} autoHideDuration={4000} onClose={() => setNotify(null)}
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
+          {notify ? (
+            <Alert onClose={() => setNotify(null)} severity={notify.severity} variant="filled" sx={{ width: '100%' }}>
+              {notify.message}
+            </Alert>
+          ) : undefined}
+        </Snackbar>
+      </Box>
     </ErrorBoundary>
   );
 };

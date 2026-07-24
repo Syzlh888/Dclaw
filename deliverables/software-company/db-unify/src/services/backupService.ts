@@ -8,6 +8,7 @@ export interface BackupConfig {
   backupIntervalHours: number;
   backupPath: string;
   maxBackupCount: number;
+  lastManualBackupPath?: string;
 }
 
 export interface BackupFile {
@@ -23,11 +24,14 @@ export interface BackupResult {
   filePath: string;
   size: number;
   timestamp: string;
+  dataFileCount?: number;
+  driverFileCount?: number;
 }
 
 export interface RestoreResult {
   success: boolean;
   restoredCount: number;
+  restoredDriverCount?: number;
   rollbackFile: string;
   timestamp: string;
   message: string;
@@ -100,14 +104,40 @@ export async function restoreBackup(filePath: string): Promise<RestoreResult> {
 }
 
 /** 删除备份文件 */
-export async function deleteBackup(fileName: string): Promise<void> {
-  const res = await apiFetch(`${BASE}/${encodeURIComponent(fileName)}`, { method: 'DELETE' });
-  if (!res.ok) throw new Error('删除失败');
+export async function deleteBackup(fileName: string, filePath?: string): Promise<void> {
+  const qs = filePath ? `?filePath=${encodeURIComponent(filePath)}` : '';
+  const res = await apiFetch(`${BASE}/${encodeURIComponent(fileName)}${qs}`, { method: 'DELETE' });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: '删除失败' }));
+    throw new Error(err.error || '删除失败');
+  }
 }
 
-/** 下载备份文件 URL */
-export function getBackupDownloadUrl(fileName: string): string {
-  return `${BASE}/download/${encodeURIComponent(fileName)}`;
+/** 下载备份文件 URL（带完整路径，跨目录都能下） */
+export function getBackupDownloadUrl(fileName: string, filePath?: string): string {
+  const qs = filePath ? `?filePath=${encodeURIComponent(filePath)}` : '';
+  return `${BASE}/download/${encodeURIComponent(fileName)}${qs}`;
+}
+
+/** 触发浏览器下载备份文件（用 fetch+blob，Electron 里 window.open 会失败）*/
+export async function downloadBackup(fileName: string, filePath?: string): Promise<void> {
+  const url = getBackupDownloadUrl(fileName, filePath);
+  const res = await apiFetch(url, { method: 'GET' });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: '下载失败' }));
+    throw new Error(err.error || '下载失败');
+  }
+  const blob = await res.blob();
+  const objectUrl = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = objectUrl;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    URL.revokeObjectURL(objectUrl);
+    document.body.removeChild(a);
+  }, 100);
 }
 
 /** 浏览服务器目录 */

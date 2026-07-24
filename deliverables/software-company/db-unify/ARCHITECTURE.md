@@ -1,4 +1,4 @@
-# DClaw V1.0 系统架构文档
+# DClaw V1.1 系统架构文档
 
 ## 一、系统概述
 
@@ -86,6 +86,7 @@ src/
 ├── components/
 │   ├── auth/              # 登录页、激活页
 │   ├── backup/            # 备份恢复界面
+│   ├── common/            # 通用组件（右键菜单等）
 │   ├── connection/        # 连接表单、批量导入、连接面板
 │   ├── database-tree/     # 四层树组件（拖拽排序）
 │   ├── driver/            # 驱动管理界面
@@ -108,7 +109,7 @@ src/
 | `connectionStore` | 连接列表、选中连接、连接测试状态 |
 | `treeStore` | 四层树结构、节点 CRUD、展开/折叠、拖拽排序 |
 | `executionStore` | 执行状态、SQL 内容、SSE 连接管理 |
-| `resultStore` | 查询结果、对比视图、分页排序 |
+| `resultStore` | 查询结果、对比视图、分页排序；分批加载状态（`pageSize`/`offset`/`hasMore`/`loadingMore`，每标签独立，v1.1.14+） |
 | `historyStore` | 执行历史记录、搜索过滤 |
 | `driverStore` | 驱动定义、状态检测 |
 | `authStore` | JWT 令牌管理、登录/登出、Electron 激活状态 |
@@ -118,6 +119,29 @@ src/
 - **Props 传递**：父子组件间数据传递
 - **Zustand Store**：跨组件共享状态
 - **回调模式**：子组件向上通知（如 `onActivated`）
+
+### 通用组件
+
+| 组件 | 文件 | 用途 |
+|------|------|------|
+| `ContextMenu` | `common/ContextMenu.tsx` | 通用右键菜单组件，基于 MUI `Menu` + `anchorPosition` 定位。支持菜单项定义（标签、图标、红色警告色、分隔线、禁用态），Esc 关闭，深色主题适配。 |
+
+**右键菜单调用场景：**
+
+- **数据库树节点**（`TreeNode.tsx`）：右键提供 5 个操作：复制连接信息、测试连接、编辑、删除、执行查询
+- **结果表单元格**（`ResultTable.tsx`）：右键提供 6 个操作：复制(含表头)、复制、复制单元格内容、复制为NULL、复制列名。当存在多选区域时，额外显示「复制(含表头)」和「复制」选项，复制选中矩形区域并附上列字段名。
+- **结果表整行**（`ResultTable.tsx`）：右键提供 5 个操作：复制(含表头)、复制、复制整行(TSV)、复制为INSERT SQL、导出CSV。当存在多选区域时，额外显示「复制(含表头)」和「复制」选项。
+
+**结果表格交互增强：**
+- **行号列**：表格最左侧 50px 固定列显示行号（从 1 开始），sticky 定位不参与横向滚动，深色/浅色模式自动适配
+- **矩形多选**：鼠标拖拽可选择多行×多列的矩形区域，Ctrl+点击覆盖选择，Shift+点击扩展选择，选中区域浅蓝高亮显示
+- **快捷键复制**：选中区域后按 Ctrl+C 直接复制（制表符分隔、换行符分隔行），Esc 清除选中
+
+### 工具函数（utils/）
+
+| 工具 | 文件 | 用途 |
+|------|------|------|
+| `isPureQuerySql()` | `sqlUtils.ts` | 判断 SQL 是否为纯查询语句。去除注释后按分号拆分为多条语句，逐条检查首关键字是否在只读集合（SELECT / WITH / SHOW / DESCRIBE / EXPLAIN / DESC）中。非只读模式下，纯查询跳过确认弹窗直接执行；写操作（INSERT / UPDATE / DELETE / DROP / ALTER / TRUNCATE / CREATE）弹出确认框。 |
 
 ### 视图模式 (App.tsx 核心逻辑)
 
@@ -161,7 +185,7 @@ isElectron?
 | `auth.mjs` | `/api/auth` | 登录 (POST /login)、注册 (POST /register) |
 | `connections.mjs` | `/api/connections` | CRUD、测试、Schema/DB 发现、批量导入 |
 | `tree.mjs` | `/api/tree` | 层级树 CRUD、节点排序 |
-| `execute.mjs` | `/api/execute` | SSE 批量 SQL 执行 |
+| `execute.mjs` | `/api/execute` | SSE 批量 SQL 执行；支持 `pageSize`/`offset` 分页参数（v1.1.14+），返回 `hasMore`/`totalLoaded` 元数据；内置 `sqlHasLimit()`/`canAppendLimit()`/`appendPageLimit()` 智能追加 LIMIT，兼容 MySQL/PG/SQL Server/Oracle 语法 |
 | `history.mjs` | `/api/history` | 执行历史查询 |
 | `drivers.mjs` | `/api/drivers` | 驱动列表、状态 |
 | `scripts.mjs` | `/api/scripts` | SQL 脚本 CRUD |

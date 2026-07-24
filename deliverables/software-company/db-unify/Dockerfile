@@ -1,44 +1,70 @@
 # ============================================
-# DB-Unify Docker 多阶段构建
+# DClaw Docker 部署（多阶段构建）
+# v1.4.0-alpha.1: 纯 Web + PG16 + 国密加密
 # ============================================
 
-# ---------- 阶段 1: 构建前端 ----------
-FROM node:20-alpine AS frontend-builder
-WORKDIR /app
-COPY package.json package-lock.json ./
-RUN npm ci
-COPY . .
-RUN npm run build
+# ---- 阶段 1：构建 ----
+FROM node:20-alpine AS builder
 
-# ---------- 阶段 2: 生产运行 ----------
+WORKDIR /app
+
+# 构建依赖（node-gyp / native modules）
+RUN apk add --no-cache python3 make g++ git
+
+# 国内 npm 镜像
+RUN npm config set registry https://registry.npmmirror.com
+
+COPY package.json package-lock.json* ./
+RUN npm ci --registry=https://registry.npmmirror.com
+
+COPY tsconfig.json tsconfig.app.json tsconfig.node.json vite.config.ts index.html ./
+COPY tailwind.config.ts postcss.config.js ./
+COPY src/ src/
+COPY public/ public/
+COPY server/ server/
+
+# 构建前端 (tsc + vite) 和后端 bundle
+RUN npm run build \
+ && npm run build:server-bundle
+
+# ---- 阶段 2：运行 ----
 FROM node:20-alpine
+
 WORKDIR /app
 
-# 安全：以非 root 用户运行
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001
+RUN npm config set registry https://registry.npmmirror.com
 
-# 安装生产依赖
-COPY package.json package-lock.json ./
-RUN npm ci --omit=dev && npm cache clean --force
+# 运行时：JDBC 桥接需要 Java；PG 驱动为纯 JS 无 native 依赖
+RUN apk add --no-cache openjdk17-jre-headless curl tzdata \
+ && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
+ && echo "Asia/Shanghai" > /etc/timezone
 
-# 复制构建产物和后端代码
-COPY --from=frontend-builder /app/dist ./dist
-COPY server ./server
-COPY data ./data
+# 仅拷贝 production 依赖清单，重新安装 prod-only 节省体积
+COPY package.json package-lock.json* ./
+RUN npm ci --omit=dev --registry=https://registry.npmmirror.com \
+ && npm cache clean --force
 
-# 创建日志目录
-RUN mkdir -p logs && chown -R nodejs:nodejs /app
+# 复制前端产物 + 后端 bundle + 服务端源码 (兼容非 bundle 启动)
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/scripts/server-bundle.cjs ./scripts/server-bundle.cjs
+COPY --from=builder /app/server ./server
+COPY scripts/ ./scripts/
 
-# 切换用户
-USER nodejs
+# 默认环境（可被 docker-compose 环境变量覆盖）
+ENV NODE_ENV=production \
+    PORT=3001 \
+    DATA_DIR=/app/data \
+    LOG_DIR=/app/logs \
+    DB_CONFIG_PATH=/app/config/db.enc
 
-# 暴露端口
+# 数据 & 日志目录
+RUN mkdir -p /app/data /app/logs /app/config
+VOLUME ["/app/data", "/app/logs"]
+
 EXPOSE 3001
 
-# 健康检查
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:3001/api/health || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD curl -f http://localhost:3001/api/health || exit 1
 
-# 启动
-CMD ["node", "server/index.mjs"]
+# 启动服务端（优先 bundle，回退到源码）
+CMD ["sh", "-c", "if [ -f scripts/server-bundle.cjs ]; then node scripts/server-bundle.cjs; else node server/index.mjs; fi"]

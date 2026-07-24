@@ -10,6 +10,8 @@ export interface SqlScript {
   name: string;
   description: string;
   category?: ScriptCategory;
+  /** 关联的项目（左侧树一级目录）ID */
+  projectId?: string;
   sql_text: string;
   /** 列表接口返回的 SQL 预览（前 100 字符） */
   sql_preview?: string;

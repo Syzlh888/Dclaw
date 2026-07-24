@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
   Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Button, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Alert,
-  TextField, Chip, FormControl, InputLabel, Select, MenuItem,
+  TextField, Chip, FormControl, InputLabel, Select, MenuItem, Autocomplete, useTheme,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -39,11 +39,13 @@ interface Props {
   serverId: string;
   instances: MiddlewareInstance[];
   ports: PortInfo[];
+  serverIps: string[];
 }
 
 interface CredField { username: string; password: string }
 
-export default function MiddlewareTab({ serverId, instances, ports }: Props) {
+export default function MiddlewareTab({ serverId, instances, ports, serverIps }: Props) {
+  const theme = useTheme();
   const add = useServerStore(s => s.addMiddleware);
   const upd = useServerStore(s => s.updateMiddleware);
   const del = useServerStore(s => s.deleteMiddleware);
@@ -87,7 +89,7 @@ export default function MiddlewareTab({ serverId, instances, ports }: Props) {
   const openAdd = () => { setEditItem(null); resetForm(); setOpen(true); };
   const openEdit = (item: MiddlewareInstance) => {
     setEditItem(item);
-    setForm({ ...item, password: '******' });
+    setForm({ ...item, ip: item.ip || '', password: '******' });
     // 检测是否为自定义类型
     if (item.type && !MID_TYPES.includes(item.type)) {
       setCustomType(item.type);
@@ -109,35 +111,15 @@ export default function MiddlewareTab({ serverId, instances, ports }: Props) {
     const validCreds = credentials.filter(c => c.username.trim());
     // 如果选了"其他"，使用自定义输入的类型
     const finalType = form.type === '其他' ? customType : form.type;
-    const data: any = { ...form, type: finalType, name: form.name || finalType, credentials: validCreds };
+    const data: any = { ...form, ip: form.ip || '', type: finalType, name: form.name || finalType, credentials: validCreds };
     setSaveError('');
     try {
       if (editItem) {
         await upd(serverId, editItem.id, data);
-        if (form.port && editItem.port) {
-          const matchedPort = ports.find(p => p.port === editItem.port);
-          if (matchedPort) {
-            updatePort(serverId, matchedPort.id, {
-              port: form.port,
-              protocol: 'TCP',
-              type: '中间件',
-              serviceName: form.name || editItem.name || finalType,
-              notes: form.notes || '',
-            });
-          }
-        }
       } else {
         await add(serverId, data);
-        if (form.port) {
-          addPort(serverId, {
-            port: form.port,
-            protocol: 'TCP',
-            type: '中间件',
-            serviceName: form.name || finalType || 'unknown',
-            notes: form.notes || '',
-          });
-        }
       }
+      // 端口记录同步由后端统一处理
       setOpen(false);
     } catch (err: any) {
       const msg = err?.response?.data?.error || err?.message || '保存失败';
@@ -264,6 +246,7 @@ export default function MiddlewareTab({ serverId, instances, ports }: Props) {
       ) : (
         <TableContainer><Table size="small">
           <TableHead><TableRow>
+            <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>IP</TableCell>
             <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>类型</TableCell>
             <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>端口</TableCell>
             <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>版本</TableCell>
@@ -283,12 +266,13 @@ export default function MiddlewareTab({ serverId, instances, ports }: Props) {
                 const isRevealed = decryptedCache.has(pwdKey) && revealedPwds.has(pwdKey);
                 return (
                   <TableRow key={pwdKey}>
-                    {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: '0.8rem' }}><Chip label={m.type} size="small" sx={{ fontSize: '0.7rem' }} /></TableCell>}
-                    {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: '0.8rem' }}>{m.port || '-'}</TableCell>}
-                    {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: '0.8rem' }}>{m.version || '-'}</TableCell>}
-                    {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: '0.8rem' }}>{m.serviceApp || '-'}</TableCell>}
-                    {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: '0.8rem' }}>{m.url ? <a href={m.url} target="_blank" rel="noreferrer" style={{ color: '#1565C0' }}>{m.url}</a> : '-'}</TableCell>}
-                    <TableCell sx={{ fontSize: '0.8rem' }}>{cred.username || '-'}</TableCell>
+                    {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: '0.7rem' }}>{m.ip || '-'}</TableCell>}
+                    {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: '0.6rem' }}><Chip label={m.type} size="small" sx={{ fontSize: '0.6rem' }} /></TableCell>}
+                    {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: '0.6rem' }}>{m.port || '-'}</TableCell>}
+                    {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: '0.6rem' }}>{m.version || '-'}</TableCell>}
+                    {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: '0.6rem' }}>{m.serviceApp || '-'}</TableCell>}
+                    {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: '0.6rem' }}>{m.url ? <a href={m.url} target="_blank" rel="noreferrer" style={{ color: theme.palette.primary.dark }}>{m.url}</a> : '-'}</TableCell>}
+                    <TableCell sx={{ fontSize: '0.6rem' }}>{cred.username || '-'}</TableCell>
                     <TableCell sx={{ fontSize: '0.85rem' }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3, flexWrap: 'nowrap' }}>
                         <Typography sx={{ fontFamily: 'monospace', fontSize: '0.85rem', minWidth: 90, userSelect: isRevealed ? 'text' : 'none', letterSpacing: isRevealed ? '0' : '2px' }}>
@@ -296,12 +280,12 @@ export default function MiddlewareTab({ serverId, instances, ports }: Props) {
                         </Typography>
                         <Tooltip title="复制密码">
                           <IconButton size="small" onClick={() => handleCopyPassword(pwdKey, cred._index, cred.username || '')}>
-                            <ContentCopyIcon sx={{ fontSize: 15, color: '#1976d2' }} />
+                            <ContentCopyIcon sx={{ fontSize: 15, color: 'primary.main' }} />
                           </IconButton>
                         </Tooltip>
                         <Tooltip title="修改密码">
                           <IconButton size="small" onClick={() => openPwdChange(m, ci, cred.username || '')}>
-                            <LockResetIcon sx={{ fontSize: 15, color: '#ed6c02' }} />
+                            <LockResetIcon sx={{ fontSize: 15, color: 'warning.main' }} />
                           </IconButton>
                         </Tooltip>
                         <Tooltip title={isRevealed ? '隐藏密码' : '查看密码（需二次验证）'}>
@@ -323,7 +307,7 @@ export default function MiddlewareTab({ serverId, instances, ports }: Props) {
                         )}
                       </Box>
                     </TableCell>
-                    {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: '0.8rem', maxWidth: 120 }}>{m.notes || '-'}</TableCell>}
+                    {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: '0.6rem', maxWidth: 120 }}>{m.notes || '-'}</TableCell>}
                     {ci === 0 && (
                       <TableCell rowSpan={credCount} sx={{ verticalAlign: 'middle', textAlign: 'center' }}>
                         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
@@ -331,10 +315,7 @@ export default function MiddlewareTab({ serverId, instances, ports }: Props) {
                           <Tooltip title="删除"><IconButton size="small" onClick={() => {
                             if (!confirm('确认删除？')) return;
                             del(serverId, m.id);
-                            if (m.port) {
-                              const matchedPort = ports.find(p => p.port === m.port);
-                              if (matchedPort) deletePort(serverId, matchedPort.id);
-                            }
+                            // 端口记录同步由后端自动清理
                           }} sx={{ color: 'error.main' }}><DeleteIcon sx={{ fontSize: 16 }} /></IconButton></Tooltip>
                         </Box>
                       </TableCell>
@@ -353,9 +334,9 @@ export default function MiddlewareTab({ serverId, instances, ports }: Props) {
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
             {saveError && <Alert severity="error">{saveError}</Alert>}
-            {/* 第一行：类型 | 版本 | 端口 */}
+            {/* 第一行：类型 | IP | 端口 | 版本 */}
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
-              <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Box sx={{ flex: 1.5, display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <FormControl size="small"><InputLabel>类型</InputLabel>
                   <Select value={MID_TYPES.includes(form.type) ? form.type : '其他'} label="类型" onChange={e => {
                     const type = e.target.value;
@@ -371,8 +352,9 @@ export default function MiddlewareTab({ serverId, instances, ports }: Props) {
                     onChange={e => { setCustomType(e.target.value); setForm({ ...form, type: '其他' }); }} />
                 )}
               </Box>
-              <TextField size="small" label="版本" value={form.version || ''} onChange={e => setForm({ ...form, version: e.target.value })} sx={{ flex: 1 }} />
+              <Autocomplete freeSolo options={serverIps} inputValue={form.ip || ''} onInputChange={(_, v) => setForm({ ...form, ip: v })} sx={{ flex: 1 }} renderInput={params => <TextField {...params} size="small" label="IP" />} />
               <TextField size="small" label="端口" type="number" value={form.port || ''} onChange={e => setForm({ ...form, port: Number(e.target.value) || '' })} sx={{ flex: 1 }} />
+              <TextField size="small" label="版本" value={form.version || ''} onChange={e => setForm({ ...form, version: e.target.value })} sx={{ flex: 1 }} />
             </Box>
             {/* 第二行：服务应用 | URL */}
             <Box sx={{ display: 'flex', gap: 2 }}>
@@ -389,14 +371,14 @@ export default function MiddlewareTab({ serverId, instances, ports }: Props) {
             <Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                 <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>用户凭据</Typography>
-                <Button size="small" variant="outlined" sx={{ minWidth: 32, p: '2px 6px', fontSize: '0.7rem' }} onClick={addCred}>+ 添加</Button>
+                <Button size="small" variant="outlined" sx={{ minWidth: 32, p: '2px 6px', fontSize: '0.6rem' }} onClick={addCred}>+ 添加</Button>
               </Box>
               {credentials.map((cred, i) => (
                 <Box key={i} sx={{ display: 'flex', gap: 1, mb: 1, alignItems: 'flex-start', p: 1.5, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
                   <TextField size="small" label="用户名" value={cred.username} onChange={e => updateCred(i, 'username', e.target.value)} sx={{ flex: 1 }} />
                   <TextField size="small" label="密码" type="password" autoComplete="new-password" value={cred.password} onChange={e => updateCred(i, 'password', e.target.value)} sx={{ flex: 1.5 }} />
                   <TextField size="small" label="备注" value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} sx={{ flex: 2 }} />
-                  <Button size="small" variant="outlined" onClick={() => setShowPwdGen(showPwdGen === i ? null : i)} sx={{ minWidth: 56, flexShrink: 0, fontSize: '0.7rem', height: 40 }}>生成</Button>
+                  <Button size="small" variant="outlined" onClick={() => setShowPwdGen(showPwdGen === i ? null : i)} sx={{ minWidth: 56, flexShrink: 0, fontSize: '0.6rem', height: 40 }}>生成</Button>
                   <Tooltip title="密码历史">
                     <IconButton size="small" onClick={() => cred.username ? setCredHistoryOpen({ index: i, username: cred.username }) : null} sx={{ flexShrink: 0, height: 40, width: 40 }}>
                       <HistoryIcon sx={{ fontSize: 16 }} />
@@ -445,7 +427,7 @@ export default function MiddlewareTab({ serverId, instances, ports }: Props) {
             </Box>
             <Box>
               <Button size="small" variant="outlined" onClick={() => setPwdChangeShowGen(!pwdChangeShowGen)}
-                sx={{ minWidth: 56, fontSize: '0.7rem' }}>生成密码</Button>
+                sx={{ minWidth: 56, fontSize: '0.6rem' }}>生成密码</Button>
               {pwdChangeShowGen && (
                 <Box sx={{ mt: 1 }}>
                   <PasswordGenerator

@@ -9,3 +9,27 @@ coverage/
 release/
 release2/
 keys/private.pem
+config/db.enc
+
+# 敏感数据 - 严禁入库
+.encryption-key
+*.pem
+*.key
+!public.pem
+
+# 构建/打包产物
+build-log*.txt
+*.tgz
+scripts/server-bundle.cjs
+backups/
+
+# 编辑器/工具元数据
+.hermes/
+.scale/
+.vscode/
+.idea/
+
+# 数据库快照/备份
+server/database.mjs.json-backup
+data.snapshots/
+*.sql.gz

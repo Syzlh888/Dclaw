@@ -18,4 +18,8 @@ export interface DriverPackage {
   description?: string;
   /** 是否为内置驱动（内置驱动不可删除） */
   isBuiltIn?: boolean;
+  /** 在线下载地址（仅内置驱动有效） */
+  downloadUrl?: string;
+  /** 是否已下载到本地（仅内置驱动有效） */
+  downloaded?: boolean;
 }

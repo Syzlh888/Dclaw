@@ -199,7 +199,7 @@ const HelpGuide: React.FC<HelpGuideProps> = ({ open, onClose }) => {
             borderRight: '1px solid',
             borderColor: 'divider',
             py: 1,
-            bgcolor: 'grey.50',
+            bgcolor: 'action.hover',
           }}
         >
           {SECTIONS.map((s) => {
@@ -216,11 +216,11 @@ const HelpGuide: React.FC<HelpGuideProps> = ({ open, onClose }) => {
                   py: 1,
                   cursor: 'pointer',
                   borderRadius: 0,
-                  bgcolor: isActive ? 'primary.light' : 'transparent',
+                  bgcolor: isActive ? 'primary.main' : 'transparent',
                   color: isActive ? 'white' : 'text.primary',
                   transition: 'all 0.15s',
                   '&:hover': {
-                    bgcolor: isActive ? 'primary.light' : 'action.hover',
+                    bgcolor: isActive ? 'primary.main' : 'action.hover',
                   },
                 }}
               >

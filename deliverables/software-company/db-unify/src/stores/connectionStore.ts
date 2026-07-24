@@ -19,6 +19,7 @@ interface ConnectionState {
   addConnectionWithId: (connection: DbConnection) => Promise<void>;
   updateConnection: (id: string, partial: Partial<DbConnection>) => Promise<void>;
   deleteConnection: (id: string) => Promise<void>;
+  clearAbnormalConnections: () => Promise<string[]>;
   startHealthCheck: () => void;
   stopHealthCheck: () => void;
 }
@@ -49,6 +50,7 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
           serverId: c.server_id || c.serverId,
           dbInstanceId: c.db_instance_id || c.dbInstanceId,
           credentialIndex: c.credential_index ?? c.credentialIndex,
+          created_at: c.created_at || '',
         };
       }
       set({ connections: map, loading: false });
@@ -166,6 +168,34 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
     }
   },
 
+  /** 清除所有异常（离线/错误）连接 */
+  clearAbnormalConnections: async () => {
+    const { connections } = get();
+    const abnormalIds = Object.entries(connections)
+      .filter(([, c]) => c.status === ConnectionStatus.Error || c.status === ConnectionStatus.Offline)
+      .map(([id]) => id);
+    if (abnormalIds.length === 0) return [];
+    const deleted: string[] = [];
+    for (const id of abnormalIds) {
+      try {
+        await deleteConnection(id);
+        deleted.push(id);
+      } catch (err) {
+        console.error(`删除异常连接 ${id} 失败:`, err);
+      }
+    }
+    if (deleted.length > 0) {
+      set((state) => {
+        const rest = { ...state.connections };
+        for (const id of deleted) {
+          delete rest[id];
+        }
+        return { connections: rest };
+      });
+    }
+    return deleted;
+  },
+
   startHealthCheck: () => {
     const { healthCheckInterval } = get();
     if (healthCheckInterval) return; // already running
@@ -194,7 +224,7 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
           }));
         }
       }
-    }, 300000); // every 5 minutes
+    }, 1800000); // every 30 minutes
 
     set({ healthCheckInterval: interval });
   },

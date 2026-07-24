@@ -1,30 +1,20 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box, Typography, List, ListItem, ListItemText, Chip,
-  IconButton, Tooltip, Collapse, Table, TableBody, TableCell,
-  TableContainer, TableHead, TableRow, Paper, Button, Alert,
+  IconButton, Tooltip, Button, Alert,
   Snackbar, CircularProgress, Checkbox, FormControlLabel,
 } from '@mui/material';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import ErrorIcon from '@mui/icons-material/Error';
-import TimerIcon from '@mui/icons-material/Timer';
-import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import AutoDeleteIcon from '@mui/icons-material/AutoDelete';
-import { fetchHistory, fetchHistoryDetail, clearHistory, deleteHistory, deleteHistoryBatch, fetchCleanupConfig, updateCleanupConfig } from '../../services/historyService';
+import { fetchHistory, clearHistory, deleteHistory, deleteHistoryBatch, fetchCleanupConfig, updateCleanupConfig } from '../../services/historyService';
 import { useEditorStore } from '../../stores/editorStore';
-import type { ExecutionHistory, ExecutionHistoryDetail, ExecutionHistoryTask } from '../../types/history';
+import type { ExecutionHistory } from '../../types/history';
 
 const HistoryPanel: React.FC = () => {
   const [list, setList] = useState<ExecutionHistory[]>([]);
   const [loading, setLoading] = useState(false);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [detailCache, setDetailCache] = useState<Record<string, ExecutionHistoryDetail>>({});
-  const [detailLoading, setDetailLoading] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
     open: false, message: '', severity: 'success',
@@ -87,16 +77,10 @@ const HistoryPanel: React.FC = () => {
 
   // ===== 删除逻辑 =====
   const handleDeleteOne = async (id: string, e: React.MouseEvent) => {
-    e.stopPropagation(); // 阻止触发展开
+    e.stopPropagation();
     try {
       await deleteHistory(id);
       setList((prev) => prev.filter((item) => item.id !== id));
-      setDetailCache((prev) => {
-        const next = { ...prev };
-        delete next[id];
-        return next;
-      });
-      if (expandedId === id) setExpandedId(null);
       setSelectedIds((prev) => {
         const next = new Set(prev);
         next.delete(id);
@@ -115,12 +99,6 @@ const HistoryPanel: React.FC = () => {
     try {
       await deleteHistoryBatch(ids);
       setList((prev) => prev.filter((item) => !selectedIds.has(item.id)));
-      setDetailCache((prev) => {
-        const next = { ...prev };
-        ids.forEach((id) => delete next[id]);
-        return next;
-      });
-      if (expandedId && selectedIds.has(expandedId)) setExpandedId(null);
       setSelectedIds(new Set());
       showMsg(`已删除 ${ids.length} 条记录`);
     } catch (err: any) {
@@ -128,33 +106,12 @@ const HistoryPanel: React.FC = () => {
     }
   };
 
-  const handleToggleExpand = async (id: string) => {
-    if (expandedId === id) {
-      setExpandedId(null);
-      return;
-    }
-    setExpandedId(id);
-    // 如果缓存中没有详情，则请求
-    if (!detailCache[id]) {
-      setDetailLoading(true);
-      try {
-        const detail = await fetchHistoryDetail(id);
-        setDetailCache((prev) => ({ ...prev, [id]: detail }));
-      } catch {
-        // 忽略，可能没有明细
-      } finally {
-        setDetailLoading(false);
-      }
-    }
-  };
-
+  // ===== 删除逻辑 =====
   const handleClear = async () => {
     if (!window.confirm('确定清空全部执行历史吗？此操作不可撤销。')) return;
     try {
       await clearHistory();
       setList([]);
-      setDetailCache({});
-      setExpandedId(null);
       showMsg('已清空全部执行历史');
     } catch (err: any) {
       showMsg(err.message || '清空失败', 'error');
@@ -173,25 +130,6 @@ const HistoryPanel: React.FC = () => {
       month: '2-digit', day: '2-digit',
       hour: '2-digit', minute: '2-digit', second: '2-digit',
     });
-  };
-
-  const getStatusIcon = (task: ExecutionHistoryTask) => {
-    switch (task.status) {
-      case 'success': return <CheckCircleIcon sx={{ fontSize: 16, color: 'success.main' }} />;
-      case 'failed': return <ErrorIcon sx={{ fontSize: 16, color: 'error.main' }} />;
-      case 'timeout': return <TimerIcon sx={{ fontSize: 16, color: 'warning.main' }} />;
-      default: return <HourglassEmptyIcon sx={{ fontSize: 16, color: 'text.disabled' }} />;
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'success': return '成功';
-      case 'failed': return '失败';
-      case 'timeout': return '超时';
-      case 'running': return '执行中';
-      default: return '等待';
-    }
   };
 
   const truncateSql = (sql: string, maxLen = 80) => {
@@ -283,10 +221,7 @@ const HistoryPanel: React.FC = () => {
         <Box sx={{ flex: 1, overflow: 'auto' }}>
           <List dense disablePadding>
             {list.map((item) => {
-              const isExpanded = expandedId === item.id;
               const isSelected = selectedIds.has(item.id);
-              const detail = detailCache[item.id];
-              const isExpanding = isExpanded && detailLoading && !detail;
               return (
                 <Box key={item.id}>
                   <ListItem
@@ -299,8 +234,7 @@ const HistoryPanel: React.FC = () => {
                       px: 1,
                       bgcolor: isSelected ? 'action.selected' : 'transparent',
                     }}
-                    onClick={() => handleToggleExpand(item.id)}
-                    onDoubleClick={() => handleDoubleClick(item.sql_text)}
+                    onClick={() => handleDoubleClick(item.sql_text)}
                   >
                     <Checkbox
                       size="small"
@@ -313,11 +247,6 @@ const HistoryPanel: React.FC = () => {
                       sx={{ p: 0.25, mr: 0.5 }}
                     />
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mr: 0.5 }}>
-                      {isExpanded ? (
-                        <ExpandLessIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
-                      ) : (
-                        <ExpandMoreIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
-                      )}
                     </Box>
                     <ListItemText
                       primary={
@@ -357,55 +286,6 @@ const HistoryPanel: React.FC = () => {
                       </Tooltip>
                     </Box>
                   </ListItem>
-
-                  {/* 展开的明细 */}
-                  <Collapse in={isExpanded}>
-                    <Box sx={{ px: 3, py: 1, bgcolor: 'grey.50' }}>
-                      {isExpanding ? (
-                        <Box sx={{ textAlign: 'center', py: 2 }}>
-                          <CircularProgress size={16} />
-                        </Box>
-                      ) : detail && detail.tasks && detail.tasks.length > 0 ? (
-                        <TableContainer component={Paper} variant="outlined" sx={{ mb: 1 }}>
-                          <Table size="small">
-                            <TableHead>
-                              <TableRow>
-                                <TableCell sx={{ fontSize: '0.72rem', fontWeight: 600, py: 0.5 }}>连接</TableCell>
-                                <TableCell sx={{ fontSize: '0.72rem', fontWeight: 600, py: 0.5 }}>状态</TableCell>
-                                <TableCell sx={{ fontSize: '0.72rem', fontWeight: 600, py: 0.5 }}>耗时</TableCell>
-                                <TableCell sx={{ fontSize: '0.72rem', fontWeight: 600, py: 0.5 }}>行数</TableCell>
-                              </TableRow>
-                            </TableHead>
-                            <TableBody>
-                              {detail.tasks.map((task) => (
-                                <TableRow key={task.id}>
-                                  <TableCell sx={{ fontSize: '0.72rem', py: 0.5 }}>{task.connection_name}</TableCell>
-                                  <TableCell sx={{ py: 0.5 }}>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                      {getStatusIcon(task)}
-                                      <Typography variant="caption" sx={{ fontSize: '0.7rem' }}>
-                                        {getStatusLabel(task.status)}
-                                      </Typography>
-                                    </Box>
-                                  </TableCell>
-                                  <TableCell sx={{ fontSize: '0.72rem', py: 0.5 }}>
-                                    {task.duration_ms != null ? formatDuration(task.duration_ms) : '-'}
-                                  </TableCell>
-                                  <TableCell sx={{ fontSize: '0.72rem', py: 0.5 }}>
-                                    {task.row_count != null ? task.row_count : '-'}
-                                  </TableCell>
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
-                        </TableContainer>
-                      ) : (
-                        <Typography variant="caption" color="text.disabled">
-                          暂无明细数据
-                        </Typography>
-                      )}
-                    </Box>
-                  </Collapse>
                 </Box>
               );
             })}

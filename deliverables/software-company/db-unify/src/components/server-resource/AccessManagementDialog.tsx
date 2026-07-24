@@ -346,13 +346,13 @@ export default function AccessManagementDialog({ open, onClose }: Props) {
               <Table size="small">
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>类型</TableCell>
-                    <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>地址</TableCell>
-                    <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>提供方</TableCell>
-                    <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>用户</TableCell>
-                    <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>密码</TableCell>
-                    <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>备注</TableCell>
-                    <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>操作</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', width: '8%' }}>类型</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', width: '14%' }}>地址</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', width: '14%' }}>提供方</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', width: '24%' }}>用户</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', width: '26%' }}>密码</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', width: '8%' }}>备注</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', width: '6%' }}>操作</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -365,7 +365,7 @@ export default function AccessManagementDialog({ open, onClose }: Props) {
                       return (
                         <TableRow key={pwdKey}>
                           {ci === 0 && (
-                            <TableCell rowSpan={credCount} sx={{ fontSize: '0.8rem' }}>
+                            <TableCell rowSpan={credCount} sx={{ fontSize: '0.8rem', width: '8%' }}>
                               <Chip
                                 icon={e.type === 'VPN' ? <VpnKeyIcon sx={{ fontSize: 14 }} /> : <SecurityIcon sx={{ fontSize: 14 }} />}
                                 label={e.type}
@@ -376,10 +376,12 @@ export default function AccessManagementDialog({ open, onClose }: Props) {
                               />
                             </TableCell>
                           )}
-                          {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: '0.8rem', color: '#1565C0' }}>{e.address}</TableCell>}
-                          {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: '0.8rem' }}>{e.provider || '-'}</TableCell>}
-                          <TableCell sx={{ fontSize: '0.8rem' }}>{cred.username || '-'}</TableCell>
-                          <TableCell sx={{ fontSize: '0.85rem' }}>
+                          {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: '0.8rem', color: 'primary.dark', width: '14%', wordBreak: 'break-all' }}>{e.address}</TableCell>}
+                          {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: '0.8rem', width: '14%' }}>{e.provider || '-'}</TableCell>}
+                          <TableCell sx={{ fontSize: '0.8rem', width: '24%', whiteSpace: 'normal', wordBreak: 'break-word' }}>
+                            {cred.username || '-'}
+                          </TableCell>
+                          <TableCell sx={{ fontSize: '0.85rem', width: '26%' }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3, flexWrap: 'nowrap' }}>
                               <Typography sx={{
                                 fontFamily: 'monospace', fontSize: '0.85rem', minWidth: 90,
@@ -390,12 +392,12 @@ export default function AccessManagementDialog({ open, onClose }: Props) {
                               </Typography>
                               <Tooltip title="复制密码">
                                 <IconButton size="small" onClick={() => handleCopyPassword(e.id, pwdKey, cred._index, cred.username || '')}>
-                                  <ContentCopyIcon sx={{ fontSize: 15, color: '#1976d2' }} />
+                                  <ContentCopyIcon sx={{ fontSize: 15, color: 'primary.main' }} />
                                 </IconButton>
                               </Tooltip>
                               <Tooltip title="修改密码">
                                 <IconButton size="small" onClick={() => openPwdChange(e, ci, cred.username || '')}>
-                                  <LockResetIcon sx={{ fontSize: 15, color: '#ed6c02' }} />
+                                  <LockResetIcon sx={{ fontSize: 15, color: 'warning.main' }} />
                                 </IconButton>
                               </Tooltip>
                               <Tooltip title={isRevealed ? '隐藏密码' : '查看密码（需二次验证）'}>
@@ -418,12 +420,12 @@ export default function AccessManagementDialog({ open, onClose }: Props) {
                             </Box>
                           </TableCell>
                           {ci === 0 && (
-                            <TableCell rowSpan={credCount} sx={{ fontSize: '0.8rem', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            <TableCell rowSpan={credCount} sx={{ fontSize: '0.8rem', width: '8%', maxWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                               {e.notes || '-'}
                             </TableCell>
                           )}
                           {ci === 0 && (
-                            <TableCell rowSpan={credCount} sx={{ verticalAlign: 'middle', textAlign: 'center' }}>
+                            <TableCell rowSpan={credCount} sx={{ verticalAlign: 'middle', textAlign: 'center', width: '6%' }}>
                               <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
                                 <Tooltip title="编辑"><IconButton size="small" onClick={() => openEdit(e)}><EditIcon sx={{ fontSize: 16 }} /></IconButton></Tooltip>
                                 <Tooltip title="删除"><IconButton size="small" onClick={() => handleDelete(e.id)} sx={{ color: 'error.main' }}><DeleteIcon sx={{ fontSize: 16 }} /></IconButton></Tooltip>

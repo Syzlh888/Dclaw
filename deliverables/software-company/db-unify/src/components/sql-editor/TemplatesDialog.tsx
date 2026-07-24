@@ -410,7 +410,7 @@ const TemplatesDialog: React.FC<TemplatesDialogProps> = ({ open, onClose, onInse
                             mt: 0.5,
                             p: 0.75,
                             fontSize: '0.7rem',
-                            bgcolor: 'grey.50',
+                            bgcolor: 'action.hover',
                             borderRadius: 0.5,
                             maxHeight: 70,
                             overflow: 'hidden',

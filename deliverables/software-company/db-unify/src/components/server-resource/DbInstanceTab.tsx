@@ -22,6 +22,7 @@ import { useServerStore } from '../../stores/serverStore';
 import { useTreeStore } from '../../stores/treeStore';
 import { decryptCredentialPassword } from '../../services/serverService';
 import { syncDbInstance, removeDbInstanceConnections, findAssociatedConnectionIds, findTreeNodeByConnectionId } from '../../services/dbInstanceSyncService';
+import { useThemeMode } from '../../contexts/ThemeModeContext';
 
 interface Props {
   serverId: string;
@@ -74,7 +75,7 @@ export default function DbInstanceTab({ serverId, instances, ports, serverIps = 
 
   // 密码二次验证弹窗
   const [pwdVerifyOpen, setPwdVerifyOpen] = useState(false);
-  const [pwdVerifyTarget, setPwdVerifyTarget] = useState<{ pwdKey: string; credIndex: number; username: string; action?: 'copy' | 'view' } | null>(null);
+  const [pwdVerifyTarget, setPwdVerifyTarget] = useState<{ pwdKey: string; credIndex: number; username: string; action?: 'copy' | 'view'; instanceType?: string; instanceId?: string } | null>(null);
   const [pwdVerifyInput, setPwdVerifyInput] = useState('');
   const [pwdVerifyError, setPwdVerifyError] = useState('');
   const [pwdVerifyLoading, setPwdVerifyLoading] = useState(false);
@@ -118,13 +119,8 @@ export default function DbInstanceTab({ serverId, instances, ports, serverIps = 
     } catch (err) {
       console.error('删除关联连接失败:', err);
     }
-    // 删除数据库实例
+    // 删除数据库实例（端口记录由后端自动清理）
     deleteDbInstance(serverId, item.id);
-    // 同步删除端口管理中的对应记录
-    if (item.port) {
-      const matchedPort = ports.find(p => p.port === item.port);
-      if (matchedPort) deletePort(serverId, matchedPort.id);
-    }
   };
 
   const handleSave = async () => {
@@ -143,22 +139,9 @@ export default function DbInstanceTab({ serverId, instances, ports, serverIps = 
     setSaveError('');
     
     if (editItem) {
-      // 编辑模式：直接保存
+      // 编辑模式：直接保存（端口同步由后端自动完成）
       try {
         await updateDbInstance(serverId, editItem.id, data);
-        // 编辑时同步端口信息：根据原端口号匹配并更新
-        if (form.port && editItem.port) {
-          const matchedPort = ports.find(p => p.port === editItem.port);
-          if (matchedPort) {
-            updatePort(serverId, matchedPort.id, {
-              port: form.port,
-              protocol: 'TCP',
-              type: '数据库',
-              serviceName: `${form.dbType || '数据库'}/${form.dbName || 'unknown'}`,
-              notes: form.notes || '',
-            });
-          }
-        }
         // 编辑时同步到连接管理和树节点
         try {
           const editStoreState = useServerStore.getState();
@@ -289,11 +272,25 @@ export default function DbInstanceTab({ serverId, instances, ports, serverIps = 
             setOpen(false);
             return; // 成功，跳过错误提示
           }
-        } catch (retryErr: any) {
-          console.error('[sync] 冲突重试也失败:', retryErr);
+        } catch (err) {
+          console.error('[sync] 重试同步连接失败（放弃）:', err);
         }
       }
       setSaveError(errMsg);
+    }
+  };
+
+  // 跳过挂载：只保存实例，不同步到连接管理
+  const handleParentSkip = async () => {
+    const saveData = pendingSaveData;
+    setPendingSaveData(null);
+    setParentSelectorOpen(false);
+    if (!saveData) return;
+    try {
+      await addDbInstance(serverId, saveData);
+      setOpen(false);
+    } catch (err: any) {
+      console.error('[sync] 跳过挂载保存失败:', err?.message);
     }
   };
 
@@ -346,7 +343,7 @@ export default function DbInstanceTab({ serverId, instances, ports, serverIps = 
   };
 
   // 点击眼睛图标 → 弹出二次验证弹窗
-  const requestViewPassword = (pwdKey: string, credIndex: number, username: string) => {
+  const requestViewPassword = (pwdKey: string, credIndex: number, username: string, instanceType?: string, instanceId?: string) => {
     // 已缓存且当前可见 → 隐藏
     if (decryptedCache.has(pwdKey) && revealedPwds.has(pwdKey)) {
       setRevealedPwds(prev => { const n = new Set(prev); n.delete(pwdKey); return n; });
@@ -357,8 +354,22 @@ export default function DbInstanceTab({ serverId, instances, ports, serverIps = 
       setRevealedPwds(prev => new Set(prev).add(pwdKey));
       return;
     }
-    // 未验证 → 弹出验证弹窗
-    setPwdVerifyTarget({ pwdKey, credIndex, username });
+    // 未解密，弹框验证
+    setPwdVerifyTarget({ pwdKey, credIndex, username, action: 'view', instanceType, instanceId });
+    setPwdVerifyInput('');
+    setPwdVerifyError('');
+    setPwdVerifyOpen(true);
+  };
+
+  // 复制密码到剪贴板
+  const handleCopyPassword = async (pwdKey: string, credIndex: number, username: string, instanceType?: string, instanceId?: string) => {
+    const plainPwd = decryptedCache.get(pwdKey);
+    if (plainPwd) {
+      await navigator.clipboard.writeText(plainPwd);
+      return;
+    }
+    // 未解密，先验证再复制
+    setPwdVerifyTarget({ pwdKey, credIndex, username, action: 'copy', instanceType, instanceId });
     setPwdVerifyInput('');
     setPwdVerifyError('');
     setPwdVerifyOpen(true);
@@ -370,7 +381,8 @@ export default function DbInstanceTab({ serverId, instances, ports, serverIps = 
     setPwdVerifyLoading(true);
     setPwdVerifyError('');
     try {
-      const result = await decryptCredentialPassword(serverId, pwdVerifyTarget.credIndex, pwdVerifyInput);
+      const result = await decryptCredentialPassword(serverId, pwdVerifyTarget.credIndex, pwdVerifyInput,
+        pwdVerifyTarget.instanceType, pwdVerifyTarget.instanceId);
       if (result.error) {
         setPwdVerifyError(result.error);
         setPwdVerifyLoading(false);
@@ -404,20 +416,6 @@ export default function DbInstanceTab({ serverId, instances, ports, serverIps = 
     return '••••••••';
   };
 
-  // 复制密码到剪贴板
-  const handleCopyPassword = async (pwdKey: string, credIndex: number, username: string) => {
-    const plainPwd = decryptedCache.get(pwdKey);
-    if (plainPwd) {
-      await navigator.clipboard.writeText(plainPwd);
-      return;
-    }
-    // 未解密，先验证再复制
-    setPwdVerifyTarget({ pwdKey, credIndex, username, action: 'copy' });
-    setPwdVerifyInput('');
-    setPwdVerifyError('');
-    setPwdVerifyOpen(true);
-  };
-
   // 获取实例的所有凭据列表（兼容旧版单字段）
   const getInstanceCreds = (d: DbInstance): (ServerCredential & { _key: string; _index: number })[] => {
     if (d.credentials && d.credentials.length > 0) {
@@ -434,22 +432,21 @@ export default function DbInstanceTab({ serverId, instances, ports, serverIps = 
         <Button size="small" startIcon={<AddIcon />} onClick={openAdd}>新增</Button>
       </Box>
       {instances.length === 0 ? (
-        <Typography variant="body2" color="text.secondary" sx={{ pt: 0.5, textAlign: 'left', fontSize: '0.9rem' }}>暂无数据库实例</Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ pt: 0.5, textAlign: 'left', fontSize: '0.8rem' }}>暂无数据库实例</Typography>
       ) : (
         <TableContainer>
           <Table size="small">
             <TableHead><TableRow>
-              <TableCell sx={{ fontWeight: 600, fontSize: '0.85rem' }}>类型</TableCell>
-              <TableCell sx={{ fontWeight: 600, fontSize: '0.85rem' }}>库名</TableCell>
-              <TableCell sx={{ fontWeight: 600, fontSize: '0.85rem' }}>IP:端口</TableCell>
-              <TableCell sx={{ fontWeight: 600, fontSize: '0.85rem' }}>集群</TableCell>
-              <TableCell sx={{ fontWeight: 600, fontSize: '0.85rem' }}>Schema</TableCell>
-              <TableCell sx={{ fontWeight: 600, fontSize: '0.85rem' }}>所属区域</TableCell>
-              <TableCell sx={{ fontWeight: 600, fontSize: '0.85rem' }}>连接名称</TableCell>
-              <TableCell sx={{ fontWeight: 600, fontSize: '0.85rem' }}>用户</TableCell>
-              <TableCell sx={{ fontWeight: 600, fontSize: '0.85rem' }}>密码</TableCell>
-              <TableCell sx={{ fontWeight: 600, fontSize: '0.85rem' }}>备注</TableCell>
-              <TableCell sx={{ fontWeight: 600, fontSize: '0.85rem' }}>操作</TableCell>
+              <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>类型</TableCell>
+              <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>库名</TableCell>
+              <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>IP:端口</TableCell>
+              <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>集群</TableCell>
+              <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>Schema</TableCell>
+              <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>连接名称</TableCell>
+              <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>用户</TableCell>
+              <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>密码</TableCell>
+              <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>备注</TableCell>
+              <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>操作</TableCell>
             </TableRow></TableHead>
             <TableBody>
               {instances.map(d => {
@@ -460,22 +457,21 @@ export default function DbInstanceTab({ serverId, instances, ports, serverIps = 
                   const isRevealed = decryptedCache.has(pwdKey) && revealedPwds.has(pwdKey);
                   return (
                     <TableRow key={pwdKey}>
-                      {ci === 0 && <TableCell rowSpan={credCount}><Chip label={d.dbType} size="small" sx={{ fontSize: '0.8rem' }} /></TableCell>}
-                      {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: '0.9rem' }}>{d.dbName}</TableCell>}
-                      {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: '0.9rem' }}>{d.internalIp || d.externalIp || '-'}:{d.port}</TableCell>}
+                      {ci === 0 && <TableCell rowSpan={credCount}><Chip label={d.dbType} size="small" sx={{ fontSize: '0.7rem' }} /></TableCell>}
+                      {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: '0.8rem' }}>{d.dbName}</TableCell>}
+                      {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: '0.8rem' }}>{d.internalIp || d.externalIp || '-'}:{d.port}</TableCell>}
                       {ci === 0 && <TableCell rowSpan={credCount}>
                         {d.isCluster ? <Chip label="集群" size="small" color="warning" sx={{ fontSize: '0.75rem' }} title={d.clusterIps || ''} /> : '-'}
                       </TableCell>}
-                      <TableCell sx={{ fontSize: '0.9rem' }}>{cred.schema || '-'}</TableCell>
-                      <TableCell sx={{ fontSize: '0.9rem' }}>{cred.region || '-'}</TableCell>
-                      <TableCell sx={{ fontSize: '0.9rem' }}>{cred.connectionName || '-'}</TableCell>
-                      <TableCell sx={{ fontSize: '0.9rem' }}>{cred.username || '-'}</TableCell>
-                      <TableCell sx={{ fontSize: '0.85rem' }}>
+                      <TableCell sx={{ fontSize: '0.8rem' }}>{cred.schema || '-'}</TableCell>
+                      <TableCell sx={{ fontSize: '0.8rem' }}>{cred.connectionName || '-'}</TableCell>
+                      <TableCell sx={{ fontSize: '0.8rem' }}>{cred.username || '-'}</TableCell>
+                      <TableCell sx={{ fontSize: '0.75rem' }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3, flexWrap: 'nowrap' }}>
                           <Typography
                             sx={{
                               fontFamily: 'monospace',
-                              fontSize: '0.85rem',
+                              fontSize: '0.75rem',
                               minWidth: 90,
                               userSelect: isRevealed ? 'text' : 'none',
                               letterSpacing: isRevealed ? '0' : '2px',
@@ -484,17 +480,17 @@ export default function DbInstanceTab({ serverId, instances, ports, serverIps = 
                             {getDisplayPassword(pwdKey, cred.password || '')}
                           </Typography>
                           <Tooltip title="复制密码">
-                            <IconButton size="small" onClick={() => handleCopyPassword(pwdKey, cred._index, cred.username || '')}>
-                              <ContentCopyIcon sx={{ fontSize: 15, color: '#1976d2' }} />
+                            <IconButton size="small" onClick={() => handleCopyPassword(pwdKey, cred._index, cred.username || '', 'dbInstance', d.id)}>
+                              <ContentCopyIcon sx={{ fontSize: 15, color: 'primary.main' }} />
                             </IconButton>
                           </Tooltip>
                           <Tooltip title="修改密码">
                             <IconButton size="small" onClick={() => openPwdChange(d, ci, cred.username || '')}>
-                              <LockResetIcon sx={{ fontSize: 15, color: '#ed6c02' }} />
+                              <LockResetIcon sx={{ fontSize: 15, color: 'warning.main' }} />
                             </IconButton>
                           </Tooltip>
                           <Tooltip title={isRevealed ? '隐藏密码' : '查看密码（需二次验证）'}>
-                            <IconButton size="small" onClick={() => requestViewPassword(pwdKey, cred._index, cred.username || '')}>
+                            <IconButton size="small" onClick={() => requestViewPassword(pwdKey, cred._index, cred.username || '', 'dbInstance', d.id)}>
                               {isRevealed ? <VisibilityOffIcon sx={{ fontSize: 15 }} /> : <VisibilityIcon sx={{ fontSize: 15 }} />}
                             </IconButton>
                           </Tooltip>
@@ -512,7 +508,7 @@ export default function DbInstanceTab({ serverId, instances, ports, serverIps = 
                           )}
                         </Box>
                       </TableCell>
-                      {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: '0.9rem', maxWidth: 160 }}>{d.notes || '-'}</TableCell>}
+                      {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: '0.8rem', maxWidth: 160 }}>{d.notes || '-'}</TableCell>}
                       {ci === 0 && (
                         <TableCell rowSpan={credCount} sx={{ verticalAlign: 'middle', textAlign: 'center' }}>
                           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
@@ -593,7 +589,7 @@ export default function DbInstanceTab({ serverId, instances, ports, serverIps = 
               {credentials.map((cred, i) => (
                 <Box key={i} sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mb: 1, p: 1.5, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
                   <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
-                    <TextField size="small" label="所属区域" value={cred.region} onChange={e => updateCred(i, 'region', e.target.value)} sx={{ flex: 1 }} />
+                    {/* <TextField size="small" label="所属区域" value={cred.region} onChange={e => updateCred(i, 'region', e.target.value)} sx={{ flex: 1 }} /> */}
                     <TextField size="small" label="连接名称" value={cred.connectionName} onChange={e => updateCred(i, 'connectionName', e.target.value)} sx={{ flex: 1 }} />
                     <TextField size="small" label="Schema" value={cred.schema} onChange={e => updateCred(i, 'schema', e.target.value)} sx={{ flex: 1 }} />
                     <TextField size="small" label="用户名" value={cred.username} onChange={e => updateCred(i, 'username', e.target.value)} sx={{ flex: 1 }} />
@@ -742,6 +738,7 @@ export default function DbInstanceTab({ serverId, instances, ports, serverIps = 
         open={parentSelectorOpen}
         onClose={() => { setParentSelectorOpen(false); setPendingSaveData(null); }}
         onSelect={handleParentSelect}
+        onSkip={handleParentSkip}
       />
     </Box>
   );

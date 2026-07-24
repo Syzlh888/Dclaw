@@ -15,8 +15,8 @@ const router = Router();
  * GET /api/connections
  * 获取所有连接（密码字段脱敏）
  */
-router.get('/', (_req, res) => {
-  const connections = getAll('connections').map((c) => ({
+router.get('/', async (_req, res) => {
+  const connections = (await getAll('connections')).map((c) => ({
     ...c,
     password: '******', // 不返回真实密码
     password_encrypted: undefined,
@@ -31,11 +31,11 @@ router.get('/', (_req, res) => {
 router.get('/template', (_req, res) => {
   const headers = [
     '连接名称', '驱动类型', '主机地址', '端口', '用户名', '密码',
-    '数据库名', 'Schema', '项目', '业务模块', '区域节点', '连接实例名称',
+    '数据库名', 'Schema', '自定义驱动名称', '项目', '业务模块', '区域节点', '连接实例名称',
   ];
   const exampleRow = [
     '示例-主连接实例', 'mysql', '192.168.1.100', '3306', 'db_user', 'your_password',
-    'his_db', 'public', '示例项目', '数据交换模块', '中心区域', '主连接实例',
+    'his_db', 'public', '', '示例项目', '数据交换模块', '中心区域', '主连接实例',
   ];
 
   const bom = '\uFEFF'; // UTF-8 BOM，确保 Excel 正确识别中文
@@ -50,7 +50,7 @@ router.get('/template', (_req, res) => {
   const csvLines = [
     headers.map(escapeCsv).join(','),
     exampleRow.map(escapeCsv).join(','),
-    ['注：后4列（项目/业务模块/区域节点/连接实例名称）为可选，用于自动关联左侧树结构'].map(escapeCsv).join(','),
+    ['注：后5列（自定义驱动名称/项目/业务模块/区域节点/连接实例名称）为可选，自定义驱动名称用于指定 driver=custom 时使用的驱动（如 瀚高、金仓）'].map(escapeCsv).join(','),
   ];
 
   const csvContent = bom + csvLines.join('\n');
@@ -65,8 +65,8 @@ router.get('/template', (_req, res) => {
  * GET /api/connections/:id
  * 获取单个连接详情（密码脱敏，仅内部执行时解密）
  */
-router.get('/:id', (req, res) => {
-  const conn = getById('connections', req.params.id);
+router.get('/:id', async (req, res) => {
+  const conn = await getById('connections', req.params.id);
   if (!conn) {
     return res.status(404).json({ error: '连接不存在' });
   }
@@ -84,7 +84,7 @@ router.get('/:id', (req, res) => {
  * POST /api/connections
  * 创建新连接（密码加密存储）
  */
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const { name, driver, host, port, username, password, database, schema, customDriverId } = req.body;
 
   // 参数校验
@@ -110,7 +110,7 @@ router.post('/', (req, res) => {
     updated_at: now,
   };
 
-  insert('connections', connection);
+  await insert('connections', connection);
 
   // 返回时脱敏
   res.status(201).json({
@@ -121,11 +121,45 @@ router.post('/', (req, res) => {
 });
 
 /**
+ * POST /api/connections/:id/duplicate
+ * 复制现有连接，创建一个副本（服务端直接复制加密密码，避免前端脱敏丢失）
+ */
+router.post('/:id/duplicate', async (req, res) => {
+  const src = await getById('connections', req.params.id);
+  if (!src) {
+    return res.status(404).json({ error: '源连接不存在' });
+  }
+  const id = nanoid(8);
+  const now = new Date().toISOString();
+  const copy = {
+    id,
+    name: `${src.name} (副本)`,
+    driver: src.driver,
+    host: src.host,
+    port: src.port,
+    username: src.username,
+    password_encrypted: src.password_encrypted, // 直接复用加密密码
+    database_name: src.database_name || '',
+    schema_name: src.schema_name || '',
+    custom_driver_id: src.custom_driver_id || null,
+    status: 'unknown',
+    created_at: now,
+    updated_at: now,
+  };
+  await insert('connections', copy);
+  res.status(201).json({
+    ...copy,
+    password: '******',
+    password_encrypted: undefined,
+  });
+});
+
+/**
  * PUT /api/connections/:id
  * 更新连接信息
  */
-router.put('/:id', (req, res) => {
-  const existing = getById('connections', req.params.id);
+router.put('/:id', async (req, res) => {
+  const existing = await getById('connections', req.params.id);
   if (!existing) {
     return res.status(404).json({ error: '连接不存在' });
   }
@@ -145,7 +179,7 @@ router.put('/:id', (req, res) => {
   if (schema !== undefined) partial.schema_name = schema.trim();
   if (customDriverId !== undefined) partial.custom_driver_id = customDriverId || null;
 
-  const updated = update('connections', req.params.id, partial);
+  const updated = await update('connections', req.params.id, partial);
   if (!updated) {
     return res.status(500).json({ error: '更新失败' });
   }
@@ -161,16 +195,16 @@ router.put('/:id', (req, res) => {
  * DELETE /api/connections/:id
  * 删除连接
  */
-router.delete('/:id', (req, res) => {
-  const existing = getById('connections', req.params.id);
+router.delete('/:id', async (req, res) => {
+  const existing = await getById('connections', req.params.id);
   if (!existing) {
     return res.status(404).json({ error: '连接不存在' });
   }
 
   // 同步删除引用此连接的树节点(hospitals)
-  removeWhere('hospitals', h => h.connection_id === req.params.id);
+  await removeWhere('hospitals', h => h.connection_id === req.params.id);
 
-  remove('connections', req.params.id);
+  await remove('connections', req.params.id);
   res.json({ success: true });
 });
 
@@ -198,7 +232,7 @@ router.post('/test', async (req, res) => {
  * 测试已保存的连接
  */
 router.post('/:id/test', async (req, res) => {
-  const conn = getById('connections', req.params.id);
+  const conn = await getById('connections', req.params.id);
   if (!conn) {
     return res.status(404).json({ error: '连接不存在' });
   }
@@ -207,10 +241,10 @@ router.post('/:id/test', async (req, res) => {
 
   try {
     await testConnection(conn.driver, conn.host, conn.port, conn.username, password, conn.database_name, conn.custom_driver_id);
-    update('connections', req.params.id, { status: 'online' });
+    await update('connections', req.params.id, { status: 'online' });
     res.json({ success: true, message: '连接成功' });
   } catch (err) {
-    update('connections', req.params.id, { status: 'error' });
+    await update('connections', req.params.id, { status: 'error' });
     res.status(500).json({ success: false, error: formatConnectionError(err) });
   }
 });
@@ -260,7 +294,7 @@ router.post('/databases', async (req, res) => {
  * POST /api/connections/bulk-import
  * 批量导入数据库连接（支持层级自动创建）
  */
-router.post('/bulk-import', (req, res) => {
+router.post('/bulk-import', async (req, res) => {
   const { connections } = req.body;
 
   if (!Array.isArray(connections) || connections.length === 0) {
@@ -281,8 +315,8 @@ router.post('/bulk-import', (req, res) => {
   for (const item of connections) {
     const row = (item.row !== undefined ? item.row : results.length + 1);
     try {
-      const { name, driver, host, port, username, password, database, schema,
-        platform, predb_type, district, hospital_name } = item;
+      let { name, driver, host, port, username, password, database, schema,
+        platform, predb_type, district, hospital_name, customDriverName } = item;
 
       // 字段验证
       if (!name || !driver || !host || !port || !username || !password) {
@@ -291,11 +325,44 @@ router.post('/bulk-import', (req, res) => {
         continue;
       }
 
+      // 驱动类型验证 + 自定义驱动名称自动匹配
+      let customDriverId = null;
+      const driverLower = driver.toLowerCase();
+
       const validDrivers = ['mysql', 'postgresql', 'oracle', 'sqlserver', 'custom'];
-      if (!validDrivers.includes(driver)) {
-        results.push({ row, name, status: 'failed', error: `不支持的驱动类型: ${driver}，支持的类型: ${validDrivers.join(', ')}` });
-        failCount++;
-        continue;
+      if (!validDrivers.includes(driverLower)) {
+        // 非标准驱动类型，尝试通过名称匹配已安装的自定义驱动
+        const allDrivers = await getAll('drivers');
+        const searchName = (customDriverName || driver).toLowerCase();
+        const matched = allDrivers.find((d) => {
+          const dName = (d.name || '').toLowerCase();
+          const dDbType = (d.dbType || '').toLowerCase();
+          return dName.includes(searchName) || searchName.includes(dName)
+            || dDbType.includes(searchName) || searchName.includes(dDbType);
+        });
+        if (matched) {
+          driver = 'custom';
+          customDriverId = matched.id;
+          console.log(`[bulk-import] 驱动 "${item.driver}" 匹配到自定义驱动: ${matched.name} (${matched.id})`);
+        } else {
+          results.push({ row, name, status: 'failed',
+            error: `不支持的驱动类型: ${item.driver}，也未找到匹配的自定义驱动。支持: ${validDrivers.join(', ')}，或先安装对应的自定义驱动` });
+          failCount++;
+          continue;
+        }
+      }
+
+      // 如果 driver 已经是 custom，且提供了 customDriverName，也尝试匹配
+      if (driverLower === 'custom' && customDriverName && !customDriverId) {
+        const allDrivers = await getAll('drivers');
+        const searchName = String(customDriverName).toLowerCase();
+        const matched = allDrivers.find((d) => {
+          const dName = (d.name || '').toLowerCase();
+          return dName.includes(searchName) || searchName.includes(dName);
+        });
+        if (matched) {
+          customDriverId = matched.id;
+        }
       }
 
       // ---- 处理层级自动创建 ----
@@ -310,12 +377,12 @@ router.post('/bulk-import', (req, res) => {
         if (platformCache.has(platName)) {
           platformId = platformCache.get(platName);
         } else {
-          const existing = query('platforms', p => p.name === platName)[0];
+          const existing = await query('platforms', p => p.name === platName)[0];
           if (existing) {
             platformId = existing.id;
           } else {
             platformId = nanoid(8);
-            insert('platforms', {
+            await insert('platforms', {
               id: platformId, name: platName, sort_order: 0,
               created_at: now, updated_at: now,
             });
@@ -331,12 +398,12 @@ router.post('/bulk-import', (req, res) => {
           if (predbTypeCache.has(cacheKey)) {
             predbTypeId = predbTypeCache.get(cacheKey);
           } else {
-            const existing = query('predbTypes', p => p.platform_id === platformId && p.name === ptName)[0];
+            const existing = await query('predbTypes', p => p.platform_id === platformId && p.name === ptName)[0];
             if (existing) {
               predbTypeId = existing.id;
             } else {
               predbTypeId = nanoid(8);
-              insert('predbTypes', {
+              await insert('predbTypes', {
                 id: predbTypeId, platform_id: platformId, name: ptName, sort_order: 0,
                 created_at: now, updated_at: now,
               });
@@ -352,12 +419,12 @@ router.post('/bulk-import', (req, res) => {
             if (districtCache.has(cacheKey)) {
               districtId = districtCache.get(cacheKey);
             } else {
-              const existing = query('districts', d => d.predb_type_id === predbTypeId && d.name === distName)[0];
+              const existing = await query('districts', d => d.predb_type_id === predbTypeId && d.name === distName)[0];
               if (existing) {
                 districtId = existing.id;
               } else {
                 districtId = nanoid(8);
-                insert('districts', {
+                await insert('districts', {
                   id: districtId, predb_type_id: predbTypeId, name: distName, sort_order: 0,
                   created_at: now, updated_at: now,
                 });
@@ -381,18 +448,18 @@ router.post('/bulk-import', (req, res) => {
         password_encrypted: encryptPassword(String(password)),
         database_name: (database || '').trim(),
         schema_name: (schema || '').trim(),
-        custom_driver_id: null,
+        custom_driver_id: customDriverId,
         status: 'unknown',
         created_at: now,
         updated_at: now,
       };
-      insert('connections', connection);
+      await insert('connections', connection);
 
       // ---- 创建连接实例节点并关联 ----
       if (districtId) {
         const hospName = (hospital_name && String(hospital_name).trim()) ? String(hospital_name).trim() : name;
         const hospitalId = nanoid(8);
-        insert('hospitals', {
+        await insert('hospitals', {
           id: hospitalId,
           district_id: districtId,
           name: hospName,
@@ -423,20 +490,41 @@ router.post('/bulk-import', (req, res) => {
 });
 
 /**
+ * POST /api/connections/:id/schemas
+ * 获取指定连接的 Schema 列表
+ */
+router.post('/:id/schemas', async (req, res) => {
+  const conn = await getById('connections', req.params.id);
+  if (!conn) {
+    return res.status(404).json({ error: '连接不存在' });
+  }
+  const password = decryptPassword(conn.password_encrypted || '');
+  try {
+    const schemas = await discoverSchemas(conn.driver, conn.host, conn.port, conn.username, password, conn.database_name, conn.custom_driver_id);
+    res.json({ schemas });
+  } catch (err) {
+    console.error(`[connections:schema] error:`, err.message);
+    res.status(500).json({ error: formatConnectionError(err) });
+  }
+});
+
+/**
  * POST /api/connections/:id/metadata
  * 获取数据库元数据（表列表 + 列信息）
  */
 router.post('/:id/metadata', async (req, res) => {
-  const conn = getById('connections', req.params.id);
+  const conn = await getById('connections', req.params.id);
   if (!conn) {
     return res.status(404).json({ error: '连接不存在' });
   }
 
   const password = decryptPassword(conn.password_encrypted || '');
+  // 允许请求体指定 schema，覆盖连接默认的 schema_name
+  const targetSchema = req.body?.schema || conn.schema_name || '';
 
   try {
-    console.log(`[metadata] driver=${conn.driver} db=${conn.database_name} host=${conn.host}:${conn.port}`);
-    const metadata = await discoverMetadata(conn.driver, conn.host, conn.port, conn.username, password, conn.database_name, conn.schema_name, conn.custom_driver_id);
+    console.log(`[metadata] driver=${conn.driver} db=${conn.database_name} host=${conn.host}:${conn.port} schema=${targetSchema}`);
+    const metadata = await discoverMetadata(conn.driver, conn.host, conn.port, conn.username, password, conn.database_name, targetSchema, conn.custom_driver_id);
     console.log(`[metadata] found ${metadata.length} tables`);
     res.json({ tables: metadata });
   } catch (err) {
@@ -446,13 +534,197 @@ router.post('/:id/metadata', async (req, res) => {
 });
 
 /**
+ * POST /api/connections/:id/ddl
+ * 获取指定表的建表 DDL
+ * Body: { table: string }
+ */
+router.post('/:id/ddl', async (req, res) => {
+  const conn = await getById('connections', req.params.id);
+  if (!conn) {
+    return res.status(404).json({ error: '连接不存在' });
+  }
+
+  const { table } = req.body;
+  if (!table) {
+    return res.status(400).json({ error: '表名不能为空' });
+  }
+
+  const password = decryptPassword(conn.password_encrypted || '');
+
+  try {
+    console.log(`[ddl] driver=${conn.driver} db=${conn.database_name} host=${conn.host}:${conn.port} table=${table}`);
+    const effectiveSchema = conn.schema_name || '';
+    const dbClient = await createDbConnection({
+      driver: conn.driver,
+      host: conn.host,
+      port: conn.port,
+      username: conn.username,
+      password,
+      database: conn.database_name || '',
+      schema: effectiveSchema,
+      customDriverId: conn.custom_driver_id || undefined,
+    });
+
+    try {
+      const realDriver = resolveRealDriver(conn.driver, conn.custom_driver_id);
+      let ddl = '';
+
+      if (realDriver === 'mysql') {
+        const result = await executeQuery(dbClient, conn.driver, `SHOW CREATE TABLE \`${table}\``, 30000, conn.custom_driver_id);
+        if (result.rows.length > 0) {
+          ddl = result.rows[0]['Create Table'] || '';
+        }
+      } else {
+        // PostgreSQL 及兼容数据库（瀚高、高斯、金仓等）
+        try {
+          // 尝试 SHOW CREATE TABLE（部分 PG 兼容数据库支持此语法）
+          const result = await executeQuery(dbClient, conn.driver, `SHOW CREATE TABLE "${table}"`, 30000, conn.custom_driver_id);
+          if (result.rows.length > 0) {
+            ddl = result.rows[0]['Create Table'] || result.rows[0]['create_table'] || '';
+          }
+        } catch {
+          // Fallback 1: pg_get_ddl (PG 16+)
+          try {
+            const result = await executeQuery(dbClient, conn.driver,
+              `SELECT pg_catalog.pg_get_ddl(c.oid) AS ddl FROM pg_catalog.pg_class c WHERE c.relname = '${table.replace(/.*\./, '')}'`,
+              30000, conn.custom_driver_id);
+            if (result.rows.length > 0) {
+              ddl = result.rows[0].ddl || '';
+            }
+          } catch {}
+          if (!ddl) {
+            // Fallback 2: 从 information_schema 重建 DDL（兼容 PG 9+ / 瀚高 / 金仓等）
+            const tblName = table.replace(/.*\./, '').replace(/"/g, '');
+            const schemaName = table.includes('.') ? table.replace(/\..*/, '').replace(/"/g, '') : (conn.schema_name || 'public');
+            try {
+              const colResult = await executeQuery(dbClient, conn.driver,
+                `SELECT column_name, data_type, COALESCE(character_maximum_length, numeric_precision) AS col_length,
+                        is_nullable, column_default, ordinal_position
+                 FROM information_schema.columns
+                 WHERE table_schema = '${schemaName}' AND table_name = '${tblName}'
+                 ORDER BY ordinal_position`,
+                30000, conn.custom_driver_id);
+              if (colResult.rows.length > 0) {
+                // 查主键
+                let pkCols = [];
+                try {
+                  const pkResult = await executeQuery(dbClient, conn.driver,
+                    `SELECT a.attname
+                     FROM pg_catalog.pg_index i
+                     JOIN pg_catalog.pg_attribute a ON a.attrelid = i.indrelid AND a.attnum = ANY(i.indkey)
+                     WHERE i.indrelid = '${schemaName}.${tblName}'::regclass AND i.indisprimary
+                     ORDER BY a.attnum`,
+                    15000, conn.custom_driver_id);
+                  pkCols = (pkResult.rows || []).map((r) => r.attname).filter(Boolean);
+                } catch {}
+                const cols = colResult.rows.map((r) => {
+                  let col = `"${r.column_name}" ${r.data_type}`;
+                  if (r.col_length) col += `(${r.col_length})`;
+                  if (pkCols.includes(r.column_name)) col += ' PRIMARY KEY';
+                  if (r.is_nullable === 'NO') col += ' NOT NULL';
+                  if (r.column_default) col += ` DEFAULT ${r.column_default}`;
+                  return col;
+                });
+                ddl = `CREATE TABLE "${schemaName}"."${tblName}" (\n  ${cols.join(',\n  ')}\n);`;
+              }
+            } catch (e2) {
+              console.error(`[ddl] Fallback 2 failed:`, e2?.message || e2);
+            }
+          }
+        }
+      }
+
+      if (!ddl) {
+      }
+
+      console.log(`[ddl] table=${table} ddl_length=${ddl.length}`);
+      res.json({ ddl });
+    } finally {
+      await closeConnection(dbClient, conn.driver, conn.custom_driver_id).catch(() => {});
+    }
+  } catch (err) {
+    console.error(`[ddl] error:`, err.message);
+    res.status(500).json({ error: formatConnectionError(err) });
+  }
+});
+
+/**
+ * POST /api/connections/:id/ddl/grants
+ * 获取表的 owner 和权限（用于 DDL 权限显示）
+ * Body: { schema?: string, table: string }
+ */
+router.post('/:id/ddl/grants', async (req, res) => {
+  const conn = await getById('connections', req.params.id);
+  if (!conn) return res.status(404).json({ error: '连接不存在' });
+
+  const { schema, table } = req.body;
+  if (!table) return res.status(400).json({ error: '表名不能为空' });
+
+  const password = decryptPassword(conn.password_encrypted || '');
+  const tblName = table.replace(/.*\./, '').replace(/"/g, '');
+  const schemaName = schema || (table.includes('.') ? table.replace(/\..*/, '').replace(/"/g, '') : 'public');
+
+  try {
+    const dbClient = await createDbConnection({
+      driver: conn.driver, host: conn.host, port: conn.port,
+      username: conn.username, password, database: conn.database_name || '',
+      schema: schemaName, customDriverId: conn.custom_driver_id || undefined,
+    });
+
+    try {
+      let owner = '';
+      const grants = [];
+      let realDriver = conn.driver;
+      try { realDriver = resolveRealDriver(conn.driver, conn.custom_driver_id); } catch {}
+
+      if (realDriver === 'postgresql') {
+        // 查询表所有者
+        const ownerResult = await executeQuery(dbClient, conn.driver,
+          `SELECT pg_catalog.pg_get_userbyid(c.relowner) AS owner
+           FROM pg_catalog.pg_class c
+           JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+           WHERE c.relname = '${tblName}' AND n.nspname = '${schemaName}'`,
+          15000, conn.custom_driver_id);
+        if (ownerResult.rows.length > 0) {
+          owner = ownerResult.rows[0].owner || '';
+        }
+
+        // 查询表级权限
+        const privResult = await executeQuery(dbClient, conn.driver,
+          `SELECT grantee, privilege_type
+           FROM information_schema.table_privileges
+           WHERE table_schema = '${schemaName}' AND table_name = '${tblName}'
+           ORDER BY grantee, privilege_type`,
+          15000, conn.custom_driver_id);
+        const privMap = {};
+        for (const r of privResult.rows) {
+          if (!privMap[r.grantee]) privMap[r.grantee] = [];
+          privMap[r.grantee].push(r.privilege_type);
+        }
+        for (const [grantee, privs] of Object.entries(privMap)) {
+          grants.push(`GRANT ${(privs).join(', ')} ON TABLE "${schemaName}"."${tblName}" TO ${grantee};`);
+        }
+      }
+
+      res.json({ owner, grants });
+    } finally {
+      if (dbClient && dbClient.__type === 'jdbc_bridge') await dbClient.client.end().catch(() => {});
+      else if (dbClient && dbClient.end) await dbClient.end().catch(() => {});
+    }
+  } catch (err) {
+    console.error(`[ddl/grants] error:`, err.message);
+    res.json({ owner: '', grants: [] });
+  }
+});
+
+/**
  * 根据 driver 和 customDriverId 解析实际的数据库类型
  * 自定义驱动会根据其 dbType 映射到已知的连接协议
  */
-function resolveRealDriver(driver, customDriverId) {
+export async function resolveRealDriver(driver, customDriverId) {
   if (driver !== 'custom') return driver;
   if (!customDriverId) throw new Error('自定义驱动未指定');
-  const d = getById('drivers', customDriverId);
+  const d = await getById('drivers', customDriverId);
   if (!d) throw new Error('自定义驱动不存在');
   const dt = (d.dbType || '').toLowerCase();
   if (dt.includes('mysql')) return 'mysql';
@@ -464,69 +736,15 @@ function resolveRealDriver(driver, customDriverId) {
 
 /**
  * 测试数据库连接
+ * 注意：使用与 createDbConnection 一致的连接逻辑（含 JDBC 回退），避免测试与正式连接结果不一致
  */
 async function testConnection(driver, host, port, username, password, database, customDriverId) {
-  const realDriver = resolveRealDriver(driver, customDriverId);
-  switch (realDriver) {
-    case 'mysql': {
-      const mysql = await import('mysql2/promise');
-      const conn = await mysql.createConnection({
-        host, port, user: username, password,
-        database: database || undefined,
-        connectTimeout: 15000,
-      });
-      await conn.ping();
-      await conn.end();
-      return;
-    }
-    case 'postgresql': {
-      // 自定义驱动（如瀚高、高斯、金仓等）必须使用 JDBC 桥接测试
-      // 这些数据库修改了 PostgreSQL 协议（如 SM3 国密认证），TCP 连通性不等于认证成功
-      if (driver === 'custom' && customDriverId) {
-        const { createHgdbConnection } = await import('../hgdb-bridge.mjs');
-        const bridge = await createHgdbConnection({ host, port, username, password, database, driverId: customDriverId });
-        await bridge.exec('SELECT 1');
-        await bridge.end();
-        return;
-      }
-      // 标准 PostgreSQL：优先用 pg 库，失败时自动回退 JDBC 桥接
-      let pgClient;
-      try {
-        const pg = await import('pg');
-        const { Client } = pg.default || pg;
-        pgClient = new Client({
-          host, port, user: username, password,
-          database: database || 'postgres',
-          connectionTimeoutMillis: 15000,
-        });
-        await pgClient.connect();
-        await pgClient.query('SELECT 1');
-        await pgClient.end();
-        console.log(`[testConnection] standard pg OK`);
-        return;
-      } catch (pgErr) {
-        console.error(`[testConnection] standard pg FAILED:`, pgErr.message);
-        if (pgClient) { try { pgClient.end(); } catch {} }
-        // pg 失败（SM3 国密认证等），回退 JDBC 桥接
-        try {
-          const { createHgdbConnection } = await import('../hgdb-bridge.mjs');
-          const resolvedDriverId = customDriverId || findAvailablePgDriver();
-          if (resolvedDriverId) {
-            console.log(`[testConnection] falling back JDBC (driver=${resolvedDriverId})`);
-            const bridge = await createHgdbConnection({ host, port, username, password, database, driverId: resolvedDriverId });
-            await bridge.exec('SELECT 1');
-            await bridge.end();
-            console.log(`[testConnection] JDBC bridge OK`);
-            return;
-          }
-        } catch (jdbcErr) {
-          console.error(`[testConnection] JDBC fallback FAILED:`, jdbcErr.message);
-        }
-        throw pgErr;
-      }
-    }
-    default:
-      throw new Error(`暂不支持 ${realDriver} 类型的连接测试`);
+  const dbClient = await createDbConnection({ driver, host, port, username, password, database, customDriverId });
+  // JDBC 桥接返回 { __type: 'jdbc_bridge', client: bridge, schema }
+  if (dbClient && dbClient.__type === 'jdbc_bridge') {
+    await dbClient.client.end();
+  } else {
+    await dbClient.end();
   }
 }
 
@@ -736,18 +954,25 @@ async function discoverMetadata(driver, host, port, username, password, database
              FROM information_schema.tables t
              JOIN pg_catalog.pg_class c ON c.relname = t.table_name
              JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace AND n.nspname = t.table_schema
-             WHERE t.table_schema = ${targetSchema} AND t.table_type = 'BASE TABLE'
+             WHERE t.table_schema = ${targetSchema} AND t.table_type IN ('BASE TABLE', 'VIEW')
              ORDER BY t.table_name`
           );
           // 查询列信息
           const colResult = await sql.unsafe(
-            `SELECT table_name, column_name, data_type, is_nullable,
-                    column_default, COALESCE(pg_catalog.col_description(c.oid, a.attnum), '') AS comment,
-                    ordinal_position
+            `SELECT col.table_name, col.column_name, col.data_type, col.is_nullable,
+                    col.column_default, COALESCE(pg_catalog.col_description(c.oid, a.attnum), '') AS comment,
+                    col.ordinal_position, col.character_maximum_length,
+                    CASE WHEN pk.column_name IS NOT NULL THEN true ELSE false END AS is_primary_key
              FROM information_schema.columns col
              JOIN pg_catalog.pg_class c ON c.relname = col.table_name
              JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace AND n.nspname = col.table_schema
              JOIN pg_catalog.pg_attribute a ON a.attrelid = c.oid AND a.attname = col.column_name
+             LEFT JOIN (
+               SELECT ku.column_name, ku.table_name, ku.table_schema
+               FROM information_schema.table_constraints tc
+               JOIN information_schema.key_column_usage ku ON tc.constraint_name = ku.constraint_name
+               WHERE tc.constraint_type = 'PRIMARY KEY'
+             ) pk ON pk.table_name = col.table_name AND pk.column_name = col.column_name AND pk.table_schema = col.table_schema
              WHERE col.table_schema = ${targetSchema}
              ORDER BY col.table_name, col.ordinal_position`
           );
@@ -757,7 +982,9 @@ async function discoverMetadata(driver, host, port, username, password, database
             colMap[c.table_name].push({
               name: c.column_name,
               type: c.data_type,
+              length: c.character_maximum_length,
               nullable: c.is_nullable === 'YES',
+              primaryKey: !!c.is_primary_key,
               default: c.column_default,
               comment: c.comment || '',
             });
@@ -796,18 +1023,25 @@ async function discoverMetadata(driver, host, port, username, password, database
            FROM information_schema.tables t
            JOIN pg_catalog.pg_class c ON c.relname = t.table_name
            JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace AND n.nspname = t.table_schema
-           WHERE t.table_schema = $1 AND t.table_type = 'BASE TABLE'
+           WHERE t.table_schema = $1 AND t.table_type IN ('BASE TABLE', 'VIEW')
            ORDER BY t.table_name`,
           [targetSchema]
         );
         const colResult = await stdClient.query(
-          `SELECT table_name, column_name, data_type, is_nullable,
-                  column_default, pg_catalog.col_description(c.oid, a.attnum) AS comment,
-                  ordinal_position
+          `SELECT col.table_name, col.column_name, col.data_type, col.is_nullable,
+                  col.column_default, pg_catalog.col_description(c.oid, a.attnum) AS comment,
+                  col.ordinal_position, col.character_maximum_length,
+                  CASE WHEN pk.column_name IS NOT NULL THEN true ELSE false END AS is_primary_key
            FROM information_schema.columns col
            JOIN pg_catalog.pg_class c ON c.relname = col.table_name
            JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace AND n.nspname = col.table_schema
            JOIN pg_catalog.pg_attribute a ON a.attrelid = c.oid AND a.attname = col.column_name
+           LEFT JOIN (
+             SELECT ku.column_name, ku.table_name, ku.table_schema
+             FROM information_schema.table_constraints tc
+             JOIN information_schema.key_column_usage ku ON tc.constraint_name = ku.constraint_name
+             WHERE tc.constraint_type = 'PRIMARY KEY'
+           ) pk ON pk.table_name = col.table_name AND pk.column_name = col.column_name AND pk.table_schema = col.table_schema
            WHERE col.table_schema = $1
            ORDER BY col.table_name, col.ordinal_position`,
           [targetSchema]
@@ -836,17 +1070,24 @@ async function discoverMetadata(driver, host, port, username, password, database
                FROM information_schema.tables t
                JOIN pg_catalog.pg_class c ON c.relname = t.table_name
                JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace AND n.nspname = t.table_schema
-               WHERE t.table_schema = '${targetSchema}' AND t.table_type = 'BASE TABLE'
+               WHERE t.table_schema = '${targetSchema}' AND t.table_type IN ('BASE TABLE', 'VIEW')
                ORDER BY t.table_name`
             );
             const colResult = await bridge.exec(
-              `SELECT table_name, column_name, data_type, is_nullable,
-                      column_default, COALESCE(pg_catalog.col_description(c.oid, a.attnum), '') AS comment,
-                      ordinal_position
+              `SELECT col.table_name, col.column_name, col.data_type, col.is_nullable,
+                      col.column_default, COALESCE(pg_catalog.col_description(c.oid, a.attnum), '') AS comment,
+                      col.ordinal_position, col.character_maximum_length,
+                      CASE WHEN pk.column_name IS NOT NULL THEN true ELSE false END AS is_primary_key
                FROM information_schema.columns col
                JOIN pg_catalog.pg_class c ON c.relname = col.table_name
                JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace AND n.nspname = col.table_schema
                JOIN pg_catalog.pg_attribute a ON a.attrelid = c.oid AND a.attname = col.column_name
+               LEFT JOIN (
+                 SELECT ku.column_name, ku.table_name, ku.table_schema
+                 FROM information_schema.table_constraints tc
+                 JOIN information_schema.key_column_usage ku ON tc.constraint_name = ku.constraint_name
+                 WHERE tc.constraint_type = 'PRIMARY KEY'
+               ) pk ON pk.table_name = col.table_name AND pk.column_name = col.column_name AND pk.table_schema = col.table_schema
                WHERE col.table_schema = '${targetSchema}'
                ORDER BY col.table_name, col.ordinal_position`
             );
@@ -875,7 +1116,9 @@ function buildMetadataResult(tableRows, colRows) {
     colMap[c.table_name].push({
       name: c.column_name,
       type: c.data_type,
+      length: c.character_maximum_length,
       nullable: c.is_nullable === 'YES',
+      primaryKey: !!c.is_primary_key,
       default: c.column_default,
       comment: c.comment || '',
     });
@@ -895,9 +1138,9 @@ function buildMetadataResult(tableRows, colRows) {
  * 判断是否为需要特殊连接方式的 PostgreSQL 兼容数据库（如瀚高、高斯、金仓等）
  * 这些数据库修改了标准 PostgreSQL 协议，标准 pg 库无法正常工作
  */
-function isPgForkDriver(driver, customDriverId) {
+async function isPgForkDriver(driver, customDriverId) {
   if (driver !== 'custom' || !customDriverId) return false;
-  const d = getById('drivers', customDriverId);
+  const d = await getById('drivers', customDriverId);
   if (!d) { console.log(`[isPgForkDriver] driver ${customDriverId} not found`); return false; }
   const dt = (d.dbType || '').toLowerCase();
   console.log(`[isPgForkDriver] dbType="${d.dbType}" (lower: "${dt}")`);
@@ -911,8 +1154,8 @@ function isPgForkDriver(driver, customDriverId) {
 /**
  * 查找可用的 PostgreSQL 兼容 JDBC 驱动（用于 pg 库失败时的自动回退）
  */
-function findAvailablePgDriver() {
-  const drivers = getAll('drivers');
+async function findAvailablePgDriver() {
+  const drivers = await getAll('drivers');
   if (!drivers) return null;
   // 优先找瀚高/高斯/金仓等国产驱动
   const special = drivers.find(d => {
@@ -1024,6 +1267,17 @@ export async function executeQuery(conn, driver, sql, timeoutMs = 30000, customD
       // 瀚高等国产数据库使用 JDBC 桥接（支持 SM3 认证）
       if (conn && conn.__type === 'jdbc_bridge') {
         queryPromise = (async () => {
+          const schema = conn.schema;
+          // 先切换 search_path（若连接配了 schema），让手写不带 schema 的 SQL 也能定位表
+          if (schema) {
+            try {
+              // 转义双引号，防注入；瀚高/达梦兼容双引号包裹
+              const safeSchema = String(schema).replace(/"/g, '""');
+              await conn.client.exec(`SET search_path TO "${safeSchema}", public`);
+            } catch (e) {
+              console.warn(`[executeQuery] SET search_path failed (schema=${schema}):`, e.message);
+            }
+          }
           const result = await conn.client.exec(sql);
           return { columns: result.columns || [], rows: result.rows || [] };
         })();
@@ -1151,6 +1405,11 @@ export function formatConnectionError(err) {
     return '认证失败：用户名或密码错误';
   }
   if (raw.includes('ER_BAD_DB_ERROR') || (raw.includes('database') && (raw.includes('does not exist') || raw.includes('not exist')))) {
+    // 尝试提取具体数据库名
+    const dbMatch = raw.match(/database\s+["']?([^\s"']+)["']?\s+does not exist/i);
+    if (dbMatch) {
+      return `数据库 "${dbMatch[1]}" 不存在，请检查数据库名称是否正确`;
+    }
     return '数据库不存在或无权访问';
   }
   if (raw.includes('timeout') || raw.includes('超时')) {
@@ -1159,5 +1418,43 @@ export function formatConnectionError(err) {
 
   return raw;
 }
+
+/**
+ * POST /api/connections/:id/execute
+ * 对指定连接直接执行单条 SQL（非 SSE，返回 JSON）
+ */
+router.post('/:id/execute', async (req, res) => {
+  const { sql } = req.body;
+  if (!sql || !sql.trim()) return res.status(400).json({ error: 'SQL 不能为空' });
+  try {
+    const connData = await getById('connections', req.params.id);
+    if (!connData) return res.status(404).json({ error: '连接不存在' });
+
+    const { decryptPassword } = await import('../crypto.mjs');
+    const password = decryptPassword(connData.password);
+
+    const dbConn = await createDbConnection({
+      driver: connData.driver,
+      host: connData.host,
+      port: connData.port,
+      username: connData.username,
+      password,
+      database: connData.database_name || connData.database || '',
+      schema: connData.schema_name || connData.schema || '',
+      customDriverId: connData.custom_driver_id || undefined,
+    });
+
+    const result = await executeQuery(dbConn, connData.driver, sql, 60000, connData.custom_driver_id);
+
+    // 关闭连接
+    if (dbConn && typeof dbConn.end === 'function') dbConn.end().catch(() => {});
+    if (dbConn && typeof dbConn.close === 'function') dbConn.close().catch(() => {});
+
+    res.json({ success: true, ...result });
+  } catch (err) {
+    console.error(`[connections:execute] error:`, err);
+    res.status(500).json({ error: err.message || '执行失败' });
+  }
+});
 
 export default router;

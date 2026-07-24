@@ -15,6 +15,10 @@ export interface ExecuteOptions {
     maxRetries: number;
     readOnlyMode: boolean;
   };
+  /** 每批行数（>0 时启用分页，默认不限制） */
+  pageSize?: number;
+  /** 偏移量（配合 pageSize，默认 0） */
+  offset?: number;
 }
 
 export interface ExecutionProgressEvent {
@@ -30,6 +34,10 @@ export interface ExecutionProgressEvent {
   rows?: any[];
   totalRows?: number;
   truncated?: boolean;
+  /** 是否还有更多数据可加载（分页模式） */
+  hasMore?: boolean;
+  /** 已加载的总行数（分页模式） */
+  totalLoaded?: number;
   timestamp: number;
 }
 
