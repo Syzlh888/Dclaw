@@ -897,13 +897,15 @@ async function discoverMetadata(driver, host, port, username, password, database
         const { createHgdbConnection } = await import('../hgdb-bridge.mjs');
         const bridge = await createHgdbConnection({ host, port, username, password, database, driverId: customDriverId });
         const targetSchema = schema || 'public';
-        await bridge.exec(`SET search_path TO "${targetSchema}", public`);
+        const escSchemaId = targetSchema.replace(/"/g, '""');
+        const escSchemaLit = targetSchema.replace(/'/g, "''");
+        await bridge.exec(`SET search_path TO "${escSchemaId}", public`);
         // 简化查询：优先使用 information_schema，减少对 pg_catalog 的依赖（兼容不同版本瀚高）
         const tableResult = await bridge.exec(
           `SELECT table_name,
                   CASE WHEN table_type = 'VIEW' THEN 'VIEW' ELSE 'BASE TABLE' END AS table_type
            FROM information_schema.tables
-           WHERE table_schema = '${targetSchema}' AND table_type IN ('BASE TABLE', 'VIEW')
+           WHERE table_schema = '${escSchemaLit}' AND table_type IN ('BASE TABLE', 'VIEW')
            ORDER BY table_name`
         );
         const colResult = await bridge.exec(
@@ -911,7 +913,7 @@ async function discoverMetadata(driver, host, port, username, password, database
                   column_default, '' AS comment,
                   ordinal_position
            FROM information_schema.columns
-           WHERE table_schema = '${targetSchema}'
+           WHERE table_schema = '${escSchemaLit}'
            ORDER BY table_name, ordinal_position`
         );
         await bridge.end();
@@ -943,8 +945,10 @@ async function discoverMetadata(driver, host, port, username, password, database
         const sql = postgres(connStr, { connect_timeout: 20 });
         const targetSchema = schema || 'public';
         try {
-          await sql.unsafe(`SET search_path TO "${targetSchema}", public`);
-          // 查询表信息（使用 unsafe 因为 schema 是动态的）
+          // 安全转义 schema 名称
+          const escapedSchema = targetSchema.replace(/"/g, '""');
+          await sql.unsafe(`SET search_path TO "${escapedSchema}", public`);
+          // 查询表信息（通过 $1 参数化避免 SQL 注入）
           const tableResult = await sql.unsafe(
             `SELECT t.table_name,
                     CASE WHEN t.table_type = 'VIEW' THEN 'VIEW' ELSE 'BASE TABLE' END AS table_type,
@@ -954,8 +958,9 @@ async function discoverMetadata(driver, host, port, username, password, database
              FROM information_schema.tables t
              JOIN pg_catalog.pg_class c ON c.relname = t.table_name
              JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace AND n.nspname = t.table_schema
-             WHERE t.table_schema = ${targetSchema} AND t.table_type IN ('BASE TABLE', 'VIEW')
-             ORDER BY t.table_name`
+             WHERE t.table_schema = $1 AND t.table_type IN ('BASE TABLE', 'VIEW')
+             ORDER BY t.table_name`,
+            [targetSchema]
           );
           // 查询列信息
           const colResult = await sql.unsafe(
@@ -973,8 +978,9 @@ async function discoverMetadata(driver, host, port, username, password, database
                JOIN information_schema.key_column_usage ku ON tc.constraint_name = ku.constraint_name
                WHERE tc.constraint_type = 'PRIMARY KEY'
              ) pk ON pk.table_name = col.table_name AND pk.column_name = col.column_name AND pk.table_schema = col.table_schema
-             WHERE col.table_schema = ${targetSchema}
-             ORDER BY col.table_name, col.ordinal_position`
+             WHERE col.table_schema = $1
+             ORDER BY col.table_name, col.ordinal_position`,
+            [targetSchema]
           );
           const colMap = {};
           for (const c of colResult) {
@@ -1060,7 +1066,9 @@ async function discoverMetadata(driver, host, port, username, password, database
             console.log(`[discoverMetadata] falling back to JDBC (driver=${resolvedDriverId})`);
             const bridge = await createHgdbConnection({ host, port, username, password, database, driverId: resolvedDriverId });
             const targetSchema = schema || 'public';
-            await bridge.exec(`SET search_path TO "${targetSchema}", public`);
+            const escSchemaId = targetSchema.replace(/"/g, '""');
+            const escSchemaLit = targetSchema.replace(/'/g, "''");
+            await bridge.exec(`SET search_path TO "${escSchemaId}", public`);
             const tableResult = await bridge.exec(
               `SELECT t.table_name,
                       CASE WHEN t.table_type = 'VIEW' THEN 'VIEW' ELSE 'BASE TABLE' END AS table_type,
@@ -1070,7 +1078,7 @@ async function discoverMetadata(driver, host, port, username, password, database
                FROM information_schema.tables t
                JOIN pg_catalog.pg_class c ON c.relname = t.table_name
                JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace AND n.nspname = t.table_schema
-               WHERE t.table_schema = '${targetSchema}' AND t.table_type IN ('BASE TABLE', 'VIEW')
+               WHERE t.table_schema = '${escSchemaLit}' AND t.table_type IN ('BASE TABLE', 'VIEW')
                ORDER BY t.table_name`
             );
             const colResult = await bridge.exec(
@@ -1088,7 +1096,7 @@ async function discoverMetadata(driver, host, port, username, password, database
                  JOIN information_schema.key_column_usage ku ON tc.constraint_name = ku.constraint_name
                  WHERE tc.constraint_type = 'PRIMARY KEY'
                ) pk ON pk.table_name = col.table_name AND pk.column_name = col.column_name AND pk.table_schema = col.table_schema
-               WHERE col.table_schema = '${targetSchema}'
+               WHERE col.table_schema = '${escSchemaLit}'
                ORDER BY col.table_name, col.ordinal_position`
             );
             await bridge.end();
@@ -1303,7 +1311,10 @@ export async function executeQuery(conn, driver, sql, timeoutMs = 30000, customD
         queryPromise = (async () => {
           const { client: pgClient, schema } = conn;
           try {
-            if (schema) await pgClient.unsafe(`SET search_path TO "${schema}", public`);
+            if (schema) {
+              const escSchema = schema.replace(/"/g, '""');
+              await pgClient.unsafe(`SET search_path TO "${escSchema}", public`);
+            }
             const result = await pgClient.unsafe(sql);
             // postgres.js 返回格式与 pg 不同，需要适配
             if (Array.isArray(result)) {
@@ -1454,6 +1465,24 @@ router.post('/:id/execute', async (req, res) => {
   } catch (err) {
     console.error(`[connections:execute] error:`, err);
     res.status(500).json({ error: err.message || '执行失败' });
+  }
+});
+
+/**
+ * PATCH /api/connections/:id/status
+ * 更新连接状态（用于巡检结果持久化到数据库）
+ */
+router.patch('/:id/status', async (req, res) => {
+  try {
+    const { status } = req.body;
+    if (!['online', 'error', 'unknown'].includes(status)) {
+      return res.status(400).json({ error: '无效的状态值' });
+    }
+    await update('connections', req.params.id, { status });
+    res.json({ success: true });
+  } catch (err) {
+    console.error(`[connections:status] error:`, err);
+    res.status(500).json({ error: err.message || '更新状态失败' });
   }
 });
 

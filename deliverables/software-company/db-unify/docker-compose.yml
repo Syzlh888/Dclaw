@@ -1,6 +1,4 @@
 # DClaw Docker Compose 部署 (v1.4.0-alpha.1: PG16 + 国密加密连接配置)
-version: '3.8'
-
 services:
   postgres:
     image: postgres:16-alpine
@@ -44,6 +42,7 @@ services:
       PORT: 3001
     volumes:
       - ./backups:/backups
+      - ./data:/app/server/data
     ports:
       - '8081:3001'
 

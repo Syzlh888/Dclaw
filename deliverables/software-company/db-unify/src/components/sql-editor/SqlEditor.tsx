@@ -337,8 +337,46 @@ const SqlEditor: React.FC<SqlEditorProps> = ({ onExecute }) => {
     return () => container.removeEventListener('wheel', handler);
   }, [zoomReady]);
 
+  // 处理从左侧树拖入的表名
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    const tableName = e.dataTransfer.getData('text/plain');
+    if (tableName) {
+      // 在光标位置插入表名
+      const editor = editorRef.current;
+      if (editor) {
+        const position = editor.getPosition();
+        const model = editor.getModel();
+        if (position && model) {
+          // 在当前位置插入表名 + 空格
+          const newText = `${tableName} `;
+          const range = {
+            startLineNumber: position.lineNumber,
+            startColumn: position.column,
+            endLineNumber: position.lineNumber,
+            endColumn: position.column,
+          };
+          editor.executeEdits('insert-table', [{
+            range,
+            text: newText,
+          }]);
+          editor.focus();
+        }
+      }
+    }
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+  }, []);
+
   return (
-    <Box sx={{ height: '100%', border: '1px solid', borderColor: 'divider', borderRadius: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+    <Box
+      sx={{ height: '100%', border: '1px solid', borderColor: 'divider', borderRadius: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
+      onDrop={handleDrop}
+      onDragOver={handleDragOver}
+    >
       <React.Suspense
         fallback={
           <Box

@@ -21,7 +21,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import SecurityIcon from '@mui/icons-material/Security';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import { SchemaIcon, TableIcon, ViewIcon } from './DbIcons';
+import { SchemaIcon, TableIcon, ViewIcon, FunctionIcon, ProcedureIcon } from './DbIcons';
 import {
   fetchMetadata,
   fetchConnectionSchemas,
@@ -45,6 +45,7 @@ import EditTableDialog from '../database-table/EditTableDialog';
 import ConfirmDropDialog from '../database-table/ConfirmDropDialog';
 import FieldViewerDialog from '../database-table/FieldViewerDialog';
 import { deleteTable, deleteView, fetchViewDdl } from '../../services/tableMgmtService';
+import { fetchFunctions, fetchProcedures, fetchFunctionDetail, fetchFunctionDdl, deleteFunction, type FunctionInfo, type ProcedureInfo } from '../../services/functionMgmtService';
 import { apiFetch } from '../../services/apiClient';
 
 interface MetadataBrowserProps {
@@ -60,6 +61,12 @@ interface SchemaState {
   expanded: boolean;
   tablesOpen: boolean;
   viewsOpen: boolean;
+  functionsOpen: boolean;
+  proceduresOpen: boolean;
+  functionsLoading: boolean;
+  proceduresLoading: boolean;
+  functions: FunctionInfo[];
+  procedures: ProcedureInfo[];
 }
 
 const emptySchemaState = (): SchemaState => ({
@@ -69,6 +76,12 @@ const emptySchemaState = (): SchemaState => ({
   expanded: false,
   tablesOpen: false,
   viewsOpen: false,
+  functionsOpen: false,
+  proceduresOpen: false,
+  functionsLoading: false,
+  proceduresLoading: false,
+  functions: [],
+  procedures: [],
 });
 
 const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseIndentPx = 14 }) => {
@@ -269,6 +282,38 @@ const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseInden
     patchSt(schemaKey, { viewsOpen: willOpen });
     if (willOpen && !st.data && !st.loading) {
       loadMeta(schemaKey, schemaName);
+    }
+  };
+
+  const toggleFunctionsGroup = async (schemaKey: string, schemaName?: string) => {
+    const st = getSt(schemaKey);
+    const willOpen = !st.functionsOpen;
+    patchSt(schemaKey, { functionsOpen: willOpen, functionsLoading: true });
+    if (willOpen && st.functions.length === 0) {
+      try {
+        const data = await fetchFunctions(connection.id, schemaName || schemaKey);
+        patchSt(schemaKey, { functions: data, functionsLoading: false });
+      } catch (err: any) {
+        patchSt(schemaKey, { functionsLoading: false, error: err.message || '加载函数失败' });
+      }
+    } else {
+      patchSt(schemaKey, { functionsOpen: willOpen });
+    }
+  };
+
+  const toggleProceduresGroup = async (schemaKey: string, schemaName?: string) => {
+    const st = getSt(schemaKey);
+    const willOpen = !st.proceduresOpen;
+    patchSt(schemaKey, { proceduresOpen: willOpen, proceduresLoading: true });
+    if (willOpen && st.procedures.length === 0) {
+      try {
+        const data = await fetchProcedures(connection.id, schemaName || schemaKey);
+        patchSt(schemaKey, { procedures: data, proceduresLoading: false });
+      } catch (err: any) {
+        patchSt(schemaKey, { proceduresLoading: false, error: err.message || '加载存储过程失败' });
+      }
+    } else {
+      patchSt(schemaKey, { proceduresOpen: willOpen });
     }
   };
 
@@ -659,6 +704,13 @@ const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseInden
     return (
       <Box key={tableKey}>
         <ListItemButton
+          draggable
+          onDragStart={(e) => {
+            // 设置拖拽数据：表名（带 schema 前缀）
+            const fullName = schemaName ? `"${schemaName}"."${table.name}"` : `"${table.name}"`;
+            e.dataTransfer.setData('text/plain', fullName);
+            e.dataTransfer.effectAllowed = 'copy';
+          }}
           onClick={(e) => {
             // 如果刚拖拽过，跳过 onClick（防止拖拽后重置选中）
             if (didDrag.current) {
@@ -809,6 +861,76 @@ const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseInden
             </Box>
           )}
           {st.data && views.map(t => renderTableItem(schemaKey, t, baseIndent + 20, schemaName))}
+        </Collapse>
+
+        {/* 函数 分组 */}
+        <ListItemButton
+          onClick={() => toggleFunctionsGroup(schemaKey, schemaName)}
+          sx={{ py: 0, minHeight: 14, pl: `${baseIndent}px`, '&:hover': { bgcolor: 'action.hover' } }}
+        >
+          {st.functionsOpen
+            ? <ExpandMoreIcon sx={{ fontSize: 12, color: 'text.secondary', mr: 0.15 }} />
+            : <ChevronRightIcon sx={{ fontSize: 12, color: 'text.secondary', mr: 0.15 }} />}
+          <FunctionIcon size={11} style={{ marginRight: 2 }} />
+          <Typography variant="caption" sx={{ fontSize: '0.75rem', fontWeight: 600, flex: 1 }}>
+            函数{st.functions.length > 0 ? ` (${st.functions.length})` : ''}
+          </Typography>
+        </ListItemButton>
+        <Collapse in={st.functionsOpen} timeout="auto" unmountOnExit>
+          {st.functionsLoading && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.5, pl: `${baseIndent + 20}px` }}>
+              <CircularProgress size={10} />
+              <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>加载中...</Typography>
+            </Box>
+          )}
+          {st.functions.length === 0 && !st.functionsLoading && (
+            <Box sx={{ py: 0.5, pl: `${baseIndent + 20}px` }}>
+              <Typography variant="caption" color="text.disabled" sx={{ fontSize: '0.75rem' }}>无函数</Typography>
+            </Box>
+          )}
+          {st.functions.map(fn => (
+            <ListItemButton
+              key={fn.name}
+              sx={{ py: 0, minHeight: 12, pl: `${baseIndent + 20}px` }}
+            >
+              <Typography variant="caption" sx={{ fontSize: '0.75rem' }}>{fn.name}</Typography>
+            </ListItemButton>
+          ))}
+        </Collapse>
+
+        {/* 存储过程 分组 */}
+        <ListItemButton
+          onClick={() => toggleProceduresGroup(schemaKey, schemaName)}
+          sx={{ py: 0, minHeight: 14, pl: `${baseIndent}px`, '&:hover': { bgcolor: 'action.hover' } }}
+        >
+          {st.proceduresOpen
+            ? <ExpandMoreIcon sx={{ fontSize: 12, color: 'text.secondary', mr: 0.15 }} />
+            : <ChevronRightIcon sx={{ fontSize: 12, color: 'text.secondary', mr: 0.15 }} />}
+          <ProcedureIcon size={11} style={{ marginRight: 2 }} />
+          <Typography variant="caption" sx={{ fontSize: '0.75rem', fontWeight: 600, flex: 1 }}>
+            存储过程{st.procedures.length > 0 ? ` (${st.procedures.length})` : ''}
+          </Typography>
+        </ListItemButton>
+        <Collapse in={st.proceduresOpen} timeout="auto" unmountOnExit>
+          {st.proceduresLoading && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.5, pl: `${baseIndent + 20}px` }}>
+              <CircularProgress size={10} />
+              <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>加载中...</Typography>
+            </Box>
+          )}
+          {st.procedures.length === 0 && !st.proceduresLoading && (
+            <Box sx={{ py: 0.5, pl: `${baseIndent + 20}px` }}>
+              <Typography variant="caption" color="text.disabled" sx={{ fontSize: '0.75rem' }}>无存储过程</Typography>
+            </Box>
+          )}
+          {st.procedures.map(pr => (
+            <ListItemButton
+              key={pr.name}
+              sx={{ py: 0, minHeight: 12, pl: `${baseIndent + 20}px` }}
+            >
+              <Typography variant="caption" sx={{ fontSize: '0.75rem' }}>{pr.name}</Typography>
+            </ListItemButton>
+          ))}
         </Collapse>
       </>
     );

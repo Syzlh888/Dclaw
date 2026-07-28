@@ -19,6 +19,7 @@
 import 'dotenv/config';
 // force nodemon restart for bridge fix
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -51,6 +52,7 @@ import tableMgmtRouter from './routes/table-mgmt.mjs';
 import usersRouter from './routes/users.mjs';
 import rolesRouter from './routes/roles.mjs';
 import permissionsRouter from './routes/permissions.mjs';
+import functionMgmtRouter from './routes/function-mgmt.mjs';
 
 const app = express();
 const PORT = parseInt(process.env.PORT, 10) || 3001;
@@ -118,7 +120,7 @@ app.use((req, res, next) => {
 
 // 静态文件服务（生产环境）
 // APP_DIST 由 Electron 主进程注入，指向 asar 解包后的真实 dist/ 目录
-const staticDir = process.env.APP_DIST || 'dist';
+const staticDir = process.env.APP_DIST || path.resolve(process.cwd(), 'dist');
 if (isProduction) {
   app.use(express.static(staticDir));
 }
@@ -223,6 +225,7 @@ app.use('/api/access', authMiddleware, accessRouter);
 app.use('/api/query', authMiddleware, queryRouter);
 app.use('/api/connections', authMiddleware, tableMgmtRouter);
 app.use('/api/connection', authMiddleware, tableMgmtRouter);
+app.use('/api/connections', authMiddleware, functionMgmtRouter);
 app.use('/api/users', authMiddleware, usersRouter);
 app.use('/api/roles', authMiddleware, rolesRouter);
 app.use('/api/permissions', authMiddleware, permissionsRouter);

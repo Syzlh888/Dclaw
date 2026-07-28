@@ -209,6 +209,14 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
             method: 'POST',
           });
           const status = resp.ok ? ConnectionStatus.Online : ConnectionStatus.Error;
+          // 持久化状态到后端数据库
+          try {
+            await (await import('../services/apiClient')).apiFetch(`/api/connections/${id}/status`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ status }),
+            });
+          } catch { /* 持久化失败不影响前端显示 */ }
           set(state => ({
             connections: {
               ...state.connections,

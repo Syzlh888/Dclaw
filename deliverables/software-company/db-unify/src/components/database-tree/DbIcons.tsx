@@ -16,8 +16,8 @@ interface IconProps {
   style?: React.CSSProperties;
 }
 
-/** 连接（Hospital）：三层堆叠数据库柱体 —— 蓝色 #4DB8E6 */
-export const ConnectionIcon: React.FC<IconProps> = ({ size = 14, color = '#4DB8E6', style }) => (
+/** 连接（Hospital）：三层堆叠数据库柱体 —— 绿色 #4CAF50 */
+export const ConnectionIcon: React.FC<IconProps> = ({ size = 14, color = '#4CAF50', style }) => (
   <svg width={size} height={size} viewBox="0 0 16 16" fill="none" style={style} xmlns="http://www.w3.org/2000/svg">
     {/* 顶部椭圆（面） */}
     <ellipse cx="8" cy="3" rx="5.5" ry="1.8" fill={color} />
@@ -49,8 +49,8 @@ export const ConnectionIcon: React.FC<IconProps> = ({ size = 14, color = '#4DB8E
   </svg>
 );
 
-/** Schema：文档 + 3 行方形列表项 —— 青色 #4EC9B0 */
-export const SchemaIcon: React.FC<IconProps> = ({ size = 14, color = '#4EC9B0', style }) => (
+/** Schema：文档 + 3 行方形列表项 —— 橙色 #FF9800 */
+export const SchemaIcon: React.FC<IconProps> = ({ size = 14, color = '#FF9800', style }) => (
   <svg width={size} height={size} viewBox="0 0 16 16" fill="none" style={style} xmlns="http://www.w3.org/2000/svg">
     {/* 文档轮廓（带右上折角） */}
     <path
@@ -80,8 +80,8 @@ export const SchemaIcon: React.FC<IconProps> = ({ size = 14, color = '#4EC9B0', 
   </svg>
 );
 
-/** 表（Table）：网格表格 2×3（顶部有表头行）—— 白/浅灰 #E0E0E0 */
-export const TableIcon: React.FC<IconProps> = ({ size = 14, color = '#E0E0E0', style }) => (
+/** 表（Table）：网格表格 2×3（顶部有表头行）—— 蓝色 #42A5F5 */
+export const TableIcon: React.FC<IconProps> = ({ size = 14, color = '#42A5F5', style }) => (
   <svg width={size} height={size} viewBox="0 0 16 16" fill="none" style={style} xmlns="http://www.w3.org/2000/svg">
     {/* 外框 */}
     <rect x="1.5" y="2.5" width="13" height="11" stroke={color} strokeWidth="1" fill="none" rx="0.5" />
@@ -112,5 +112,38 @@ export const ViewIcon: React.FC<IconProps> = ({ size = 14, color = '#DAAA4E', st
     <circle cx="8" cy="8" r="2.2" fill={color} />
     {/* 高光小点 */}
     <circle cx="8.8" cy="7.2" r="0.5" fill="#2B2B2B" />
+  </svg>
+);
+
+/** 函数/存储过程（Function）：fx 符号 —— 紫色 #9B59B6 */
+export const FunctionIcon: React.FC<IconProps> = ({ size = 14, color = '#9B59B6', style }) => (
+  <svg width={size} height={size} viewBox="0 0 16 16" fill="none" style={style} xmlns="http://www.w3.org/2000/svg">
+    {/* fx 文字图形 */}
+    <text x="2" y="12" fontFamily="Arial, sans-serif" fontSize="10" fontWeight="bold" fill={color}>fx</text>
+  </svg>
+);
+
+/** 存储过程（Procedure）：文件带齿轮 —— 青色 #17A2B8 */
+export const ProcedureIcon: React.FC<IconProps> = ({ size = 14, color = '#17A2B8', style }) => (
+  <svg width={size} height={size} viewBox="0 0 16 16" fill="none" style={style} xmlns="http://www.w3.org/2000/svg">
+    {/* 文档轮廓 */}
+    <path
+      d="M3 1.5 L10.5 1.5 L13 4 L13 14 L3 14 Z"
+      stroke={color}
+      strokeWidth="1"
+      fill="none"
+      strokeLinejoin="round"
+    />
+    {/* 折角三角形 */}
+    <path
+      d="M10.5 1.5 L10.5 4 L13 4"
+      stroke={color}
+      strokeWidth="1"
+      fill="none"
+      strokeLinejoin="round"
+    />
+    {/* 齿轮图形 */}
+    <circle cx="8" cy="8" r="2.5" stroke={color} strokeWidth="1" fill="none" />
+    <circle cx="8" cy="8" r="1" fill={color} />
   </svg>
 );

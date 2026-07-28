@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { DriverPackage } from '../types/driver';
-import { fetchDrivers, createDriver as apiCreateDriver, updateDriverApi, deleteDriverApi, downloadDriverApi, uninstallDriverApi, uploadBuiltinJarApi } from '../services/driverService';
+import { fetchDrivers, createDriver as apiCreateDriver, updateDriver, deleteDriver, downloadDriverApi, uninstallDriver, uploadBuiltinJarApi } from '../services/driverService';
 
 interface DriverState {
   drivers: Record<string, DriverPackage>;
@@ -197,7 +197,7 @@ export const useDriverStore = create<DriverState>((set, get) => ({
     const driver = get().drivers[id];
     if (!driver || driver.isBuiltIn) return false;
     try {
-      const updated = await updateDriverApi(id, data);
+      const updated = await updateDriver(id, data);
       set((state) => ({
         drivers: { ...state.drivers, [id]: updated },
       }));
@@ -214,7 +214,7 @@ export const useDriverStore = create<DriverState>((set, get) => ({
     if (!driver || driver.isBuiltIn) return;
 
     try {
-      await deleteDriverApi(id);
+      await deleteDriver(id);
       set((state) => {
         const { [id]: _, ...rest } = state.drivers;
         return { drivers: rest };
@@ -274,7 +274,7 @@ export const useDriverStore = create<DriverState>((set, get) => ({
   /** 卸载驱动（移除 JAR 文件，保留驱动记录） */
   uninstallDriver: async (id) => {
     try {
-      await uninstallDriverApi(id);
+      await uninstallDriver(id);
       // 更新 store 中该驱动的状态
       set((state) => {
         const driver = state.drivers[id];
