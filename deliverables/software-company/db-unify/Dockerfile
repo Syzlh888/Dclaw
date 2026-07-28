@@ -34,8 +34,8 @@ WORKDIR /app
 
 RUN npm config set registry https://registry.npmmirror.com
 
-# 运行时：纯 JS 运行时，无 native 依赖（JDBC 桥接需要 Java，按需另加）
-RUN apk add --no-cache curl tzdata \
+# 运行时：纯 JS 运行时 + Java 17 JRE（用于瀚高 JDBC 桥接）
+RUN apk add --no-cache curl tzdata openjdk17-jre \
  && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
  && echo "Asia/Shanghai" > /etc/timezone
 

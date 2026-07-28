@@ -30,6 +30,7 @@ services:
         condition: service_healthy
     environment:
       NODE_ENV: production
+      DATA_DIR: /app/server/data
       GM_MASTER_KEY: ${GM_MASTER_KEY}
       GM_JWT_SECRET: ${GM_JWT_SECRET}
       GM_PWD_PEPPER: ${GM_PWD_PEPPER}
