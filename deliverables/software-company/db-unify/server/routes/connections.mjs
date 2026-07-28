@@ -566,7 +566,7 @@ router.post('/:id/ddl', async (req, res) => {
     });
 
     try {
-      const realDriver = resolveRealDriver(conn.driver, conn.custom_driver_id);
+      const realDriver = await resolveRealDriver(conn.driver, conn.custom_driver_id);
       let ddl = '';
 
       if (realDriver === 'mysql') {
@@ -675,7 +675,7 @@ router.post('/:id/ddl/grants', async (req, res) => {
       let owner = '';
       const grants = [];
       let realDriver = conn.driver;
-      try { realDriver = resolveRealDriver(conn.driver, conn.custom_driver_id); } catch {}
+      try { realDriver = await resolveRealDriver(conn.driver, conn.custom_driver_id); } catch {}
 
       if (realDriver === 'postgresql') {
         // 查询表所有者
@@ -752,7 +752,7 @@ async function testConnection(driver, host, port, username, password, database, 
  * 发现 Schema 列表
  */
 async function discoverSchemas(driver, host, port, username, password, database, customDriverId) {
-  const realDriver = resolveRealDriver(driver, customDriverId);
+  const realDriver = await resolveRealDriver(driver, customDriverId);
   switch (realDriver) {
     case 'mysql':
       // MySQL 中 schema 等同于 database，直接返回当前数据库名
@@ -805,7 +805,7 @@ async function discoverSchemas(driver, host, port, username, password, database,
  * 发现数据库列表
  */
 async function discoverDatabases(driver, host, port, username, password, customDriverId) {
-  const realDriver = resolveRealDriver(driver, customDriverId);
+  const realDriver = await resolveRealDriver(driver, customDriverId);
   switch (realDriver) {
     case 'mysql': {
       const mysql = await import('mysql2/promise');
@@ -849,7 +849,7 @@ async function discoverDatabases(driver, host, port, username, password, customD
  * 发现数据库元数据（表 + 列）
  */
 async function discoverMetadata(driver, host, port, username, password, database, schema, customDriverId) {
-  const realDriver = resolveRealDriver(driver, customDriverId);
+  const realDriver = await resolveRealDriver(driver, customDriverId);
   switch (realDriver) {
     case 'mysql': {
       const mysql = await import('mysql2/promise');
@@ -937,7 +937,7 @@ async function discoverMetadata(driver, host, port, username, password, database
         }));
       }
       // 瀚高等国产数据库使用 postgres.js
-      if (isPgForkDriver(driver, customDriverId)) {
+      if (await isPgForkDriver(driver, customDriverId)) {
         const safeDb = encodeURIComponent(database || 'postgres');
         const connStr = `postgres://${encodeURIComponent(username)}:${encodeURIComponent(password)}@${host}:${port}/${safeDb}`;
         const sql = postgres(connStr, { connect_timeout: 20 });
@@ -1179,8 +1179,8 @@ async function findAvailablePgDriver() {
  */
 export async function createDbConnection(params) {
   const { driver, host, port, username, password, database, schema, customDriverId } = params;
-  const realDriver = resolveRealDriver(driver, customDriverId);
-  const isFork = isPgForkDriver(driver, customDriverId);
+  const realDriver = await resolveRealDriver(driver, customDriverId);
+  const isFork = await isPgForkDriver(driver, customDriverId);
   console.log(`[createDbConnection] driver=${driver} customDriverId=${customDriverId} realDriver=${realDriver} isPgFork=${isFork} host=${host}:${port} db=${database}`);
 
   switch (realDriver) {
@@ -1246,7 +1246,7 @@ export async function createDbConnection(params) {
  * 在指定连接上执行 SQL 查询
  */
 export async function executeQuery(conn, driver, sql, timeoutMs = 30000, customDriverId) {
-  const realDriver = resolveRealDriver(driver, customDriverId);
+  const realDriver = await resolveRealDriver(driver, customDriverId);
   const timeoutPromise = new Promise((_, reject) =>
     setTimeout(() => reject(new Error(`查询超时（${timeoutMs / 1000}s）`)), timeoutMs)
   );
@@ -1341,7 +1341,7 @@ export async function executeQuery(conn, driver, sql, timeoutMs = 30000, customD
  * 关闭数据库连接
  */
 export async function closeConnection(conn, driver, customDriverId) {
-  const realDriver = resolveRealDriver(driver, customDriverId);
+  const realDriver = await resolveRealDriver(driver, customDriverId);
   try {
     if (conn && conn.__type === 'jdbc_bridge') {
       // JDBC 桥接连接
@@ -1431,7 +1431,7 @@ router.post('/:id/execute', async (req, res) => {
     if (!connData) return res.status(404).json({ error: '连接不存在' });
 
     const { decryptPassword } = await import('../crypto.mjs');
-    const password = decryptPassword(connData.password);
+    const password = decryptPassword(connData.password_encrypted);
 
     const dbConn = await createDbConnection({
       driver: connData.driver,

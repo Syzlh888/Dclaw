@@ -4,6 +4,7 @@
 import type { ExecutionTask } from '../types/execution';
 import type { QueryResult } from '../types/result';
 import { ExecutionStatus } from '../types/execution';
+import { apiFetch } from './apiClient';
 
 export interface ExecuteOptions {
   sql: string;
@@ -78,7 +79,8 @@ export function executeBatchSSE(
       const apiBase = import.meta.env.DEV
         ? (import.meta.env.VITE_API_HOST || 'http://localhost:3001')
         : '';
-      const response = await fetch(`${apiBase}/api/execute`, {
+      const url = `${apiBase}/api/execute`;
+      const response = await apiFetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(options),

@@ -13,10 +13,10 @@ export function loadDbConfig() {
 
   const configPath = process.env.DB_CONFIG_PATH || './config/db.enc';
 
-  // 开发回退
+  // 开发回退（生产环境也支持环境变量配置）
   if (!fs.existsSync(configPath)) {
-    if (process.env.NODE_ENV !== 'production' && process.env.DB_HOST) {
-      console.warn('[db-config] 开发模式：使用环境变量 DB_HOST/DB_USER/... 直接连接');
+    if (process.env.DB_HOST) {
+      console.warn('[db-config] 无加密配置文件，使用环境变量 DB_HOST/DB_USER/... 直接连接');
       cachedConfig = {
         host: process.env.DB_HOST || 'localhost',
         port: parseInt(process.env.DB_PORT || '5432', 10),

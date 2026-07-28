@@ -22,24 +22,30 @@ services:
       retries: 10
 
   web:
-    build: .
+    image: db-unify-web:stable-v1.4.0
     container_name: dclaw-web
     restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
     depends_on:
       postgres:
         condition: service_healthy
     environment:
       NODE_ENV: production
-      GM_MASTER_KEY: ${GM_MASTER_KEY}          # 国密主密钥，必须从外部注入
+      GM_MASTER_KEY: ${GM_MASTER_KEY}
       GM_JWT_SECRET: ${GM_JWT_SECRET}
       GM_PWD_PEPPER: ${GM_PWD_PEPPER}
-      DB_CONFIG_PATH: /app/config/db.enc       # 加密后的连接配置
+      ENCRYPTION_KEY: 5be9c0634982469f5b414d2979193f14dda7bbde61f3d4c9bf6fc8d8ef5a12fd
+      DB_HOST: postgres
+      DB_PORT: '5432'
+      DB_USER: dclaw
+      DB_PASSWORD: DClaw@2024Pwd
+      DB_NAME: dclaw
       PORT: 3001
     volumes:
-      - ./config:/app/config:ro                # 只读挂载，包含 db.enc
       - ./backups:/backups
     ports:
-      - '8080:3001'   # 外部 8080 → 容器内 3001（医院内网 80 常受限）
+      - '8081:3001'
 
 volumes:
   dclaw-pg-data:

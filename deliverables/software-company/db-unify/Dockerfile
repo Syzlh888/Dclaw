@@ -15,7 +15,7 @@ RUN apk add --no-cache python3 make g++ git
 RUN npm config set registry https://registry.npmmirror.com
 
 COPY package.json package-lock.json* ./
-RUN npm ci --registry=https://registry.npmmirror.com
+RUN npm install --registry=https://registry.npmmirror.com
 
 COPY tsconfig.json tsconfig.app.json tsconfig.node.json vite.config.ts index.html ./
 COPY tailwind.config.ts postcss.config.js ./
@@ -34,14 +34,14 @@ WORKDIR /app
 
 RUN npm config set registry https://registry.npmmirror.com
 
-# 运行时：JDBC 桥接需要 Java；PG 驱动为纯 JS 无 native 依赖
-RUN apk add --no-cache openjdk17-jre-headless curl tzdata \
+# 运行时：纯 JS 运行时，无 native 依赖（JDBC 桥接需要 Java，按需另加）
+RUN apk add --no-cache curl tzdata \
  && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
  && echo "Asia/Shanghai" > /etc/timezone
 
 # 仅拷贝 production 依赖清单，重新安装 prod-only 节省体积
 COPY package.json package-lock.json* ./
-RUN npm ci --omit=dev --registry=https://registry.npmmirror.com \
+RUN npm install --include=prod --legacy-peer-deps --registry=https://registry.npmmirror.com \
  && npm cache clean --force
 
 # 复制前端产物 + 后端 bundle + 服务端源码 (兼容非 bundle 启动)
@@ -66,5 +66,5 @@ EXPOSE 3001
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
   CMD curl -f http://localhost:3001/api/health || exit 1
 
-# 启动服务端（优先 bundle，回退到源码）
-CMD ["sh", "-c", "if [ -f scripts/server-bundle.cjs ]; then node scripts/server-bundle.cjs; else node server/index.mjs; fi"]
+# 启动服务端（使用 ESM 源码模式，支持 import.meta）
+CMD ["node", "server/index.mjs"]

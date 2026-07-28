@@ -1,10 +1,12 @@
 /**
  * 树层级 API 服务
  */
+import { apiFetch } from './apiClient';
+
 const API_BASE = '/api/tree';
 
 export async function fetchTree() {
-  const response = await fetch(API_BASE);
+  const response = await apiFetch(API_BASE);
   if (!response.ok) {
     const err = await response.json().catch(() => ({ error: '请求失败' }));
     throw new Error(err.error || '获取树数据失败');
@@ -47,7 +49,7 @@ export async function createNode(params: {
       throw new Error('未知节点类型');
   }
 
-  const response = await fetch(url, {
+  const response = await apiFetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
@@ -90,7 +92,7 @@ export async function updateNode(params: {
       throw new Error('未知节点类型');
   }
 
-  const response = await fetch(url, {
+  const response = await apiFetch(url, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
@@ -124,7 +126,7 @@ export async function deleteNode(params: {
       throw new Error('未知节点类型');
   }
 
-  const response = await fetch(url, { method: 'DELETE' });
+  const response = await apiFetch(url, { method: 'DELETE' });
   if (!response.ok) {
     const err = await response.json().catch(() => ({ error: '删除失败' }));
     throw new Error(err.error || '删除失败');
@@ -133,7 +135,7 @@ export async function deleteNode(params: {
 }
 
 export async function fetchTreeConnections() {
-  const response = await fetch(`${API_BASE}/connections`);
+  const response = await apiFetch(`${API_BASE}/connections`);
   if (!response.ok) {
     const err = await response.json().catch(() => ({ error: '请求失败' }));
     throw new Error(err.error || '获取连接列表失败');
@@ -143,21 +145,21 @@ export async function fetchTreeConnections() {
 
 /** 获取所有项目列表（用于级联选择器） */
 export async function fetchPlatforms(): Promise<Array<{ id: string; name: string }>> {
-  const response = await fetch(`${API_BASE}/platforms-list`);
+  const response = await apiFetch(`${API_BASE}/platforms-list`);
   if (!response.ok) throw new Error('获取项目列表失败');
   return response.json();
 }
 
 /** 获取指定项目下的业务模块列表 */
 export async function fetchPredbTypes(platformId: string): Promise<Array<{ id: string; name: string }>> {
-  const response = await fetch(`${API_BASE}/predb-types-list?platform_id=${encodeURIComponent(platformId)}`);
+  const response = await apiFetch(`${API_BASE}/predb-types-list?platform_id=${encodeURIComponent(platformId)}`);
   if (!response.ok) throw new Error('获取业务模块列表失败');
   return response.json();
 }
 
 /** 获取指定业务模块下的区域节点列表 */
 export async function fetchDistricts(predbTypeId: string): Promise<Array<{ id: string; name: string }>> {
-  const response = await fetch(`${API_BASE}/districts-list?predb_type_id=${encodeURIComponent(predbTypeId)}`);
+  const response = await apiFetch(`${API_BASE}/districts-list?predb_type_id=${encodeURIComponent(predbTypeId)}`);
   if (!response.ok) throw new Error('获取区域节点列表失败');
   return response.json();
 }
@@ -169,7 +171,7 @@ export async function fetchHospitalByConnection(connectionId: string): Promise<{
   predbType: { id: string; name: string } | null;
   platform: { id: string; name: string } | null;
 } | null> {
-  const response = await fetch(`${API_BASE}/hospitals/by-connection/${encodeURIComponent(connectionId)}`);
+  const response = await apiFetch(`${API_BASE}/hospitals/by-connection/${encodeURIComponent(connectionId)}`);
   if (!response.ok) throw new Error('获取关联连接实例失败');
   return response.json();
 }
@@ -179,7 +181,7 @@ export async function reorderNodes(params: {
   type: 'platform' | 'predb_type' | 'district' | 'hospital';
   ids: string[];
 }): Promise<void> {
-  const response = await fetch(`${API_BASE}/reorder`, {
+  const response = await apiFetch(`${API_BASE}/reorder`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(params),
@@ -197,7 +199,7 @@ export async function moveHospital(params: {
   parentId: string;
   siblingIds?: string[];
 }): Promise<void> {
-  const response = await fetch(`${API_BASE}/hospitals/${encodeURIComponent(params.hospitalId)}/move`, {
+  const response = await apiFetch(`${API_BASE}/hospitals/${encodeURIComponent(params.hospitalId)}/move`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({

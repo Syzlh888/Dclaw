@@ -87,8 +87,8 @@ function wrapHandler(handler) {
 /**
  * 检查数据库是否支持角色管理
  */
-function supportsRoleManagement(driver, customDriverId) {
-  const real = resolveRealDriver(driver, customDriverId);
+async function supportsRoleManagement(driver, customDriverId) {
+  const real = await resolveRealDriver(driver, customDriverId);
   return real === 'mysql' || real === 'postgresql';
 }
 
@@ -102,9 +102,9 @@ function supportsRoleManagement(driver, customDriverId) {
  */
 router.get('/:id/roles', wrapHandler(async (req, res) => {
   const { conn } = await getConnConfig(req.params.id);
-  const real = resolveRealDriver(conn.driver, conn.custom_driver_id);
+  const real = await resolveRealDriver(conn.driver, conn.custom_driver_id);
 
-  if (!supportsRoleManagement(conn.driver, conn.custom_driver_id)) {
+  if (!await supportsRoleManagement(conn.driver, conn.custom_driver_id)) {
     return res.status(400).json({ error: '当前数据库类型不支持角色管理' });
   }
 
@@ -137,12 +137,12 @@ router.get('/:id/roles', wrapHandler(async (req, res) => {
  */
 router.post('/:id/roles', wrapHandler(async (req, res) => {
   const { conn } = await getConnConfig(req.params.id);
-  const real = resolveRealDriver(conn.driver, conn.custom_driver_id);
+  const real = await resolveRealDriver(conn.driver, conn.custom_driver_id);
   const { roleName, password, canLogin, superUser } = req.body;
 
   if (!roleName) return res.status(400).json({ error: '角色名称不能为空' });
 
-  if (!supportsRoleManagement(conn.driver, conn.custom_driver_id)) {
+  if (!await supportsRoleManagement(conn.driver, conn.custom_driver_id)) {
     return res.status(400).json({ error: '当前数据库类型不支持角色管理' });
   }
 
@@ -184,11 +184,11 @@ router.post('/:id/roles', wrapHandler(async (req, res) => {
  */
 router.put('/:id/roles/:roleName', wrapHandler(async (req, res) => {
   const { conn } = await getConnConfig(req.params.id);
-  const real = resolveRealDriver(conn.driver, conn.custom_driver_id);
+  const real = await resolveRealDriver(conn.driver, conn.custom_driver_id);
   const { roleName } = req.params;
   const { newPassword, canLogin, superUser } = req.body;
 
-  if (!supportsRoleManagement(conn.driver, conn.custom_driver_id)) {
+  if (!await supportsRoleManagement(conn.driver, conn.custom_driver_id)) {
     return res.status(400).json({ error: '当前数据库类型不支持角色管理' });
   }
 
@@ -231,9 +231,9 @@ router.put('/:id/roles/:roleName', wrapHandler(async (req, res) => {
  */
 router.delete('/:id/roles/:roleName', wrapHandler(async (req, res) => {
   const { conn } = await getConnConfig(req.params.id);
-  const real = resolveRealDriver(conn.driver, conn.custom_driver_id);
+  const real = await resolveRealDriver(conn.driver, conn.custom_driver_id);
 
-  if (!supportsRoleManagement(conn.driver, conn.custom_driver_id)) {
+  if (!await supportsRoleManagement(conn.driver, conn.custom_driver_id)) {
     return res.status(400).json({ error: '当前数据库类型不支持角色管理' });
   }
 
@@ -259,10 +259,10 @@ router.delete('/:id/roles/:roleName', wrapHandler(async (req, res) => {
  */
 router.get('/:id/roles/:roleName/grants', wrapHandler(async (req, res) => {
   const { conn } = await getConnConfig(req.params.id);
-  const real = resolveRealDriver(conn.driver, conn.custom_driver_id);
+  const real = await resolveRealDriver(conn.driver, conn.custom_driver_id);
   const { roleName } = req.params;
 
-  if (!supportsRoleManagement(conn.driver, conn.custom_driver_id)) {
+  if (!await supportsRoleManagement(conn.driver, conn.custom_driver_id)) {
     return res.status(400).json({ error: '当前数据库类型不支持角色管理' });
   }
 
@@ -302,11 +302,11 @@ router.get('/:id/roles/:roleName/grants', wrapHandler(async (req, res) => {
  */
 router.post('/:id/roles/:roleName/grants', wrapHandler(async (req, res) => {
   const { conn } = await getConnConfig(req.params.id);
-  const real = resolveRealDriver(conn.driver, conn.custom_driver_id);
+  const real = await resolveRealDriver(conn.driver, conn.custom_driver_id);
   const { roleName } = req.params;
   const { privilege, table, schema } = req.body;
 
-  if (!supportsRoleManagement(conn.driver, conn.custom_driver_id)) {
+  if (!await supportsRoleManagement(conn.driver, conn.custom_driver_id)) {
     return res.status(400).json({ error: '当前数据库类型不支持角色管理' });
   }
 
@@ -347,11 +347,11 @@ router.post('/:id/roles/:roleName/grants', wrapHandler(async (req, res) => {
  */
 router.delete('/:id/roles/:roleName/grants', wrapHandler(async (req, res) => {
   const { conn } = await getConnConfig(req.params.id);
-  const real = resolveRealDriver(conn.driver, conn.custom_driver_id);
+  const real = await resolveRealDriver(conn.driver, conn.custom_driver_id);
   const { roleName } = req.params;
   const { privilege, table, schema } = req.body;
 
-  if (!supportsRoleManagement(conn.driver, conn.custom_driver_id)) {
+  if (!await supportsRoleManagement(conn.driver, conn.custom_driver_id)) {
     return res.status(400).json({ error: '当前数据库类型不支持角色管理' });
   }
 
@@ -392,11 +392,11 @@ router.delete('/:id/roles/:roleName/grants', wrapHandler(async (req, res) => {
  */
 router.post('/:id/roles/:roleName/grants/batch', wrapHandler(async (req, res) => {
   const { conn } = await getConnConfig(req.params.id);
-  const real = resolveRealDriver(conn.driver, conn.custom_driver_id);
+  const real = await resolveRealDriver(conn.driver, conn.custom_driver_id);
   const { roleName } = req.params;
   const { privilege, tables, schema } = req.body;
 
-  if (!supportsRoleManagement(conn.driver, conn.custom_driver_id)) {
+  if (!await supportsRoleManagement(conn.driver, conn.custom_driver_id)) {
     return res.status(400).json({ error: '当前数据库类型不支持角色管理' });
   }
 
@@ -455,7 +455,7 @@ router.post('/:id/roles/:roleName/grants/batch', wrapHandler(async (req, res) =>
  */
 router.post('/:id/tables', wrapHandler(async (req, res) => {
   const { conn } = await getConnConfig(req.params.id);
-  const real = resolveRealDriver(conn.driver, conn.custom_driver_id);
+  const real = await resolveRealDriver(conn.driver, conn.custom_driver_id);
   const { tableName, schema, columns, comment } = req.body;
 
   if (!tableName) return res.status(400).json({ error: '表名不能为空' });
@@ -496,7 +496,7 @@ router.post('/:id/tables', wrapHandler(async (req, res) => {
  */
 router.delete('/:id/tables/:tableName', wrapHandler(async (req, res) => {
   const { conn } = await getConnConfig(req.params.id);
-  const real = resolveRealDriver(conn.driver, conn.custom_driver_id);
+  const real = await resolveRealDriver(conn.driver, conn.custom_driver_id);
   const { tableName } = req.params;
   const schema = req.query.schema;
 
@@ -521,7 +521,7 @@ router.delete('/:id/tables/:tableName', wrapHandler(async (req, res) => {
  */
 router.post('/:id/tables/:tableName/columns', wrapHandler(async (req, res) => {
   const { conn } = await getConnConfig(req.params.id);
-  const real = resolveRealDriver(conn.driver, conn.custom_driver_id);
+  const real = await resolveRealDriver(conn.driver, conn.custom_driver_id);
   const { tableName } = req.params;
   const { column, after } = req.body;
 
@@ -557,7 +557,7 @@ router.post('/:id/tables/:tableName/columns', wrapHandler(async (req, res) => {
  */
 router.put('/:id/tables/:tableName/columns/:columnName', wrapHandler(async (req, res) => {
   const { conn } = await getConnConfig(req.params.id);
-  const real = resolveRealDriver(conn.driver, conn.custom_driver_id);
+  const real = await resolveRealDriver(conn.driver, conn.custom_driver_id);
   const { tableName, columnName } = req.params;
   const { newName, type, nullable, defaultValue, comment } = req.body;
   const schema = req.query.schema;
@@ -655,7 +655,7 @@ router.put('/:id/tables/:tableName/columns/:columnName', wrapHandler(async (req,
  */
 router.delete('/:id/tables/:tableName/columns/:columnName', wrapHandler(async (req, res) => {
   const { conn } = await getConnConfig(req.params.id);
-  const real = resolveRealDriver(conn.driver, conn.custom_driver_id);
+  const real = await resolveRealDriver(conn.driver, conn.custom_driver_id);
   const { tableName, columnName } = req.params;
   const schema = req.query.schema;
 
@@ -686,7 +686,7 @@ router.delete('/:id/tables/:tableName/columns/:columnName', wrapHandler(async (r
  */
 router.post('/:id/views', wrapHandler(async (req, res) => {
   const { conn } = await getConnConfig(req.params.id);
-  const real = resolveRealDriver(conn.driver, conn.custom_driver_id);
+  const real = await resolveRealDriver(conn.driver, conn.custom_driver_id);
   const { viewName, schema, asSql, comment } = req.body;
 
   if (!viewName) return res.status(400).json({ error: '视图名不能为空' });
@@ -720,7 +720,7 @@ router.post('/:id/views', wrapHandler(async (req, res) => {
  */
 router.put('/:id/views/:viewName', wrapHandler(async (req, res) => {
   const { conn } = await getConnConfig(req.params.id);
-  const real = resolveRealDriver(conn.driver, conn.custom_driver_id);
+  const real = await resolveRealDriver(conn.driver, conn.custom_driver_id);
   const { viewName } = req.params;
   const { asSql, comment } = req.body;
   const schema = req.query.schema;
@@ -761,7 +761,7 @@ router.put('/:id/views/:viewName', wrapHandler(async (req, res) => {
  */
 router.delete('/:id/views/:viewName', wrapHandler(async (req, res) => {
   const { conn } = await getConnConfig(req.params.id);
-  const real = resolveRealDriver(conn.driver, conn.custom_driver_id);
+  const real = await resolveRealDriver(conn.driver, conn.custom_driver_id);
   const { viewName } = req.params;
   const schema = req.query.schema;
 
@@ -786,7 +786,7 @@ router.delete('/:id/views/:viewName', wrapHandler(async (req, res) => {
  */
 router.get('/:id/views/:viewName/ddl', wrapHandler(async (req, res) => {
   const { conn } = await getConnConfig(req.params.id);
-  const real = resolveRealDriver(conn.driver, conn.custom_driver_id);
+  const real = await resolveRealDriver(conn.driver, conn.custom_driver_id);
   const { viewName } = req.params;
   const schema = req.query.schema;
 

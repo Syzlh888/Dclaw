@@ -472,7 +472,7 @@ const ConnectionDialog: React.FC<ConnectionDialogProps> = ({ open, onClose }) =>
   };
 
   /** 构建"移动到树节点"子菜单：显示 平台 > 业务模块 > 区域 的路径列表 */
-  const moveToNodeSubItems = useMemo<ContextMenuItemDef[]>(() => {
+  const moveToNodeSubItems = useMemo(() => {
     // 收集所有 District 节点，展示带父级路径的名称
     const districts: Array<{ id: string; path: string }> = [];
     Object.values(treeNodes).forEach((n) => {
