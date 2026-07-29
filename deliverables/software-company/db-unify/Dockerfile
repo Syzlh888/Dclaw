@@ -42,7 +42,8 @@ RUN apk add --no-cache curl tzdata openjdk17-jre \
 # 仅拷贝 production 依赖清单，重新安装 prod-only 节省体积
 COPY package.json package-lock.json* ./
 RUN npm install --include=prod --legacy-peer-deps --registry=https://registry.npmmirror.com \
- && npm cache clean --force
+ && npm cache clean --force \
+ && npm install --no-save --legacy-peer-deps exceljs 2>/dev/null || true
 
 # 复制前端产物 + 后端 bundle + 服务端源码 (兼容非 bundle 启动)
 COPY --from=builder /app/dist ./dist

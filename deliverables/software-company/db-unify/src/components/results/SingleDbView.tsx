@@ -2,7 +2,9 @@ import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { Box, FormControl, InputLabel, MenuItem, Select, Button, Typography, Alert, Snackbar, TextField, Menu } from '@mui/material';
 import { useResultStore } from '../../stores/resultStore';
 import { useEditorStore } from '../../stores/editorStore';
+import { useExportStore } from '../../stores/exportStore';
 import ResultTable from './ResultTable';
+import ImportExportIcon from '@mui/icons-material/ImportExport';
 import { exportCsv, exportExcel, exportJson } from '../../services/exporters';
 import { apiFetch } from '../../services/apiClient';
 import DownloadIcon from '@mui/icons-material/Download';
@@ -280,6 +282,31 @@ const SingleDbView: React.FC = () => {
               <MenuItem onClick={() => handleExportFormat('xlsx')}>XLSX</MenuItem>
               <MenuItem onClick={() => handleExportFormat('json')}>JSON</MenuItem>
             </Menu>
+            {/* 导出向导：把当前 SQL 带入到向导（单库单查询） */}
+            <Button
+              size="small"
+              startIcon={<ImportExportIcon />}
+              onClick={() => {
+                const openExportWizard = useExportStore.getState().openWizard;
+                // 从 resultStore 拿当前 SQL 结果对应的数据库
+                const selectedDbId = useResultStore.getState().selectedDbId || '';
+                openExportWizard({
+                  tables: selectedDbId
+                    ? [{
+                        connectionId: selectedDbId,
+                        tableName: '__sql_query__',
+                        schemaName: '',
+                      }]
+                    : [],
+                  sql: sql,
+                  type: 'sql',
+                } as any);
+              }}
+              variant="outlined"
+              sx={{ textTransform: 'none', fontSize: '0.72rem', minWidth: 100 }}
+            >
+              导出向导
+            </Button>
             {Object.keys(modifiedCells).length > 0 && (
               <Button
                 size="small"

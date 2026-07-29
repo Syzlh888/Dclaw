@@ -56,6 +56,7 @@ const COLLECTION_TO_TABLE = {
   sqlApproverConfig: 'sql_approver_config',
   auditLogs: 'audit_logs',
   authSessions: 'auth_sessions',
+  exportHistory: 'export_history',
 };
 
 function resolveTable(collection) {

@@ -272,6 +272,37 @@ router.post('/schemas', async (req, res) => {
 });
 
 /**
+ * GET /api/connections/:id/schemas
+ * 使用已保存连接（服务端解密密码）获取 Schema 列表。
+ */
+router.get('/:id/schemas', async (req, res) => {
+  const conn = await getById('connections', req.params.id);
+  if (!conn) {
+    return res.status(404).json({ error: '连接不存在' });
+  }
+
+  const password = decryptPassword(conn.password_encrypted || '');
+  if (!conn.driver || !conn.host || !conn.port || !conn.username || !password) {
+    return res.status(400).json({ error: '连接参数不完整' });
+  }
+
+  try {
+    const schemas = await discoverSchemas(
+      conn.driver,
+      conn.host,
+      conn.port,
+      conn.username,
+      password,
+      conn.database_name || '',
+      conn.custom_driver_id || undefined
+    );
+    res.json({ schemas });
+  } catch (err) {
+    res.status(500).json({ error: formatConnectionError(err) });
+  }
+});
+
+/**
  * POST /api/connections/databases
  * 获取数据库服务器上的数据库列表
  */
@@ -504,6 +535,26 @@ router.post('/:id/schemas', async (req, res) => {
     res.json({ schemas });
   } catch (err) {
     console.error(`[connections:schema] error:`, err.message);
+    res.status(500).json({ error: formatConnectionError(err) });
+  }
+});
+
+/**
+ * GET /api/connections/:id/tables?schema=xxx
+ * 获取指定连接的表列表（用于导出向导目标表下拉）
+ */
+router.get('/:id/tables', async (req, res) => {
+  const conn = await getById('connections', req.params.id);
+  if (!conn) {
+    return res.status(404).json({ error: '连接不存在' });
+  }
+  const password = decryptPassword(conn.password_encrypted || '');
+  const targetSchema = req.query.schema || conn.schema_name || '';
+  try {
+    const metadata = await discoverMetadata(conn.driver, conn.host, conn.port, conn.username, password, conn.database_name, targetSchema, conn.custom_driver_id);
+    res.json({ tables: metadata });
+  } catch (err) {
+    console.error(`[tables] error:`, err.message);
     res.status(500).json({ error: formatConnectionError(err) });
   }
 });

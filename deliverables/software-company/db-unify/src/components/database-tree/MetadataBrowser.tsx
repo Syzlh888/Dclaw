@@ -44,6 +44,9 @@ import CreateViewDialog from '../database-table/CreateViewDialog';
 import EditTableDialog from '../database-table/EditTableDialog';
 import ConfirmDropDialog from '../database-table/ConfirmDropDialog';
 import FieldViewerDialog from '../database-table/FieldViewerDialog';
+import ImportExportIcon from '@mui/icons-material/ImportExport';
+import ExportWizard from '../data-export/ExportWizard';
+import { useExportStore } from '../../stores/exportStore';
 import { deleteTable, deleteView, fetchViewDdl } from '../../services/tableMgmtService';
 import { fetchFunctions, fetchProcedures, fetchFunctionDetail, fetchFunctionDdl, deleteFunction, type FunctionInfo, type ProcedureInfo } from '../../services/functionMgmtService';
 import { apiFetch } from '../../services/apiClient';
@@ -104,6 +107,7 @@ const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseInden
   const isDragging = useRef(false);
   const dragStartKey = useRef<string | null>(null);
   const didDrag = useRef(false); // 标记是否真的发生了拖拽移动
+  const lastClickKey = useRef<string | null>(null); // 上次点击的表，用于 Shift 区间选择
 
   // 鼠标释放清除拖拽状态
   useEffect(() => {
@@ -360,6 +364,44 @@ const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseInden
     ];
 
     return [
+      {
+        label: '导出数据',
+        icon: <ImportExportIcon />,
+        onClick: () => {
+          const selectedTableList = Array.from(selectedTables).flatMap((tableKey) => {
+            const separatorIndex = tableKey.indexOf('::');
+            if (separatorIndex < 0) return [];
+
+            const schemaKey = tableKey.slice(0, separatorIndex);
+            const tableName = tableKey.slice(separatorIndex + 2);
+            const selectedTable = schemaStates[schemaKey]?.data?.find(
+              (candidate) => candidate.name === tableName
+            );
+            if (!selectedTable) return [];
+
+            return [{
+              connectionId: connection.id,
+              tableName: selectedTable.name,
+              schemaName: schemaKey === DEFAULT_KEY ? undefined : schemaKey,
+            }];
+          });
+
+          // 只有当右键表在当前多选集合中，才传所有选中表；
+          // 否则只导出当前右键的这 1 张表（避免之前点选残留影响）
+          const contextTableKey = `${schemaName || DEFAULT_KEY}::${table.name}`;
+          let tables: Array<{ connectionId: string; tableName: string; schemaName?: string }>;
+          if (selectedTables.has(contextTableKey) && selectedTableList.length > 0) {
+            tables = selectedTableList;
+          } else {
+            tables = [{ connectionId: connection.id, tableName: table.name, schemaName }];
+          }
+
+          useExportStore.getState().openWizard({
+            connectionId: connection.id,
+            tables,
+          });
+        },
+      },
       {
         label: '生成 SQL',
         icon: <PlayArrowIcon />,
@@ -717,26 +759,57 @@ const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseInden
               didDrag.current = false;
               return;
             }
-            // 单选
-            setSelectedTables(new Set([tableKey]));
+            // 多选逻辑：
+            // - Ctrl + 点击：单个点选/取消
+            // - Shift + 点击：区间选择（从 lastClickKey 到 tableKey 之间的所有表）
+            // - 普通点击：单选
+            if (e.ctrlKey) {
+              setSelectedTables(prev => {
+                const next = new Set(prev);
+                if (next.has(tableKey)) {
+                  next.delete(tableKey);
+                } else {
+                  next.add(tableKey);
+                }
+                return next;
+              });
+              lastClickKey.current = tableKey;
+            } else if (e.shiftKey && lastClickKey.current) {
+              // 区间选择：扁平化所有可见表，找到区间
+              const flatList = [] as string[];
+              Object.entries(schemaStates).forEach(([schemaKey, st]: [string, any]) => {
+                if (st && st.data) {
+                  st.data.forEach((t: any) => {
+                    flatList.push(`${schemaKey}::${t.name}`);
+                  });
+                }
+              });
+              const startIdx = flatList.indexOf(lastClickKey.current);
+              const endIdx = flatList.indexOf(tableKey);
+              if (startIdx >= 0 && endIdx >= 0) {
+                const [from, to] = startIdx < endIdx ? [startIdx, endIdx] : [endIdx, startIdx];
+                const range = flatList.slice(from, to + 1);
+                setSelectedTables(prev => {
+                  const next = new Set(prev);
+                  range.forEach(k => next.add(k));
+                  return next;
+                });
+              }
+            } else {
+              setSelectedTables(new Set([tableKey]));
+              lastClickKey.current = tableKey;
+            }
           }}
           onMouseDown={(e) => {
             if (e.button === 0) {
+              // 拖拽准备：只标记状态，不修改选择
               isDragging.current = true;
               didDrag.current = false;
               dragStartKey.current = tableKey;
-              setSelectedTables(new Set([tableKey]));
             }
           }}
           onMouseEnter={() => {
-            if (isDragging.current) {
-              didDrag.current = true;
-              setSelectedTables(prev => {
-                const next = new Set(prev);
-                next.add(tableKey);
-                return next;
-              });
-            }
+            // 不再通过鼠标进入追加选择，避免与拖动表名冲突
           }}
           onDoubleClick={() => {
             setFieldViewer({
@@ -1176,6 +1249,7 @@ const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseInden
       />
 
       {/* 角色管理对话框 */}
+      <ExportWizard />
       <RoleManager
         open={roleManagerOpen}
         connectionId={connection.id}

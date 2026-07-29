@@ -53,6 +53,7 @@ import usersRouter from './routes/users.mjs';
 import rolesRouter from './routes/roles.mjs';
 import permissionsRouter from './routes/permissions.mjs';
 import functionMgmtRouter from './routes/function-mgmt.mjs';
+import exportRouter from './routes/export.mjs';
 
 const app = express();
 const PORT = parseInt(process.env.PORT, 10) || 3001;
@@ -204,6 +205,7 @@ app.get('/api/license/status', (_req, res) => {
 app.use('/api/connections', authMiddleware, connectionsRouter);
 app.use('/api/tree', authMiddleware, treeRouter);
 app.use('/api/execute', authMiddleware, executeRouter);
+app.use('/api/export', authMiddleware, exportRouter);
 app.use('/api/history', authMiddleware, historyRouter);
 app.use('/api/templates', authMiddleware, templatesRouter);
 app.use('/api/scripts', authMiddleware, scriptsRouter);

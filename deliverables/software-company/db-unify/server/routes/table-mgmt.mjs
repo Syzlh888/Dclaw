@@ -450,6 +450,44 @@ router.post('/:id/roles/:roleName/grants/batch', wrapHandler(async (req, res) =>
 // ===================================================================
 
 /**
+ * GET /api/connections/:id/tables
+ * 列出指定连接下的所有表（含 schema、估算行数）
+ */
+router.get('/:id/tables', wrapHandler(async (req, res) => {
+  const { conn, password } = await getConnConfig(req.params.id);
+  const dbClient = await createDbConnection({
+    driver: conn.driver,
+    host: conn.host,
+    port: conn.port,
+    username: conn.username,
+    password,
+    database: conn.database_name || '',
+    schema: conn.schema_name || '',
+    customDriverId: conn.custom_driver_id || undefined,
+  });
+  try {
+    const real = await resolveRealDriver(conn.driver, conn.custom_driver_id);
+    const isMysql = real === 'mysql';
+    const schema = (req.query.schema || conn.schema_name || '').trim();
+    // 列名
+    const cols = isMysql
+      ? `table_name AS name, table_schema AS schema_name, table_rows AS estimated_rows`
+      : `table_name AS name, table_schema AS schema_name`;
+    const schemaFilter = isMysql
+      ? (schema ? `AND table_schema = '${schema.replace(/'/g, "''")}'` : '')
+      : (schema ? `AND table_schema = '${schema.replace(/'/g, "''")}'` : `AND table_schema NOT IN ('pg_catalog', 'information_schema')`);
+    // BASE TABLE + VIEW（视图也支持导出）
+    const sql = isMysql
+      ? `SELECT ${cols}, table_type AS obj_type FROM information_schema.tables WHERE table_type IN ('BASE TABLE', 'VIEW') ${schemaFilter} ORDER BY table_type, table_name`
+      : `SELECT ${cols}, table_type AS obj_type FROM information_schema.tables WHERE table_type IN ('BASE TABLE', 'VIEW') ${schemaFilter} ORDER BY table_type, table_name`;
+    const result = await executeQuery(dbClient, conn.driver, sql, 30000, conn.custom_driver_id);
+    res.json({ tables: result.rows || [] });
+  } finally {
+    await closeConnection(dbClient, conn.driver, conn.custom_driver_id);
+  }
+}));
+
+/**
  * POST /api/connections/:id/tables
  * 创建表
  */

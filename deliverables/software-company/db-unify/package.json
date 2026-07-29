@@ -8,7 +8,7 @@
     "dev:frontend": "vite",
     "dev:backend": "nodemon server/index.mjs",
     "build": "tsc -b && vite build",
-    "build:server-bundle": "esbuild server/index.mjs --bundle --platform=node --outfile=scripts/server-bundle.cjs --format=cjs",
+    "build:server-bundle": "esbuild server/index.mjs --bundle --platform=node --outfile=scripts/server-bundle.cjs --format=cjs --log-limit=0",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -29,6 +29,7 @@
     "docker:logs": "docker-compose logs -f web"
   },
   "dependencies": {
+    "exceljs": "^4.4.0",
     "pg": "^8.13.0",
     "sm-crypto": "^0.4.0"
   },
