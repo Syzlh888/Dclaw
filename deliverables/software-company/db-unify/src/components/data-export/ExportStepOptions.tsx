@@ -64,11 +64,26 @@ export const ExportStepOptions: React.FC = () => {
 
   return (
     <Box sx={{ pt: 1 }}>
-      <Typography variant="subtitle2" sx={{ mb: 1, color: '#BBBBBB' }}>
+      <Typography
+        variant="subtitle2"
+        sx={{ mb: 1.5, color: '#E0E0E0', fontSize: 13, fontWeight: 600, letterSpacing: 0.3 }}
+      >
         选项与预览
       </Typography>
 
-      <Box sx={{ display: 'flex', gap: 2, mb: 2, alignItems: 'center' }}>
+      {/* 导出选项分组卡片 */}
+      <Box
+        sx={{
+          display: 'flex',
+          gap: 2,
+          mb: 2,
+          alignItems: 'flex-start',
+          p: 1.5,
+          bgcolor: '#2F2F2F',
+          border: '1px solid #3A3A3A',
+          borderRadius: 1,
+        }}
+      >
         <TextField
           size="small"
           label="每批行数"
@@ -77,29 +92,56 @@ export const ExportStepOptions: React.FC = () => {
           onChange={(e) =>
             setOptions({ batchSize: parseInt(e.target.value, 10) || 10000 })
           }
-          sx={{ width: 140, bgcolor: '#3C3F41' }}
-          InputLabelProps={{ sx: { color: '#BBBBBB' } }}
+          sx={{
+            width: 160,
+            bgcolor: '#3C3F41',
+            '& .MuiOutlinedInput-root': { fontSize: 13 },
+            '& .MuiInputLabel-root': { fontSize: 12, color: '#BBBBBB' },
+          }}
+          helperText={<span style={{ fontSize: 11, color: '#888' }}>1 - 50000</span>}
         />
         <TextField
           size="small"
           label="最大行数"
           type="number"
-          value={options.maxRows}
-          onChange={(e) =>
-            setOptions({ maxRows: parseInt(e.target.value, 10) || 500000 })
+          value={options.maxRows || ''}
+          placeholder="不限制"
+          onChange={(e) => {
+            const v = parseInt(e.target.value, 10);
+            setOptions({ maxRows: isNaN(v) || v <= 0 ? 0 : v });
+          }}
+          sx={{
+            width: 160,
+            bgcolor: '#3C3F41',
+            '& .MuiOutlinedInput-root': { fontSize: 13 },
+            '& .MuiInputLabel-root': { fontSize: 12, color: '#BBBBBB' },
+          }}
+          helperText={
+            <span style={{ fontSize: 11, color: options.maxRows > 0 ? '#FFB74D' : '#888' }}>
+              {options.maxRows > 0 ? '超过将截断' : '0 = 不限制'}
+            </span>
           }
-          sx={{ width: 140, bgcolor: '#3C3F41' }}
-          InputLabelProps={{ sx: { color: '#BBBBBB' } }}
-          helperText="超过将截断"
         />
+        <Box sx={{ flex: 1 }} />
         <Button
-          variant="outlined"
+          variant="contained"
           size="small"
           startIcon={
-            loading ? <CircularProgress size={14} /> : <VisibilityIcon />
+            loading ? <CircularProgress size={14} sx={{ color: '#FFF' }} /> : <VisibilityIcon />
           }
           onClick={doPreview}
           disabled={!sourceReady || loading}
+          sx={{
+            mt: 0.5,
+            minWidth: 130,
+            height: 36,
+            fontSize: 12.5,
+            fontWeight: 600,
+            textTransform: 'none',
+            bgcolor: '#1976D2',
+            '&:hover': { bgcolor: '#1565C0' },
+            '&.Mui-disabled': { bgcolor: '#444', color: '#888' },
+          }}
         >
           预览前 100 行
         </Button>
@@ -111,11 +153,14 @@ export const ExportStepOptions: React.FC = () => {
             size="small"
             checked={options.includeHeader}
             onChange={(e) => setOptions({ includeHeader: e.target.checked })}
-            sx={{ color: '#5A5A5A' }}
+            sx={{
+              color: '#5A5A5A',
+              '&.Mui-checked': { color: '#42A5F5' },
+            }}
           />
         }
-        label="包含列标题行"
-        sx={{ color: '#BBBBBB', mb: 2 }}
+        label={<span style={{ fontSize: 12.5, color: '#BBBBBB' }}>包含列标题行</span>}
+        sx={{ mb: 2, ml: 0.5 }}
       />
 
       {err && (

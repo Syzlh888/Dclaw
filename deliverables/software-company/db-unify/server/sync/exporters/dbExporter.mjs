@@ -33,11 +33,12 @@ async function rollback(conn, driver, customDriverId) {
 
 function getTargetConfig(target) {
   const database = target.database && typeof target.database === 'object' ? target.database : target;
-  const targetName = database.table || database.targetTable;
+  // 兼容字段：table / tableName / targetTable
+  const targetName = database.table || database.tableName || database.targetTable;
   if (!targetName) throw new Error('数据库导出目标表不能为空');
-  const split = splitQualifiedName(targetName, database.schema || '');
+  const split = splitQualifiedName(targetName, database.schema || database.schemaName || '');
   if (!split.table) throw new Error('数据库导出目标表不能为空');
-  return { ...database, ...split };
+  return { ...database, ...split, table: split.table, schema: split.schema };
 }
 
 export async function createTargetTable({ targetConnection, target, sourceColumns, sourceDbType, targetDbType }) {
@@ -92,8 +93,10 @@ export async function exportRowsToDatabase({ sourceConnection, source, targetCon
   const mappings = buildFieldMappings(sourceColumns, effectiveSourceType, effectiveTargetType);
   if (!mappings.length) throw new Error('源查询没有可导出的列');
   const batchSize = Math.min(Math.max(1, Number(options.batchSize) || 10000), 50000);
-  const strategy = String(config.writeStrategy || options.writeStrategy || 'insert').toLowerCase();
-  if (!['insert', 'upsert', 'replace'].includes(strategy)) throw new Error(`不支持的写入策略: ${strategy}`);
+  const rawStrategy = String(config.writeStrategy || options.writeStrategy || 'insert').toLowerCase();
+  // 兼容旧值：append 是 insert 的同义词
+  const strategy = rawStrategy === 'append' ? 'insert' : rawStrategy;
+  if (!['insert', 'upsert', 'replace'].includes(strategy)) throw new Error(`不支持的写入策略: ${rawStrategy}`);
   const table = qualifiedTable(config.schema, config.table, effectiveTargetType);
   let tableCreated = false;
 

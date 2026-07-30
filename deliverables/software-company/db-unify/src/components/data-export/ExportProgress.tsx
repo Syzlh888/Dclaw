@@ -88,7 +88,7 @@ export const ExportProgress: React.FC<ExportProgressProps> = ({
             </Typography>
             {result.filePath && (
               <Typography variant="body2">
-                📄 文件: <code style={{ color: '#DAAA4E' }}>{result.filePath}</code>
+                ⬇ 已下载文件: <code style={{ color: '#DAAA4E' }}>{result.filePath}</code>
               </Typography>
             )}
             {result.tableName && (

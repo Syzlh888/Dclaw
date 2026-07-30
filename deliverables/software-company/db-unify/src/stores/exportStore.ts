@@ -22,6 +22,14 @@ export interface SelectedTable {
   schemaName?: string;
 }
 
+/** 单个字段映射（源列 → 目标列） */
+export interface FieldMapping {
+  sourceColumn: string;
+  targetColumn: string;
+  sourceType?: string;
+  targetType?: string;
+}
+
 interface ExportState {
   // 向导流程
   open: boolean;
@@ -44,6 +52,10 @@ interface ExportState {
 
   // 目标
   target: ExportTarget | null;
+
+  // 字段映射（按 [源表名::目标表名] 为键保存）
+  // 每条映射：{ sourceColumn, targetColumn, sourceType?, targetType? }
+  columnMappings: Record<string, FieldMapping[]>;
 
   // 选项
   options: {
@@ -88,6 +100,12 @@ interface ExportState {
   removeSelectedTable: (t: SelectedTable) => void;
   setPreview: (p: ExportState['preview']) => void;
   setTarget: (t: ExportTarget) => void;
+  /** 更新（或初始化）一对 sourceTable::targetTable 的字段映射 */
+  setColumnMappings: (key: string, mappings: FieldMapping[]) => void;
+  /** 取指定 sourceTable::targetTable 的字段映射（无则空数组） */
+  getColumnMappings: (key: string) => FieldMapping[];
+  /** 清空所有字段映射 */
+  clearColumnMappings: () => void;
   setOptions: (o: Partial<ExportState['options']>) => void;
   handleProgress: (e: ExportProgressEvent) => void;
   startExecution: (executionId: string) => void;
@@ -103,7 +121,7 @@ const initialSource: ExportSource = {
 const initialOptions = {
   batchSize: 10000,
   includeHeader: true,
-  maxRows: 500000,
+  maxRows: 0, // 0 表示不限制
 };
 
 const initialProgress = {
@@ -126,6 +144,8 @@ export const useExportStore = create<ExportState>((set, get) => ({
   selectedTables: [],
   preview: null,
   target: null,
+  // 字段映射缓存：key = `${sourceTable}::${targetTable}`
+  columnMappings: {},
   options: { ...initialOptions },
   currentExecutionId: null,
   progress: { ...initialProgress },
@@ -134,6 +154,9 @@ export const useExportStore = create<ExportState>((set, get) => ({
 
   openWizard: (initial) => {
     const init = initial || {};
+    console.log('[openWizard] called with init:', init);
+    console.log('[openWizard] init.tables:', (init as any).tables);
+    console.log('[openWizard] init.tables length:', (init as any).tables?.length);
     const setObj: any = {
       open: true,
       step: 0,
@@ -142,7 +165,8 @@ export const useExportStore = create<ExportState>((set, get) => ({
       // 总是用 init.tables 替换（如果传了），避免旧的 selectedTables 残留
       selectedTables: 'tables' in init ? (init.tables || []) : [],
       preview: null,
-      target: null,
+      // 默认 target 为 file（让 targetReady 立即满足，避免提示「请先完成目标选择」）
+      target: { type: 'file', format: 'csv', encoding: 'utf-8', filename: '', includeHeader: true, sqlIncludeDrop: false, compress: false },
       result: null,
       errorMessage: null,
       progress: { ...initialProgress },
@@ -152,6 +176,7 @@ export const useExportStore = create<ExportState>((set, get) => ({
     if ('sql' in init) setObj.sql = init.sql || '';
     if ('type' in init) setObj.sourceType = init.type || 'table';
     set(setObj);
+    console.log('[openWizard] after set, store has selectedTables length:', get().selectedTables.length);
   },
 
   closeWizard: () => set({ open: false }),
@@ -186,6 +211,16 @@ export const useExportStore = create<ExportState>((set, get) => ({
   setPreview: (p) => set({ preview: p }),
 
   setTarget: (t) => set({ target: t }),
+
+  /** 写入字段映射（覆盖式） */
+  setColumnMappings: (key, mappings) =>
+    set({ columnMappings: { ...get().columnMappings, [key]: mappings } }),
+
+  /** 读取字段映射（无则空数组） */
+  getColumnMappings: (key) => get().columnMappings[key] || [],
+
+  /** 清空全部字段映射（一般在 reset/wizard 关闭时调用） */
+  clearColumnMappings: () => set({ columnMappings: {} }),
 
   setOptions: (o) => set({ options: { ...get().options, ...o } }),
 
@@ -255,6 +290,7 @@ export const useExportStore = create<ExportState>((set, get) => ({
       errorMessage: null,
       progress: { ...initialProgress },
       currentExecutionId: null,
+      // 不清空 columnMappings：用户可能再次打开同一对 source/target 复用
     }),
 }));
 
@@ -266,10 +302,16 @@ export function buildExportConfig(state: ExportState): {
   source: ExportSource;
   target: any;
   batchSize?: number;
+  selectedTables?: Array<{ connectionId: string; tableName: string; schemaName?: string }>;
 } {
-  // 多表模式
+  // 多表模式：把所有 selectedTables 都传过去（后端按 tableNameArr 逐表处理）
   if (state.selectedTables.length > 0) {
     const t = state.selectedTables[0];
+    // 确保 db target 有 tableName（单表用 tableName，多表用 tableNameArr[0] 兜底）
+    const target: any = { ...state.target! };
+    if (target.type === 'database' && !target.tableName) {
+      target.tableName = (target.tableNameArr && target.tableNameArr[0]) || t.tableName;
+    }
     return {
       source: {
         type: 'table',
@@ -277,8 +319,10 @@ export function buildExportConfig(state: ExportState): {
         tableName: t.tableName,
         schemaName: t.schemaName,
       },
-      target: state.target!,
+      target,
       batchSize: state.options.batchSize,
+      // 所有源表
+      selectedTables: state.selectedTables,
     };
   }
   // 单表模式（兼容旧）

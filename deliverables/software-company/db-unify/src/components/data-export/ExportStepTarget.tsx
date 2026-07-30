@@ -17,27 +17,33 @@ import {
   FormControlLabel as CheckboxLabel,
   Button,
   Alert,
-  InputAdornment,
   Autocomplete,
   Paper,
 } from '@mui/material';
-import FolderIcon from '@mui/icons-material/Folder';
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import SearchIcon from '@mui/icons-material/Search';
+import CloseIcon from '@mui/icons-material/Close';
+import StorageIcon from '@mui/icons-material/Storage';
+import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
+import IconButton from '@mui/material/IconButton';
 import { useExportStore } from '../../stores/exportStore';
 import { useConnectionStore } from '../../stores/connectionStore';
 import { useGroupStore } from '../../stores/groupStore';
 import { useTreeStore } from '../../stores/treeStore';
 import { apiFetch } from '../../services/apiClient';
 import {
-  browseDirectory,
-  fetchDrives,
   getFileExtension,
   suggestFileName,
   type FileEncoding,
   type FileFormat,
   type TargetType,
 } from '../../services/exportService';
+import { FieldMappingDialog, type TableRef } from './FieldMappingDialog';
+import type { FieldMapping } from '../../stores/exportStore';
 
 const FORMATS: FileFormat[] = ['csv', 'tsv', 'sql', 'json', 'xlsx'];
 const ENCODINGS: FileEncoding[] = ['utf-8', 'gbk', 'gb18030'];
@@ -214,26 +220,54 @@ export const ExportStepTarget: React.FC = () => {
     return () => { cancelled = true; };
   }, [dbTarget?.connectionId, dbTarget?.schemaName, targetFixedSchema]);
 
-  const [browsing, setBrowsing] = useState(false);
+  // 字段映射对话框状态
+  const [mappingDialog, setMappingDialog] = useState<{
+    open: boolean;
+    sourceTable: TableRef;
+    targetTable: TableRef;
+    key: string;
+  } | null>(null);
+  const setColumnMappings = useExportStore((s) => s.setColumnMappings);
+  const getColumnMappings = useExportStore((s) => s.getColumnMappings);
+
+  /** 打开字段映射对话框 */
+  const openMappingDialog = (srcTable: any, idx: number) => {
+    if (!dbTarget) return;
+    const targetTableName =
+      target?.type === 'database' ? (target.tableNameArr?.[idx] || target.tableName) : '';
+    const sourceTableRef: TableRef = {
+      connectionId: srcTable.connectionId,
+      tableName: srcTable.tableName,
+      schemaName: srcTable.schemaName,
+    };
+    const targetTableRef: TableRef = {
+      connectionId: dbTarget.connectionId,
+      tableName: targetTableName,
+      schemaName: dbTarget.schemaName || targetFixedSchema,
+    };
+    setMappingDialog({
+      open: true,
+      sourceTable: sourceTableRef,
+      targetTable: targetTableRef,
+      key: `${srcTable.connectionId}::${srcTable.tableName}::${dbTarget.connectionId}::${targetTableName}`,
+    });
+  };
 
   // 默认 file target
   const ensureFileTarget = () => {
     if (target?.type === 'file') return target;
+    const fmt = 'csv' as FileFormat;
+    const baseName = suggestFileName(
+      sourceType === 'sql'
+        ? { type: 'sql', sql }
+        : { type: 'table', tableName: firstTable?.tableName, schemaName: firstTable?.schemaName, connectionId: firstTable?.connectionId },
+      { type: 'file', format: fmt, encoding: 'utf-8' } as any
+    );
     return {
       type: 'file' as const,
-      format: 'csv' as FileFormat,
+      format: fmt,
       encoding: 'utf-8' as FileEncoding,
-      savePath: suggestFileName(
-        sourceType === 'sql'
-          ? { type: 'sql', sql }
-          : { type: 'table', tableName: firstTable?.tableName, schemaName: firstTable?.schemaName, connectionId: firstTable?.connectionId },
-        {
-          type: 'file',
-          format: 'csv',
-          encoding: 'utf-8',
-          savePath: '',
-        } as any
-      ) + (selectedTables.length > 1 ? `_and_${selectedTables.length - 1}_more` : ''),
+      filename: baseName + (selectedTables.length > 1 ? `_and_${selectedTables.length - 1}_more` : ''),
       includeHeader: true,
       sqlIncludeDrop: false,
       compress: false,
@@ -269,24 +303,6 @@ export const ExportStepTarget: React.FC = () => {
     // 使用当前已有的 database target，而不是每次创建新的
     const cur = target?.type === 'database' ? target : ensureDbTarget();
     setTarget({ ...cur, ...patch });
-  };
-
-  const browseSaveFolder = async () => {
-    setBrowsing(true);
-    try {
-      const list = await fetchDrives();
-      const first = list.items?.[0];
-      if (first) {
-        const dirs = await browseDirectory(first.path);
-        const cur = ensureFileTarget();
-        const filename = cur.savePath.split(/[/\\]/).pop() || 'export.csv';
-        setTarget({ ...cur, savePath: `${first.path}\\${filename}` });
-      }
-    } catch {
-      // 静默失败，简化 UI
-    } finally {
-      setBrowsing(false);
-    }
   };
 
   return (
@@ -369,32 +385,35 @@ export const ExportStepTarget: React.FC = () => {
               )}
           </Box>
 
-          {/* 保存路径 */}
+          {/* 文件名：导出完成时浏览器自动下载 */}
           <TextField
             fullWidth
             size="small"
-            label="保存路径"
-            value={(target?.type === 'file' ? target.savePath : '') as string}
-            onChange={(e) => updateFile({ savePath: e.target.value })}
-            placeholder={`请输入保存路径（含文件名 .${getFileExtension(
-              (target?.type === 'file' ? target.format : 'csv') as FileFormat
-            )}）`}
+            label="文件名"
+            value={(() => {
+              if (target?.type === 'file' && target.filename) return target.filename;
+              // 默认文件名
+              const fmt = (target?.type === 'file' ? target.format : 'csv') as FileFormat;
+              return suggestFileName(
+                sourceType === 'sql'
+                  ? { type: 'sql', sql }
+                  : { type: 'table', tableName: firstTable?.tableName, schemaName: firstTable?.schemaName, connectionId: firstTable?.connectionId },
+                { type: 'file', format: fmt, encoding: 'utf-8' } as any
+              ) + (selectedTables.length > 1 ? `_and_${selectedTables.length - 1}_more` : '');
+            })()}
+            onChange={(e) => updateFile({ filename: e.target.value })}
+            placeholder="可留空使用默认文件名"
+            helperText={
+              <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, color: '#888' }}>
+                <CloudDownloadIcon sx={{ fontSize: 13 }} />
+                完成后文件将自动下载到浏览器默认下载目录
+              </Box>
+            }
             InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <Button
-                    size="small"
-                    onClick={browseSaveFolder}
-                    disabled={browsing}
-                    startIcon={<FolderIcon />}
-                  >
-                    浏览
-                  </Button>
-                </InputAdornment>
-              ),
               sx: { bgcolor: '#3C3F41', color: '#FFFFFF' },
             }}
             InputLabelProps={{ sx: { color: '#BBBBBB' } }}
+            FormHelperTextProps={{ sx: { color: '#888', mt: 0.5 } }}
             sx={{ mb: 2 }}
           />
 
@@ -487,16 +506,33 @@ export const ExportStepTarget: React.FC = () => {
                     border: '1px solid #5A5A5A',
                   }}
                 >
-                  {/* 搜索框 */}
-                  <Box sx={{ p: 1, borderBottom: '1px solid #5A5A5A' }}>
+                  {/* 搜索框：带搜索图标 + 清空按钮 */}
+                  <Box sx={{ p: 1, borderBottom: '1px solid #3A3A3A', bgcolor: '#2F2F2F' }}>
                     <TextField
                       size="small"
                       fullWidth
                       placeholder="搜索连接名称或 IP..."
                       value={connSearchText}
                       onChange={(e) => setConnSearchText(e.target.value)}
-                      sx={{ bgcolor: '#2B2B2B' }}
                       autoFocus
+                      InputProps={{
+                        startAdornment: <SearchIcon fontSize="small" sx={{ color: '#888', mr: 0.5 }} />,
+                        endAdornment: connSearchText ? (
+                          <IconButton size="small" onClick={() => setConnSearchText('')} sx={{ p: 0.25 }}>
+                            <CloseIcon sx={{ fontSize: 14, color: '#888' }} />
+                          </IconButton>
+                        ) : undefined,
+                      }}
+                      sx={{
+                        bgcolor: '#252525',
+                        '& .MuiOutlinedInput-root': {
+                          fontSize: 13,
+                          '& fieldset': { borderColor: '#3A3A3A' },
+                          '&:hover fieldset': { borderColor: '#5A5A5A' },
+                        },
+                        '& input': { padding: '6px 4px', color: '#DDD' },
+                        '& input::placeholder': { color: '#777', opacity: 1 },
+                      }}
                     />
                   </Box>
                   {/* 完全复用左侧菜单的树形渲染（展开/折叠状态独立） */}
@@ -540,25 +576,40 @@ export const ExportStepTarget: React.FC = () => {
                           <Box
                             key={nodeId}
                             onClick={() => {
-                              updateDb({ connectionId: conn.id, schemaName: conn.schema || '' });
+                              // 切换目标连接时重置 tableName/tableNameArr 为源表名
+                              const defaultArr = selectedTables.map((st) => st.tableName);
+                              updateDb({
+                                connectionId: conn.id,
+                                schemaName: conn.schema || '',
+                                tableName: defaultArr[0] || '',
+                                tableNameArr: defaultArr,
+                              });
                               setConnDropdownOpen(false);
                             }}
                             sx={{
-                              pl: 1 + depth * 1.2,
+                              pl: 1.5 + depth * 1.2,
                               pr: 2,
-                              py: 0.4,
+                              py: 0.6,
                               cursor: 'pointer',
-                              bgcolor: selected ? '#1E4A7B' : 'transparent',
-                              color: selected ? '#FFFFFF' : '#BBBBBB',
-                              fontSize: 13,
-                              borderLeft: selected ? '3px solid #42A5F5' : '3px solid transparent',
+                              bgcolor: selected ? '#1565C0' : 'transparent',
+                              color: selected ? '#FFFFFF' : '#E0E0E0',
+                              fontSize: 12.5,
+                              borderLeft: selected ? '3px solid #64B5F6' : '3px solid transparent',
                               whiteSpace: 'nowrap',
                               overflow: 'hidden',
                               textOverflow: 'ellipsis',
-                              '&:hover': { bgcolor: selected ? '#1E4A7B' : '#4A4A4A' },
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 0.5,
+                              transition: 'background-color 0.15s',
+                              '&:hover': { bgcolor: selected ? '#1565C0' : '#454545' },
                             }}
                           >
-                            {conn.name}
+                            <StorageIcon sx={{ fontSize: 12, color: selected ? '#FFFFFF' : '#66BB6A' }} />
+                            <span style={{ flex: 1 }}>{conn.name}</span>
+                            <span style={{ fontSize: 11, color: selected ? '#BBDEFB' : '#888' }}>
+                              {conn.host}:{conn.port}
+                            </span>
                           </Box>
                         );
                       }
@@ -573,29 +624,34 @@ export const ExportStepTarget: React.FC = () => {
                               setExpandedGroups(ns);
                             }}
                             sx={{
-                              bgcolor: '#2B2B2B',
-                              color: '#BBB',
-                              fontSize: 12,
-                              fontWeight: 600,
-                              lineHeight: '24px',
-                              pl: 0.5 + depth * 1.2,
+                              bgcolor: depth === 0 ? '#2A2A2A' : '#333333',
+                              color: depth === 0 ? '#FFFFFF' : '#C8C8C8',
+                              fontSize: depth === 0 ? 12.5 : 12,
+                              fontWeight: depth === 0 ? 700 : 500,
+                              lineHeight: '26px',
+                              pl: 0.75 + depth * 1.2,
+                              pr: 1,
                               cursor: hasChildren ? 'pointer' : 'default',
                               display: 'flex',
                               alignItems: 'center',
                               gap: 0.5,
-                              borderTop: depth === 0 ? '1px solid #4A4A4A' : 'none',
-                              '&:hover': hasChildren ? { bgcolor: '#383838' } : {},
+                              borderTop: depth === 0 ? '1px solid #1F1F1F' : 'none',
+                              borderBottom: isExpanded ? '1px solid #252525' : 'none',
+                              transition: 'background-color 0.15s',
+                              '&:hover': hasChildren ? { bgcolor: '#3A3A3A' } : {},
                             }}
                           >
-                            {hasChildren && (
-                              <ExpandMoreIcon
-                                fontSize="small"
+                            {hasChildren ? (
+                              <ChevronRightIcon
                                 sx={{
                                   fontSize: 14,
-                                  transform: isExpanded ? 'rotate(0deg)' : 'rotate(-90deg)',
+                                  color: '#999',
+                                  transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
                                   transition: 'transform 0.2s',
                                 }}
                               />
+                            ) : (
+                              <FiberManualRecordIcon sx={{ fontSize: 5, color: '#555', ml: 0.4, mr: 0.4 }} />
                             )}
                             {node.name}
                           </Box>
@@ -646,52 +702,76 @@ export const ExportStepTarget: React.FC = () => {
               </Typography>
             ) : selectedTables.length === 1 ? (
               // 单表：直接显示一个 Autocomplete
-              <Autocomplete
-                freeSolo
-                size="small"
-                fullWidth
-                options={targetTables}
-                value={target.tableName as string || null}
-                onChange={(_, val) => updateDb({ tableName: val || '' })}
-                onInputChange={(_, val) => updateDb({ tableName: val || '' })}
-                ListboxProps={{
-                  sx: {
-                    fontSize: 12,
-                    padding: 0,
-                    '& li': { fontSize: 12, padding: '4px 8px', minHeight: 24 },
-                  },
-                }}
-                slotProps={{
-                  paper: { sx: { bgcolor: '#3C3F41', color: '#FFFFFF' } },
-                }}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    size="small"
-                    placeholder={selectedTables[0]?.tableName}
-                    sx={{
-                      bgcolor: '#3C3F41',
-                      '& .MuiOutlinedInput-input': { fontSize: 12, padding: '6px 8px' },
-                    }}
-                    error={!target.tableName}
-                    helperText={!target.tableName ? '目标表名必填' : ''}
-                  />
-                )}
-              />
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Autocomplete
+                  freeSolo
+                  size="small"
+                  sx={{ flex: 1, minWidth: 120 }}
+                  options={targetTables}
+                  value={target.tableName as string || null}
+                  onChange={(_, val) => updateDb({ tableName: val || '' })}
+                  onInputChange={(_, val) => updateDb({ tableName: val || '' })}
+                  ListboxProps={{
+                    sx: {
+                      fontSize: 12,
+                      padding: 0,
+                      '& li': { fontSize: 12, padding: '4px 8px', minHeight: 24 },
+                    },
+                  }}
+                  slotProps={{
+                    paper: { sx: { bgcolor: '#3C3F41', color: '#FFFFFF' } },
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      size="small"
+                      placeholder={selectedTables[0]?.tableName}
+                      sx={{
+                        bgcolor: '#3C3F41',
+                        '& .MuiOutlinedInput-input': { fontSize: 12, padding: '6px 8px' },
+                      }}
+                      error={!target.tableName}
+                      helperText={!target.tableName ? '目标表名必填' : ''}
+                    />
+                  )}
+                />
+                <Button
+                  size="small"
+                  variant="outlined"
+                  startIcon={<AccountTreeIcon />}
+                  onClick={() => openMappingDialog(selectedTables[0], 0)}
+                  sx={{
+                    fontSize: 11,
+                    minWidth: 92,
+                    px: 1.2,
+                    py: 0.4,
+                    flexShrink: 0,
+                    color: '#42A5F5',
+                    borderColor: '#42A5F5',
+                    whiteSpace: 'nowrap',
+                    '&:hover': {
+                      borderColor: '#90CAF9',
+                      bgcolor: 'rgba(66, 165, 245, 0.1)',
+                    },
+                  }}
+                >
+                  字段映射
+                </Button>
+              </Box>
             ) : (
               // 多表：列表形式（源表 → 目标表），无边框
               selectedTables.map((t, idx) => {
                 const val = target.tableNameArr?.[idx] || t.tableName;
                 return (
-                  <Box key={idx} sx={{ display: 'flex', alignItems: 'center', mb: 0.3, gap: 1 }}>
-                    <Typography sx={{ color: '#888', fontSize: 11, width: 100, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <Box key={idx} sx={{ display: 'flex', alignItems: 'center', mb: 0.5, gap: 1 }}>
+                    <Typography sx={{ color: '#BBB', fontSize: 11, flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: 'right', pr: 0.5 }}>
                       {t.tableName}
                     </Typography>
-                    <ArrowForwardIcon sx={{ fontSize: 14, color: '#666' }} />
+                    <ArrowForwardIcon sx={{ fontSize: 14, color: '#90CAF9' }} />
                     <Autocomplete
                       freeSolo
                       size="small"
-                      sx={{ flex: 1 }}
+                      sx={{ flex: 1, minWidth: 0 }}
                       options={targetTables}
                       value={val}
                       onChange={(_, newVal) => {
@@ -715,22 +795,44 @@ export const ExportStepTarget: React.FC = () => {
                         paper: { sx: { bgcolor: '#3C3F41', color: '#FFFFFF' } },
                       }}
                       renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          size="small"
-                          placeholder={t.tableName}
-                          sx={{
-                            bgcolor: '#3C3F41',
-                            '& fieldset': { border: 'none' },
-                            '& .MuiOutlinedInput-input': { fontSize: 12, padding: '6px 8px' },
-                          }}
-                        />
-                      )}
-                    />
-                  </Box>
-                );
-              })
-            )}
+                      <TextField
+                        {...params}
+                        size="small"
+                        placeholder={t.tableName}
+                        sx={{
+                          bgcolor: '#3C3F41',
+                          '& fieldset': { border: 'none' },
+                          '& .MuiOutlinedInput-input': { fontSize: 12, padding: '6px 8px' },
+                        }}
+                      />
+                    )}
+                  />
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    startIcon={<AccountTreeIcon />}
+                    onClick={() => openMappingDialog(t, idx)}
+                    sx={{
+                      fontSize: 11,
+                      minWidth: 92,
+                      px: 1.2,
+                      py: 0.4,
+                      flexShrink: 0,
+                      color: '#42A5F5',
+                      borderColor: '#42A5F5',
+                      whiteSpace: 'nowrap',
+                      '&:hover': {
+                        borderColor: '#90CAF9',
+                        bgcolor: 'rgba(66, 165, 245, 0.1)',
+                      },
+                    }}
+                  >
+                    字段映射
+                  </Button>
+                </Box>
+              );
+            })
+          )}
           </Box>
 
           <CheckboxLabel
@@ -764,6 +866,21 @@ export const ExportStepTarget: React.FC = () => {
             <Alert severity="warning">暂无可用数据库连接</Alert>
           )}
         </Box>
+      )}
+
+      {/* 字段映射对话框（DBeaver 风格） */}
+      {mappingDialog && (
+        <FieldMappingDialog
+          open={mappingDialog.open}
+          sourceTable={mappingDialog.sourceTable}
+          targetTable={mappingDialog.targetTable}
+          initialMappings={getColumnMappings(mappingDialog.key)}
+          onClose={() => setMappingDialog(null)}
+          onSave={(mappings) => {
+            setColumnMappings(mappingDialog.key, mappings);
+            setMappingDialog(null);
+          }}
+        />
       )}
     </Box>
   );

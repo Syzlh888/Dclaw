@@ -386,20 +386,35 @@ const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseInden
             }];
           });
 
-          // 只有当右键表在当前多选集合中，才传所有选中表；
-          // 否则只导出当前右键的这 1 张表（避免之前点选残留影响）
-          const contextTableKey = `${schemaName || DEFAULT_KEY}::${table.name}`;
+          // 选中时用的是 schemaKey（DEFAULT_KEY 或真实 schema），右键时 schemaName 不一定是 DEFAULT_KEY
+          // 改为通过表名比对比对（因为同一表无论 schemaKey 是什么，实际名一样）
+          const tableNameInSelected = Array.from(selectedTables).some((tableKey) => {
+            const separatorIndex = tableKey.indexOf("::");
+            return separatorIndex >= 0 && tableKey.slice(separatorIndex + 2) === table.name;
+          });
+          const inSelectedSet = tableNameInSelected;
           let tables: Array<{ connectionId: string; tableName: string; schemaName?: string }>;
-          if (selectedTables.has(contextTableKey) && selectedTableList.length > 0) {
+          if (inSelectedSet && selectedTableList.length > 0) {
             tables = selectedTableList;
           } else {
             tables = [{ connectionId: connection.id, tableName: table.name, schemaName }];
           }
 
+          console.log('[export-data] right-click table:', table.name);
+          console.log('[export-data] selectedTables Set:', Array.from(selectedTables));
+          console.log('[export-data] selectedTableList:', selectedTableList);
+          console.log('[export-data] tables to export:', tables);
+
+          const storeState = useExportStore.getState();
+          console.log('[export-data] BEFORE openWizard, store selectedTables:', storeState.selectedTables);
+
           useExportStore.getState().openWizard({
             connectionId: connection.id,
             tables,
           });
+
+          const storeAfter = useExportStore.getState();
+          console.log('[export-data] AFTER openWizard, store selectedTables:', storeAfter.selectedTables);
         },
       },
       {

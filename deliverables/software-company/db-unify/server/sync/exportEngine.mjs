@@ -10,7 +10,7 @@ import { exportCsv, exportTsv, exportSql, exportJson, exportXlsx } from './expor
 import { exportRowsToDatabase } from './exporters/dbExporter.mjs';
 
 const DEFAULT_BATCH_SIZE = 10000;
-const DEFAULT_MAX_ROWS = 500000;
+const DEFAULT_MAX_ROWS = Number.MAX_SAFE_INTEGER  // 0 或不传表示不限制;
 const XLSX_MAX_ROWS = 100000;
 const locks = new Map();
 
@@ -155,7 +155,8 @@ export function isExportLocked(source) {
 }
 
 async function* createRowsStream({ connection, source, sql, options, driver, customDriverId, dbType, onProgress, totalRows, isCancelled }) {
-  const maxRows = Math.max(1, Number(options.maxRows) || DEFAULT_MAX_ROWS);
+  // 0/空表示不限制，> 0 才是指定值
+  const maxRows = Number(options.maxRows) > 0 ? Math.max(1, Number(options.maxRows)) : DEFAULT_MAX_ROWS;
   const batchSize = Math.min(Math.max(1, Number(options.batchSize) || DEFAULT_BATCH_SIZE), 50000);
   let queue = [];
   let producedRows = 0;
@@ -247,10 +248,12 @@ async function runFileExport({ source, target, options = {}, onProgress = () => 
     const format = String(target.file?.format || target.format || 'csv').toLowerCase();
     const exporter = exporterFor(format);
     if (!exporter) throw new Error(`不支持的导出格式: ${format}`);
-    const configuredMax = Number(options.maxRows) || (format === 'xlsx' ? XLSX_MAX_ROWS : DEFAULT_MAX_ROWS);
-    const maxRows = Math.min(configuredMax, format === 'xlsx' ? XLSX_MAX_ROWS : DEFAULT_MAX_ROWS);
+    // 0/空表示不限制（xlsx 受 Excel 行数上限约束，默认按 XLSX_MAX_ROWS 保护）
+    const specified = Number(options.maxRows);
+    const effectiveMax = specified > 0 ? specified : (format === 'xlsx' ? XLSX_MAX_ROWS : DEFAULT_MAX_ROWS);
+    const maxRows = format === 'xlsx' ? Math.min(effectiveMax, XLSX_MAX_ROWS) : effectiveMax;
     const warnings = [];
-    if (count > maxRows) warnings.push(`源数据约 ${count} 行，本次最多导出 ${maxRows} 行`);
+    if (maxRows < Number.MAX_SAFE_INTEGER && count > maxRows) warnings.push(`源数据约 ${count} 行，本次最多导出 ${maxRows} 行`);
     await onProgress({ stage: 'reading', readRows: 0, writtenRows: 0, totalRows: Math.min(count, maxRows), pct: 0, message: warnings.join('；') });
     const outputPath = resolveOutputPath(target.file || target);
     await ensureParent(outputPath);
