@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import {
   Box, Button, CircularProgress, Dialog, DialogTitle, DialogContent,
   DialogActions, IconButton, InputAdornment, TextField, Tooltip, Typography,
+  List, ListItem, ListItemButton, ListItemText,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
@@ -138,27 +139,10 @@ const ProjectTreePanel: React.FC<{ onCreateProject: () => void; onCreateTask: ()
     }
   };
 
-  // ── Styles ──
-  const nodeSx = (selected: boolean, depth: number) => ({
-    display: 'flex', alignItems: 'center', gap: 0.5, minHeight: 30, pl: `${8 + depth * 18}px`, pr: 0.5,
-    cursor: 'pointer',
-    color: selected ? 'text.primary' : 'text.secondary',
-    bgcolor: selected ? 'action.selected' : 'transparent',
-    borderLeft: selected ? '3px solid' : '3px solid transparent',
-    borderColor: 'primary.main',
-    '&:hover': { bgcolor: selected ? 'action.selected' : 'action.hover' },
-  });
-
-  const actionBtnSx = {
-    p: 0.3,
-    color: 'text.secondary',
-    '&:hover': { color: 'primary.main' },
-  };
-
   return (
     <Box sx={{ width: 240, minWidth: 240, display: 'flex', flexDirection: 'column', bgcolor: 'background.default', borderRight: '1px solid', borderColor: 'divider' }}>
       {/* ── Search box ── */}
-      <Box sx={{ px: 1, pt: 1, pb: 0.75 }}>
+      <Box sx={{ px: 1, pt: 1, pb: 0.75, borderBottom: '1px solid', borderColor: 'divider' }}>
         <TextField
           fullWidth
           size="small"
@@ -166,7 +150,7 @@ const ProjectTreePanel: React.FC<{ onCreateProject: () => void; onCreateTask: ()
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
           sx={{
-            '& .MuiInputBase-root': { fontSize: '0.75rem', bgcolor: 'action.hover', borderRadius: 1 },
+            '& .MuiInputBase-root': { fontSize: '0.7rem', bgcolor: 'action.hover', borderRadius: 1 },
             '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
           }}
           InputProps={{
@@ -186,20 +170,6 @@ const ProjectTreePanel: React.FC<{ onCreateProject: () => void; onCreateTask: ()
         />
       </Box>
 
-      {/* ── Toolbar ── */}
-      <Box sx={{ p: 1, display: 'flex', gap: 0.75, borderBottom: '1px solid', borderColor: 'divider' }}>
-        <Button fullWidth size="small" startIcon={<AddIcon sx={{ fontSize: 14 }} />} onClick={onCreateProject} sx={{ textTransform: 'none', fontSize: '0.75rem', color: 'primary.main', border: '1px solid', borderColor: 'primary.main', whiteSpace: 'nowrap' }}>
-          新建项目
-        </Button>
-        <Tooltip title={selectedProjectId ? '新建任务' : '请先选择项目'}>
-          <span>
-            <IconButton size="small" disabled={!selectedProjectId} onClick={onCreateTask} sx={{ color: 'primary.main', border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
-              <AddIcon />
-            </IconButton>
-          </span>
-        </Tooltip>
-      </Box>
-
       {/* ── Header ── */}
       <Typography sx={{ px: 1.25, py: 0.75, fontSize: '0.7rem', color: 'text.secondary', letterSpacing: 1 }}>
         同步项目
@@ -213,123 +183,202 @@ const ProjectTreePanel: React.FC<{ onCreateProject: () => void; onCreateTask: ()
             {searchText ? '无匹配结果' : '暂无同步项目'}
           </Typography>
         )}
-        {visibleProjects.map((project) => {
-          const expanded = isProjectExpanded(project.id);
-          const projectTasks = tasks.filter((task) => task.project_id === project.id);
-          const isHovered = hoveredId === project.id;
-          return (
-            <React.Fragment key={project.id}>
-              {/* ── Project node ── */}
-              <Box
-                sx={nodeSx(selectedProjectId === project.id && !selectedTaskId, 0)}
-                onClick={() => selectProject(project.id)}
-                onMouseEnter={() => setHoveredId(project.id)}
-                onMouseLeave={() => setHoveredId(null)}
-              >
-                <IconButton size="small" onClick={(e) => { e.stopPropagation(); toggleProject(project.id); }} sx={{ p: 0, color: 'text.secondary' }}>
-                  {expanded ? <ExpandMoreIcon fontSize="small" /> : <ChevronRightIcon fontSize="small" />}
-                </IconButton>
-                <FolderIcon sx={{ fontSize: 16, color: project.color || 'primary.main' }} />
-                <Typography noWrap sx={{ fontSize: '0.8rem', flex: 1, color: 'text.primary' }}>{project.name}</Typography>
-                {!isHovered && <Typography sx={{ fontSize: '0.65rem', color: 'text.disabled', mr: 0.5 }}>{projectTasks.length}</Typography>}
-                {isHovered && (
-                  <Box sx={{ display: 'flex', gap: 0.2 }}>
-                    <IconButton
-                      size="small"
-                      onClick={(e) => handleEditOpen(e, { type: 'project', id: project.id, name: project.name })}
-                      sx={actionBtnSx}
-                    >
-                      <EditIcon sx={{ fontSize: 13 }} />
-                    </IconButton>
-                    <IconButton
-                      size="small"
-                      onClick={(e) => handleDeleteOpen(e, { type: 'project', id: project.id, name: project.name })}
-                      sx={actionBtnSx}
-                    >
-                      <DeleteIcon sx={{ fontSize: 13 }} />
-                    </IconButton>
-                  </Box>
-                )}
-              </Box>
-
-              {/* ── Task nodes ── */}
-              {expanded && projectTasks.map((task) => {
-                const taskExpanded = isTaskExpanded(task.id);
-                const mark = statusMark(task.last_run_status);
-                const taskIsHovered = hoveredId === task.id;
-                const taskMappings = mappings.filter((m) => m.task_id === task.id);
-                return (
-                  <React.Fragment key={task.id}>
-                    <Box
-                      sx={nodeSx(selectedTaskId === task.id && !selectedMappingId, 1)}
-                      onClick={() => selectTask(task.id)}
-                      onMouseEnter={() => setHoveredId(task.id)}
-                      onMouseLeave={() => setHoveredId(null)}
-                    >
-                      <IconButton size="small" onClick={(e) => { e.stopPropagation(); toggleTask(task.id); }} sx={{ p: 0, color: 'text.secondary' }}>
-                        {taskExpanded ? <ExpandMoreIcon fontSize="small" /> : <ChevronRightIcon fontSize="small" />}
-                      </IconButton>
-                      <Typography sx={{ fontSize: '0.8rem', color: mark.color }}>{mark.text}</Typography>
-                      <Typography noWrap sx={{ fontSize: '0.75rem', flex: 1, color: 'text.primary' }}>{task.name}</Typography>
-                      {taskIsHovered && (
-                        <Box sx={{ display: 'flex', gap: 0.2 }}>
-                          <IconButton
-                            size="small"
-                            onClick={(e) => handleEditOpen(e, { type: 'task', id: task.id, name: task.name })}
-                            sx={actionBtnSx}
-                          >
-                            <EditIcon sx={{ fontSize: 13 }} />
-                          </IconButton>
-                          <IconButton
-                            size="small"
-                            onClick={(e) => handleDeleteOpen(e, { type: 'task', id: task.id, name: task.name })}
-                            sx={actionBtnSx}
-                          >
-                            <DeleteIcon sx={{ fontSize: 13 }} />
-                          </IconButton>
-                        </Box>
-                      )}
-                    </Box>
-
-                    {/* ── Mapping nodes ── */}
-                    {taskExpanded && taskMappings.map((mapping) => {
-                      const mappingIsHovered = hoveredId === mapping.id;
-                      return (
-                        <Box
-                          key={mapping.id}
-                          sx={nodeSx(selectedMappingId === mapping.id, 2)}
-                          onClick={() => selectMapping(mapping.id)}
-                          onMouseEnter={() => setHoveredId(mapping.id)}
-                          onMouseLeave={() => setHoveredId(null)}
+        <List dense disablePadding>
+          {visibleProjects.map((project) => {
+            const expanded = isProjectExpanded(project.id);
+            const projectTasks = tasks.filter((task) => task.project_id === project.id);
+            const completedTasks = projectTasks.filter((t) => t.last_run_status === 'success').length;
+            const selected = selectedProjectId === project.id && !selectedTaskId;
+            return (
+              <React.Fragment key={project.id}>
+                {/* ── Project node (GroupPanel 分组样式) ── */}
+                <ListItem
+                  disablePadding
+                  sx={{
+                    borderBottom: '1px solid',
+                    borderColor: 'divider',
+                    bgcolor: selected ? 'action.selected' : 'transparent',
+                  }}
+                  onMouseEnter={() => setHoveredId(project.id)}
+                  onMouseLeave={() => setHoveredId(null)}
+                  secondaryAction={
+                    <Box sx={{ display: 'flex', gap: 0.25, mr: 0.5 }}>
+                      <Tooltip title="重命名">
+                        <IconButton
+                          size="small"
+                          onClick={(e) => handleEditOpen(e, { type: 'project', id: project.id, name: project.name })}
+                          sx={{ p: 0.25 }}
                         >
-                          <Box sx={{ width: 24 }} />
-                          <TableChartIcon sx={{ fontSize: 14, color: mapping.enabled === false ? 'text.disabled' : 'primary.light' }} />
-                          <Typography noWrap sx={{ fontSize: '0.7rem', flex: 1, color: 'text.primary' }}>
-                            {mapping.source_table} → {mapping.target_table}
-                          </Typography>
-                          {mappingIsHovered && (
-                            <IconButton
-                              size="small"
-                              onClick={(e) => handleDeleteOpen(e, { type: 'mapping', id: mapping.id, name: `${mapping.source_table} → ${mapping.target_table}` })}
-                              sx={actionBtnSx}
-                            >
-                              <DeleteIcon sx={{ fontSize: 13 }} />
-                            </IconButton>
-                          )}
-                        </Box>
-                      );
-                    })}
-                  </React.Fragment>
-                );
-              })}
-            </React.Fragment>
-          );
-        })}
-      </Box>
+                          <EditIcon sx={{ fontSize: 13 }} />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="删除">
+                        <IconButton
+                          size="small"
+                          onClick={(e) => handleDeleteOpen(e, { type: 'project', id: project.id, name: project.name })}
+                          sx={{ p: 0.25 }}
+                        >
+                          <DeleteIcon sx={{ fontSize: 13 }} />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  }
+                >
+                  <ListItemButton
+                    dense
+                    onClick={() => selectProject(project.id)}
+                    sx={{
+                      py: 0.15,
+                      pl: 1.5,
+                      cursor: 'pointer',
+                      borderLeft: selected ? '3px solid' : '3px solid transparent',
+                      borderColor: 'primary.main',
+                    }}
+                  >
+                    <IconButton
+                      size="small"
+                      onClick={(e) => { e.stopPropagation(); toggleProject(project.id); }}
+                      sx={{ p: 0, color: 'text.secondary', mr: 0.25 }}
+                    >
+                      {expanded ? <ExpandMoreIcon sx={{ fontSize: 14 }} /> : <ChevronRightIcon sx={{ fontSize: 14 }} />}
+                    </IconButton>
+                    <FolderIcon sx={{ fontSize: 16, color: 'gold', mr: 0.5 }} />
+                    <ListItemText
+                      primary={project.name}
+                      sx={{
+                        '& .MuiListItemText-primary': { fontSize: '0.8rem', fontWeight: selected ? 600 : 400 },
+                      }}
+                    />
+                    <Typography sx={{ fontSize: '0.65rem', color: 'text.disabled', whiteSpace: 'nowrap', mr: 2 }}>
+                      ({completedTasks}/{projectTasks.length})
+                    </Typography>
+                  </ListItemButton>
+                </ListItem>
 
-      {/* ── Bottom "添加项目" button ── */}
-      <Box sx={{ px: 1, py: 0.5, borderTop: '1px solid', borderColor: 'divider' }}>
+                {/* ── Task nodes ── */}
+                {expanded && projectTasks.map((task) => {
+                  const taskExpanded = isTaskExpanded(task.id);
+                  const mark = statusMark(task.last_run_status);
+                  const taskIsHovered = hoveredId === task.id;
+                  const taskMappings = mappings.filter((m) => m.task_id === task.id);
+                  const taskSelected = selectedTaskId === task.id && !selectedMappingId;
+                  return (
+                    <React.Fragment key={task.id}>
+                      <ListItem
+                        disablePadding
+                        sx={{ py: 0, bgcolor: taskSelected ? 'action.selected' : 'transparent' }}
+                        onMouseEnter={() => setHoveredId(task.id)}
+                        onMouseLeave={() => setHoveredId(null)}
+                      >
+                        <ListItemButton
+                          dense
+                          onClick={() => selectTask(task.id)}
+                          sx={{
+                            py: 0.15,
+                            pl: 4.5,
+                            cursor: 'pointer',
+                            borderLeft: taskSelected ? '3px solid' : '3px solid transparent',
+                            borderColor: 'primary.main',
+                            '&:hover': { bgcolor: taskSelected ? 'action.selected' : 'action.hover' },
+                          }}
+                        >
+                          <IconButton
+                            size="small"
+                            onClick={(e) => { e.stopPropagation(); toggleTask(task.id); }}
+                            sx={{ p: 0, color: 'text.secondary', mr: 0.25 }}
+                          >
+                            {taskExpanded ? <ExpandMoreIcon sx={{ fontSize: 14 }} /> : <ChevronRightIcon sx={{ fontSize: 14 }} />}
+                          </IconButton>
+                          <Typography sx={{ fontSize: '0.75rem', color: mark.color, mr: 0.5 }}>{mark.text}</Typography>
+                          <ListItemText
+                            primary={task.name}
+                            sx={{
+                              '& .MuiListItemText-primary': { fontSize: '0.75rem' },
+                            }}
+                          />
+                          {taskIsHovered && (
+                            <Box sx={{ display: 'flex', gap: 0.25 }}>
+                              <Tooltip title="重命名">
+                                <IconButton
+                                  size="small"
+                                  onClick={(e) => handleEditOpen(e, { type: 'task', id: task.id, name: task.name })}
+                                  sx={{ p: 0.25 }}
+                                >
+                                  <EditIcon sx={{ fontSize: 13 }} />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="删除">
+                                <IconButton
+                                  size="small"
+                                  onClick={(e) => handleDeleteOpen(e, { type: 'task', id: task.id, name: task.name })}
+                                  sx={{ p: 0.25 }}
+                                >
+                                  <DeleteIcon sx={{ fontSize: 13 }} />
+                                </IconButton>
+                              </Tooltip>
+                            </Box>
+                          )}
+                        </ListItemButton>
+                      </ListItem>
+
+                      {/* ── Mapping nodes ── */}
+                      {taskExpanded && taskMappings.map((mapping) => {
+                        const mappingIsHovered = hoveredId === mapping.id;
+                        const mappingSelected = selectedMappingId === mapping.id;
+                        return (
+                          <ListItem
+                            key={mapping.id}
+                            disablePadding
+                            sx={{ py: 0, bgcolor: mappingSelected ? 'action.selected' : 'transparent' }}
+                            onMouseEnter={() => setHoveredId(mapping.id)}
+                            onMouseLeave={() => setHoveredId(null)}
+                          >
+                            <ListItemButton
+                              dense
+                              onClick={() => selectMapping(mapping.id)}
+                              sx={{
+                                py: 0.15,
+                                pl: 7,
+                                cursor: 'pointer',
+                                borderLeft: mappingSelected ? '3px solid' : '3px solid transparent',
+                                borderColor: 'primary.main',
+                                '&:hover': { bgcolor: mappingSelected ? 'action.selected' : 'action.hover' },
+                              }}
+                            >
+                              <TableChartIcon sx={{ fontSize: 14, color: mapping.enabled === false ? 'text.disabled' : 'primary.light', mr: 0.5 }} />
+                              <ListItemText
+                                primary={`${mapping.source_table} → ${mapping.target_table}`}
+                                sx={{
+                                  '& .MuiListItemText-primary': { fontSize: '0.7rem' },
+                                }}
+                              />
+                              {mappingIsHovered && (
+                                <Tooltip title="删除">
+                                  <IconButton
+                                    size="small"
+                                    onClick={(e) => handleDeleteOpen(e, { type: 'mapping', id: mapping.id, name: `${mapping.source_table} → ${mapping.target_table}` })}
+                                    sx={{ p: 0.25 }}
+                                  >
+                                    <DeleteIcon sx={{ fontSize: 13 }} />
+                                  </IconButton>
+                                </Tooltip>
+                              )}
+                            </ListItemButton>
+                          </ListItem>
+                        );
+                      })}
+                    </React.Fragment>
+                  );
+                })}
+              </React.Fragment>
+            );
+          })}
+        </List>
+      </Box>
+      {/* 新建项目按钮 — 与 SQL编辑器「添加项目」同位置 */}
+      <Box sx={{ px: 1, pt: 0.5, pb: 0.5 }}>
         <Button
+          fullWidth
           variant="text"
           size="small"
           startIcon={<AddIcon sx={{ fontSize: 14 }} />}
@@ -338,12 +387,11 @@ const ProjectTreePanel: React.FC<{ onCreateProject: () => void; onCreateTask: ()
             fontSize: '0.8rem',
             color: 'text.secondary',
             textTransform: 'none',
-            width: '100%',
             justifyContent: 'flex-start',
             '&:hover': { bgcolor: 'action.hover', color: 'primary.main' },
           }}
         >
-          添加项目
+          新建项目
         </Button>
       </Box>
 
