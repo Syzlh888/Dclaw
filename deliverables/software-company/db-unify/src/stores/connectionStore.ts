@@ -8,6 +8,7 @@ import {
   updateConnection,
   deleteConnection,
 } from '../services/connectionApiService';
+import { useTreeStore } from './treeStore';
 
 interface ConnectionState {
   connections: Record<string, DbConnection>;
@@ -95,6 +96,24 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
       set((state) => ({
         connections: { ...state.connections, [created.id]: newConn },
       }));
+
+      // 自动关联到应用分组下的 Hospital 节点
+      try {
+        const treeStore = useTreeStore.getState();
+        const { nodes } = treeStore;
+        const allNodes: any[] = Object.values(nodes as any);
+        const appDistrict = allNodes.find(
+          (n) => n.type === 'district' && (n.name === '应用' || n.name === 'default')
+        ) || allNodes.find((n) => n.type === 'district');
+        if (appDistrict) {
+          await treeStore.addHospitalNode(appDistrict.id, created.name, created.id);
+          await treeStore.loadTree();
+          console.log('[addConnection] tree 节点已创建:', created.name);
+        }
+      } catch (treeErr) {
+        console.warn('[addConnection] tree 关联失败:', treeErr);
+      }
+
       return created.id;
     } catch (err) {
       console.error('添加连接失败:', err);

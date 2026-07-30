@@ -14,6 +14,7 @@ import SettingsInputComponentIcon from '@mui/icons-material/SettingsInputCompone
 import LockIcon from '@mui/icons-material/Lock';
 import SettingsIcon from '@mui/icons-material/Settings';
 import AnalyticsIcon from '@mui/icons-material/Analytics';
+import SyncAltIcon from '@mui/icons-material/SyncAlt';
 import { useThemeMode } from '../../contexts/ThemeModeContext';
 import { useAuthStore } from '../../stores/authStore';
 import { useDriverStore } from '../../stores/driverStore';
@@ -26,6 +27,7 @@ import AccessManagementDialog from '../server-resource/AccessManagementDialog';
 import UserManagementDialog from '../settings/UserManagementDialog';
 import RoleManagementDialog from '../settings/RoleManagementDialog';
 import ProfileDialog from '../settings/ProfileDialog';
+// SyncPage 已改为独立页面，在 App.tsx 中渲染
 import GroupIcon from '@mui/icons-material/Group';
 import ShieldIcon from '@mui/icons-material/Shield';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
@@ -33,7 +35,7 @@ import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 
 const SCALE_STEPS = [0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.35, 1.5];
 
-type NavigableView = 'sql-editor' | 'server-resource' | 'comprehensive-query';
+type NavigableView = 'sql-editor' | 'server-resource' | 'comprehensive-query' | 'data-sync';
 
 interface Props {
   mainView?: string;
@@ -55,6 +57,7 @@ const AppHeader: React.FC<Props> = ({ mainView, onNavigate, onToggleAI }) => {
   const [userMgmtOpen, setUserMgmtOpen] = useState(false);
   const [roleMgmtOpen, setRoleMgmtOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  // 数据同步已改为独立页面
   const [settingsAnchor, setSettingsAnchor] = useState<null | HTMLElement>(null);
 
   useEffect(() => {
@@ -76,6 +79,7 @@ const AppHeader: React.FC<Props> = ({ mainView, onNavigate, onToggleAI }) => {
   const isSqlEditor = mainView === 'sql-editor';
   const isServerResource = mainView === 'server-resource';
   const isComprehensiveQuery = mainView === 'comprehensive-query';
+  const isDataSync = mainView === 'data-sync';
 
   return (
     <Box
@@ -98,38 +102,39 @@ const AppHeader: React.FC<Props> = ({ mainView, onNavigate, onToggleAI }) => {
         </Typography>
       </Box>
 
-      {/* 视图切换按钮 */}
-      {mainView !== undefined && (
-        <Button
-          size="small"
-          onClick={() => {
-            if (isComprehensiveQuery) {
-              onNavigate?.('server-resource');
-            } else if (isServerResource) {
-              onNavigate?.('sql-editor');
-            } else {
-              onNavigate?.('server-resource');
-            }
-          }}
-          sx={{
-            textTransform: 'none',
-            fontSize: '0.8rem',
-            px: 1.5,
-            py: 0.5,
-            minHeight: 30,
-            borderRadius: 1,
-            ml: 2,
-            bgcolor: 'rgba(255,255,255,0.15)',
-            color: 'white',
-            '&:hover': { bgcolor: 'rgba(255,255,255,0.25)' },
-          }}
-        >
-          <CodeIcon sx={{ fontSize: 16, mr: 0.5 }} />
-          <Typography component="span" sx={{ fontSize: 'inherit', fontWeight: 500 }}>
-            {isSqlEditor ? '服务器资源管理' : isComprehensiveQuery ? '服务器资源管理' : 'SQL编辑器'}
-          </Typography>
-        </Button>
-      )}
+      {/* 三个主视图页签：SQL编辑器 / 服务器资源管理 / 数据同步 */}
+      <Box sx={{ display: 'flex', gap: 0.5, ml: 2 }}>
+        {([
+          { id: 'sql-editor' as const, label: 'SQL编辑器', icon: <CodeIcon sx={{ fontSize: 16 }} /> },
+          { id: 'server-resource' as const, label: '服务器资源管理', icon: <LanIcon sx={{ fontSize: 16 }} /> },
+          { id: 'data-sync' as const, label: '数据同步', icon: <SyncAltIcon sx={{ fontSize: 16 }} /> },
+        ] as const).map((tab) => {
+          const active = mainView === tab.id || (mainView === 'comprehensive-query' && tab.id === 'server-resource');
+          return (
+            <Button
+              key={tab.id}
+              size="small"
+              startIcon={tab.icon}
+              onClick={() => onNavigate?.(tab.id)}
+              sx={{
+                textTransform: 'none',
+                fontSize: '0.78rem',
+                px: 1.2,
+                py: 0.5,
+                minHeight: 30,
+                borderRadius: 1,
+                bgcolor: active ? 'rgba(255,255,255,0.25)' : 'transparent',
+                color: active ? '#FFF' : 'rgba(255,255,255,0.7)',
+                border: active ? '1px solid rgba(255,255,255,0.3)' : '1px solid transparent',
+                fontWeight: active ? 600 : 400,
+                '&:hover': { bgcolor: 'rgba(255,255,255,0.15)', color: '#FFF' },
+              }}
+            >
+              {tab.label}
+            </Button>
+          );
+        })}
+      </Box>
 
       <Box sx={{ flex: 1 }} />
 
@@ -271,6 +276,8 @@ const AppHeader: React.FC<Props> = ({ mainView, onNavigate, onToggleAI }) => {
 
 
 
+      {/* 数据同步入口 — 同级别页面 */}
+
       {/* 备份管理 */}
       <Button
         size="small"
@@ -342,6 +349,7 @@ const AppHeader: React.FC<Props> = ({ mainView, onNavigate, onToggleAI }) => {
       <UserManagementDialog open={userMgmtOpen} onClose={() => setUserMgmtOpen(false)} />
       <RoleManagementDialog open={roleMgmtOpen} onClose={() => setRoleMgmtOpen(false)} />
       <ProfileDialog open={profileOpen} onClose={() => setProfileOpen(false)} />
+
     </Box>
   );
 };

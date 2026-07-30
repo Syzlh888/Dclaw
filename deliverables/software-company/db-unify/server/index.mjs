@@ -54,6 +54,13 @@ import rolesRouter from './routes/roles.mjs';
 import permissionsRouter from './routes/permissions.mjs';
 import functionMgmtRouter from './routes/function-mgmt.mjs';
 import exportRouter from './routes/export.mjs';
+import syncProjectsRouter from './routes/sync-projects.mjs';
+import syncTasksRouter from './routes/sync-tasks.mjs';
+import syncTableMappingsRouter from './routes/sync-table-mappings.mjs';
+import syncExecuteRouter from './routes/sync-execute.mjs';
+import syncSchedulerRouter from './routes/sync-scheduler.mjs';
+// v1.6 定时轮询调度器
+import syncScheduler from './sync/scheduler.mjs';
 
 const app = express();
 const PORT = parseInt(process.env.PORT, 10) || 3001;
@@ -135,6 +142,8 @@ if (isProduction) {
     await initDatabase();
     await initDefaultData();
     await initAuthDefaults();
+    // v1.6 数据同步：启动定时轮询调度器
+    syncScheduler.start();
   } catch (e) {
     console.error('[boot] 数据库初始化失败:', e);
     process.exit(1);
@@ -232,6 +241,14 @@ app.use('/api/users', authMiddleware, usersRouter);
 app.use('/api/roles', authMiddleware, rolesRouter);
 app.use('/api/permissions', authMiddleware, permissionsRouter);
 
+// v1.5 数据同步三层结构 (项目 / 任务 / 表映射 / 执行)
+app.use('/api/sync-projects', authMiddleware, syncProjectsRouter);
+app.use('/api/sync-tasks', authMiddleware, syncTasksRouter);
+app.use('/api/sync-tasks', authMiddleware, syncExecuteRouter);
+app.use('/api/sync-table-mappings', authMiddleware, syncTableMappingsRouter);
+// v1.6 数据同步：定时轮询调度 API
+app.use('/api/sync-scheduler', authMiddleware, syncSchedulerRouter);
+
 
 // ========= 生产环境 SPA 回退 =========
 
@@ -266,6 +283,16 @@ process.on('uncaughtException', (err) => {
 
 process.on('unhandledRejection', (reason) => {
   log.warn('[unhandledRejection] 未处理的 Promise 拒绝', { error: reason?.message || String(reason) });
+});
+
+// v1.6 数据同步：优雅关闭调度器
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received, stopping scheduler');
+  syncScheduler.stop();
+});
+process.on('SIGINT', () => {
+  console.log('SIGINT received, stopping scheduler');
+  syncScheduler.stop();
 });
 
 // ========= 启动 =========

@@ -13,6 +13,22 @@ export function createAppTheme(mode: ThemeMode, scale: number) {
   const rem = (px: number) => `${(px / 16).toFixed(4)}rem`;
   const iconSize = scale <= 0.85 ? 'small' : scale >= 1.1 ? 'medium' : 'small';
 
+  // CJK 字体栈 — 关键修复：避免 Modal/Button 等 MUI 组件内中文显示豆腐块
+  const FONT_FAMILY = [
+    '-apple-system',
+    'BlinkMacSystemFont',
+    '"Segoe UI"',
+    'Roboto',
+    '"Helvetica Neue"',
+    'Arial',
+    '"PingFang SC"',
+    '"Microsoft YaHei"',
+    '"Hiragino Sans GB"',
+    '"Noto Sans CJK SC"',
+    '"Source Han Sans CN"',
+    'sans-serif',
+  ].join(',');
+
   if (mode === 'dark') {
     return createTheme({
       palette: {
@@ -30,9 +46,20 @@ export function createAppTheme(mode: ThemeMode, scale: number) {
       typography: {
         fontSize,
         htmlFontSize: Math.round(16 * scale),
-        fontFamily: ['-apple-system','BlinkMacSystemFont','"Segoe UI"','Roboto','"Helvetica Neue"','Arial','sans-serif'].join(','),
+        // 关键：在字体栈里插入 CJK fallback
+        fontFamily: FONT_FAMILY,
       },
       components: {
+        MuiCssBaseline: {
+          styleOverrides: {
+            // 全局兜底：html/body/#root 全部声明 CJK 字体
+            'html, body, #root': { fontFamily: FONT_FAMILY },
+            // 关键修复：Dialog/Modal 内部全部使用带 CJK fallback 的字体
+            '.MuiDialog-root, .MuiDialog-root *': {
+              fontFamily: `${FONT_FAMILY} !important`,
+            },
+          },
+        },
         MuiButton: { styleOverrides: { root: { textTransform: 'none', fontSize: rem(fontSize) } } },
         MuiChip: { styleOverrides: { root: { fontWeight: 500 } } },
         MuiSvgIcon: { defaultProps: { fontSize: iconSize } }, // DBeaver 彩色图标：颜色通过 palette primary/secondary/error 映射
@@ -84,9 +111,17 @@ export function createAppTheme(mode: ThemeMode, scale: number) {
     typography: {
       fontSize,
       htmlFontSize: Math.round(16 * scale),
-      fontFamily: ['-apple-system','BlinkMacSystemFont','"Segoe UI"','Roboto','"Helvetica Neue"','Arial','sans-serif'].join(','),
+      fontFamily: FONT_FAMILY,
     },
     components: {
+      MuiCssBaseline: {
+        styleOverrides: {
+          'html, body, #root': { fontFamily: FONT_FAMILY },
+          '.MuiDialog-root, .MuiDialog-root *': {
+            fontFamily: `${FONT_FAMILY} !important`,
+          },
+        },
+      },
       MuiButton: { styleOverrides: { root: { textTransform: 'none', fontSize: rem(fontSize) } } },
       MuiChip: { styleOverrides: { root: { fontWeight: 500 } } },
       MuiSvgIcon: { defaultProps: { fontSize: iconSize } },

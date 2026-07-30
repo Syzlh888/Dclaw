@@ -17,9 +17,17 @@ export function getPool() {
     password: cfg.password,
     database: cfg.database,
     ssl: cfg.ssl,
+    // 关键修复：强制 UTF-8 编码，避免中文写入时被错误解释
+    client_encoding: 'UTF8',
     max: 20,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 5000,
+  });
+  // 兜底：每个新连接再 SET 一次 client_encoding，防止 libpq 协商中退化
+  pool.on('connect', (client) => {
+    client.query("SET client_encoding TO 'UTF8'").catch((err) => {
+      console.error('[pg-pool] SET client_encoding failed:', err.message);
+    });
   });
   pool.on('error', (err) => console.error('[pg-pool] Unexpected error:', err));
   return pool;

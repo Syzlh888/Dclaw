@@ -57,6 +57,9 @@ const COLLECTION_TO_TABLE = {
   auditLogs: 'audit_logs',
   authSessions: 'auth_sessions',
   exportHistory: 'export_history',
+  syncProjects: 'sync_projects',
+  syncTasks: 'sync_tasks',
+  syncTableMappings: 'sync_table_mappings',
 };
 
 function resolveTable(collection) {
@@ -132,6 +135,18 @@ function quoteIdent(name) {
  * 幂等；应用启动时调用一次即可。
  */
 export async function initDatabase() {
+  // 诊断日志：打印 PG server_encoding / client_encoding + 中文 roundtrip 测试
+  try {
+    const r1 = await pgQuery('SHOW server_encoding');
+    console.log('[db-init] server_encoding =', r1.rows[0]?.server_encoding);
+    const r2 = await pgQuery('SHOW client_encoding');
+    console.log('[db-init] client_encoding =', r2.rows[0]?.client_encoding);
+    const r3 = await pgQuery('SELECT $1::text AS t, length($1::text) AS chars, octet_length($1::text) AS bytes', ['测试中文']);
+    console.log('[db-init] roundtrip Chinese:', JSON.stringify(r3.rows[0]));
+  } catch (e) {
+    console.error('[db-init] SHOW encoding / roundtrip failed:', e.message);
+  }
+
   console.log('[db] 运行 migration ...');
   await runMigrations();
   // 预热连接

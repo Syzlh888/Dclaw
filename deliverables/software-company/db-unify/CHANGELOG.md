@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.5.0-alpha.0] - 2026-07-30
+
+### 新增 - v1.5 数据同步中心 UI（左侧三层树 + 任务详情面板）
+
+- **入口**：`src/components/layout/AppHeader.tsx` 顶部新增「数据同步」按钮（`SyncAltIcon` + outlined），点击打开 `SyncPage` Modal。
+- **三栏 Modal**：`src/components/sync/SyncPage.tsx`（1200×760，#2B2B2B 背景，#3C3F41 面板，#42A5F5 蓝色高亮）—— 左侧项目树 + 中间内容区 + 右侧详情面板。
+- **左侧项目树** `src/components/sync/ProjectTreePanel.tsx`：240px 宽，3 级折叠（项目 → 任务 → 表映射），状态图标 ⏱ / ✓ / ✗ / ○，「+ 新建项目」「+ 新建任务」按钮。
+- **任务列表** `src/components/sync/TaskListPanel.tsx`：选中项目时显示，列出该项目的所有任务（含源/目标 schema、写入策略、状态色 chip）。
+- **表映射列表 + 字段映射** `src/components/sync/MappingListPanel.tsx`：选中任务显示表映射列表；选中具体映射显示字段映射表（source → target / type）。
+- **右侧详情面板** `src/components/sync/DetailPanel.tsx`（300px）：项目/任务/映射的元数据；底部「编辑」「立即运行（仅任务可见，当前 disabled 占位）」「删除」操作按钮（带 confirm）。
+- **store / service / types**：
+  - `src/types/sync.ts`（新）：`SyncProject / SyncTask / SyncTableMapping / SyncColumnMapping / SyncProjectStats` 等类型，含 `CreateSyncProject/Task/MappingPayload` 与 `SyncSelection` 联合类型。
+  - `src/services/syncService.ts`（新）：`apiFetch` 封装的同步 API 客户端（CRUD + stats + description 提取自 `extra.description`）。
+  - `src/stores/syncStore.ts`（新）：`zustand` store，状态：projects/tasks/mappings/stats/selection；操作：load/select/create/delete + 选中态自动级联加载子资源；删除项目级联清空 tasks/mappings。
+- **内嵌新建表单**：`SyncPage` 中根据当前选中态弹出「新建项目 / 任务 / 表映射」Dialog（最小字段 + 错误提示 + 错误条 Snackbar）。
+- **build / deploy 验证**：`npm run build` 通过（`dist/assets/index-DwssPjfn.js` 2.38MB + `index-DNAoehom.js` 15KB + `index-BrxypXTG.css` 4.7KB），`docker cp` + `docker restart` 成功，`/api/health` 返回 `{"status":"ok"}`，容器 `/app/dist/assets/index-DwssPjfn.js` mtime = `Jul 30 15:38`，`GET /api/sync-projects` 路由已挂载（401 = 需认证，路由可达）。
+
 ## [1.4.0-alpha.1] - 2026-07-23
 
 ### 变更 - 端口调整 & 部署模式变更 (医院内网适配)
