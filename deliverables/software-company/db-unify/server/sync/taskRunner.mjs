@@ -24,18 +24,34 @@ const DEFAULT_WRITE_STRATEGY = 'insert';
 function buildSourceAndTarget(task, mapping) {
   const writeStrategy = String(task.write_strategy || DEFAULT_WRITE_STRATEGY).toLowerCase();
 
+  // v1.5+：如果 mapping 有 custom_sql（SELECT/WITH），优先用它做源。
+  const customSql = mapping.custom_sql ? String(mapping.custom_sql).trim() : '';
   const source = {
-    type: 'table',
+    type: customSql ? 'sql' : 'table',
     connectionId: task.source_connection_id,
-    table: mapping.source_table,
     schema: mapping.source_schema || task.source_schema || undefined,
   };
+  if (customSql) {
+    source.sql = customSql;
+    // 自定义 SQL 模式下，source.table 用作显示占位（让 lockKey/cache 仍可工作）
+    source.table = mapping.source_table || '__custom_sql__';
+  } else {
+    source.table = mapping.source_table;
+  }
   // where_clause 在 exportEngine 走 safeFilter (白名单 SELECT/WHERE)
-  if (mapping.where_clause) {
+  if (mapping.where_clause && !customSql) {
     source.filter = String(mapping.where_clause);
   }
-  // orderby 不被 exportEngine 直接支持：拼到 source.sql
-  if (mapping.orderby) {
+  // 增量同步：把 checkpoint 注入 where（仅 table 模式 + 启用增量字段时）
+  if (!customSql && mapping.incremental_column && mapping.checkpoint_value != null && String(mapping.checkpoint_value).length > 0) {
+    const col = String(mapping.incremental_column).replace(/[^A-Za-z0-9_.]/g, '');
+    if (col) {
+      const incCond = `${col} > '${String(mapping.checkpoint_value).replaceAll("'", "''")}'`;
+      source.filter = source.filter ? `${source.filter} AND ${incCond}` : incCond;
+    }
+  }
+  // orderby 不被 exportEngine 直接支持：拼到 source.sql（仅 table 模式）
+  if (!customSql && mapping.orderby) {
     const schemaPart = source.schema ? `"${String(source.schema).replaceAll('"', '""')}".` : '';
     const tablePart = `"${String(mapping.source_table).replaceAll('"', '""')}"`;
     const filterPart = source.filter ? ` WHERE ${source.filter}` : '';
@@ -74,7 +90,9 @@ export async function runTask(task, mappings, onProgress = () => {}) {
     const mapping = mappings[i];
     if (!mapping.enabled) continue;
 
-    const currentTable = `${mapping.source_table} → ${mapping.target_table}`;
+    const currentTable = mapping.custom_sql
+      ? `(自定义 SQL) → ${mapping.target_table}`
+      : `${mapping.source_table} → ${mapping.target_table}`;
 
     try {
       onProgress({
@@ -118,6 +136,17 @@ export async function runTask(task, mappings, onProgress = () => {}) {
         status: 'success',
         rows: result.totalRows || 0,
       });
+
+      // 增量同步：执行成功后回写 checkpoint_value（通过 PATCH 持久化）
+      if (!mapping.custom_sql && mapping.incremental_column) {
+        try {
+          await fetch(`http://localhost:${process.env.PORT || 3000}/api/sync-table-mappings/${encodeURIComponent(mapping.id)}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ checkpointValue: new Date().toISOString() }),
+          });
+        } catch (e) { /* swallow - 持久化失败不影响本次任务结果 */ }
+      }
     } catch (err) {
       hasError = true;
       const message = err?.message || String(err);

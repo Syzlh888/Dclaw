@@ -234,7 +234,7 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
     >
       <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, pr: 6, pb: 1 }}>
         <AccountTreeIcon sx={{ color: '#64B5F6' }} />
-        <Typography variant="subtitle1" sx={{ flex: 1, fontWeight: 600 }}>
+        <Typography variant="subtitle1" sx={{ flex: 1, fontWeight: 600, fontSize: '0.95rem' }}>
           字段映射：
           <Box component="span" sx={{ color: '#90CAF9', fontFamily: 'monospace' }}>
             {sourceTable.tableName || '(未命名)'}
@@ -255,7 +255,7 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
 
       <Divider sx={{ borderColor: '#3A3A3A' }} />
 
-      <DialogContent sx={{ p: 0, bgcolor: '#252525' }}>
+      <DialogContent sx={{ p: 0, bgcolor: '#252525', pt: '12px !important' }}>
         {/* 顶部统计 + 工具栏 */}
         <Box
           sx={{
@@ -271,12 +271,12 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
           <Chip
             size="small"
             label={`源 ${sourceColumns.length} 列`}
-            sx={{ bgcolor: '#1565C0', color: '#fff', fontSize: 11, height: 22 }}
+            sx={{ bgcolor: '#1565C0', color: '#fff', fontSize: '0.7rem', height: 22 }}
           />
           <Chip
             size="small"
             label={`目标 ${targetColumns.length} 列`}
-            sx={{ bgcolor: '#2E7D32', color: '#fff', fontSize: 11, height: 22 }}
+            sx={{ bgcolor: '#2E7D32', color: '#fff', fontSize: '0.7rem', height: 22 }}
           />
           <Chip
             size="small"
@@ -284,7 +284,7 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
             sx={{
               bgcolor: matchedCount === mappings.length && mappings.length > 0 ? '#2E7D32' : '#5A5A5A',
               color: '#fff',
-              fontSize: 11,
+              fontSize: '0.7rem',
               height: 22,
             }}
           />
@@ -298,7 +298,7 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
                 onClick={reAutoMatch}
                 disabled={!sourceColumns.length || !targetColumns.length}
                 sx={{
-                  fontSize: 11,
+                  fontSize: '0.7rem',
                   color: '#90CAF9',
                   borderColor: '#5A5A5A',
                   '&:hover': { borderColor: '#90CAF9', bgcolor: '#1E3A5F' },
@@ -322,19 +322,19 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
           <Table size="small" stickyHeader>
             <TableHead>
               <TableRow>
-                <TableCell sx={{ bgcolor: '#2F2F2F', color: '#BBB', fontSize: 12, fontWeight: 600, width: '30%' }}>
+                <TableCell sx={{ bgcolor: '#2F2F2F', color: '#BBB', fontSize: '0.75rem', fontWeight: 600, width: '30%' }}>
                   源字段
                 </TableCell>
-                <TableCell sx={{ bgcolor: '#2F2F2F', color: '#BBB', fontSize: 12, fontWeight: 600, width: '15%' }}>
+                <TableCell sx={{ bgcolor: '#2F2F2F', color: '#BBB', fontSize: '0.75rem', fontWeight: 600, width: '15%' }}>
                   源类型
                 </TableCell>
-                <TableCell sx={{ bgcolor: '#2F2F2F', color: '#BBB', fontSize: 12, fontWeight: 600, width: '6%', textAlign: 'center' }}>
+                <TableCell sx={{ bgcolor: '#2F2F2F', color: '#BBB', fontSize: '0.75rem', fontWeight: 600, width: '6%', textAlign: 'center' }}>
                   →
                 </TableCell>
-                <TableCell sx={{ bgcolor: '#2F2F2F', color: '#BBB', fontSize: 12, fontWeight: 600, width: '30%' }}>
+                <TableCell sx={{ bgcolor: '#2F2F2F', color: '#BBB', fontSize: '0.75rem', fontWeight: 600, width: '30%' }}>
                   目标字段
                 </TableCell>
-                <TableCell sx={{ bgcolor: '#2F2F2F', color: '#BBB', fontSize: 12, fontWeight: 600, width: '15%' }}>
+                <TableCell sx={{ bgcolor: '#2F2F2F', color: '#BBB', fontSize: '0.75rem', fontWeight: 600, width: '15%' }}>
                   目标类型
                 </TableCell>
               </TableRow>
@@ -344,7 +344,7 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
                 <TableRow>
                   <TableCell colSpan={5} sx={{ borderColor: '#3A3A3A', textAlign: 'center', py: 4 }}>
                     <CircularProgress size={20} sx={{ color: '#90CAF9', mr: 1 }} />
-                    <Typography component="span" sx={{ color: '#888', fontSize: 12 }}>
+                    <Typography component="span" sx={{ color: '#888', fontSize: '0.75rem' }}>
                       正在加载字段…
                     </Typography>
                   </TableCell>
@@ -352,7 +352,7 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
               ) : mappings.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} sx={{ borderColor: '#3A3A3A', textAlign: 'center', py: 4 }}>
-                    <Typography sx={{ color: '#888', fontSize: 12 }}>
+                    <Typography sx={{ color: '#888', fontSize: '0.75rem' }}>
                       {!sourceTable.connectionId
                         ? '请先选择源连接'
                         : !sourceTable.tableName
@@ -377,9 +377,9 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
                         sx={{
                           borderColor: '#3A3A3A',
                           color: '#E0E0E0',
-                          fontSize: 12,
+                          fontSize: '0.75rem',
                           fontFamily: 'monospace',
-                          py: 0.5,
+                          py: 0.15,
                         }}
                       >
                         <Tooltip title="源字段不可改">
@@ -390,9 +390,9 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
                         sx={{
                           borderColor: '#3A3A3A',
                           color: '#888',
-                          fontSize: 11,
+                          fontSize: '0.7rem',
                           fontFamily: 'monospace',
-                          py: 0.5,
+                          py: 0.15,
                         }}
                       >
                         {m.sourceType || '-'}
@@ -402,13 +402,13 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
                           borderColor: '#3A3A3A',
                           color: '#666',
                           textAlign: 'center',
-                          fontSize: 14,
-                          py: 0.5,
+                          fontSize: '0.85rem',
+                          py: 0.15,
                         }}
                       >
                         →
                       </TableCell>
-                      <TableCell sx={{ borderColor: '#3A3A3A', py: 0.5 }}>
+                      <TableCell sx={{ borderColor: '#3A3A3A', py: 0.15 }}>
                         <Autocomplete
                           size="small"
                           options={targetNameOptions}
@@ -422,14 +422,14 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
                           }}
                           slotProps={{
                             paper: {
-                              sx: { bgcolor: '#3C3F41', color: '#FFFFFF', fontSize: 12 },
+                              sx: { bgcolor: '#3C3F41', color: '#FFFFFF', fontSize: '0.75rem' },
                             },
                           }}
                           ListboxProps={{
                             sx: {
-                              fontSize: 12,
+                              fontSize: '0.75rem',
                               padding: 0,
-                              '& li': { fontSize: 12, padding: '4px 8px', minHeight: 24 },
+                              '& li': { fontSize: '0.75rem', padding: '4px 8px', minHeight: 24 },
                             },
                           }}
                           renderInput={(params) => (
@@ -440,7 +440,7 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
                               sx={{
                                 bgcolor: matched ? '#1E3A5F' : '#3C3F41',
                                 '& .MuiOutlinedInput-root': {
-                                  fontSize: 12,
+                                  fontSize: '0.75rem',
                                   fontFamily: 'monospace',
                                   '& fieldset': {
                                     borderColor: matched ? '#1565C0' : '#3A3A3A',
@@ -456,9 +456,9 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
                         sx={{
                           borderColor: '#3A3A3A',
                           color: '#888',
-                          fontSize: 11,
+                          fontSize: '0.7rem',
                           fontFamily: 'monospace',
-                          py: 0.5,
+                          py: 0.15,
                         }}
                       >
                         {tcType || '-'}
@@ -473,8 +473,8 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
 
         {/* 目标表为空时的提示（目标表可能尚未建） */}
         {!targetLoading && targetColumns.length === 0 && targetTable.tableName && (
-          <Box sx={{ px: 2, py: 1.5, bgcolor: '#3A2E1E', borderTop: '1px solid #5A4A2E' }}>
-            <Typography sx={{ color: '#FFB74D', fontSize: 12 }}>
+          <Box sx={{ px: 2, py: 1.5, bgcolor: '#3A2E1E', borderTop: '1px solid #5A4A2E', mb: 1.5 }}>
+            <Typography sx={{ color: '#FFB74D', fontSize: '0.75rem' }}>
               ⚠ 目标表「{targetTable.tableName}」暂不存在或读不到字段。导出时会按「不存在则自动建表」自动建表（沿用源字段）。
             </Typography>
           </Box>
@@ -484,7 +484,7 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
       <Divider sx={{ borderColor: '#3A3A3A' }} />
 
       <DialogActions sx={{ bgcolor: '#2B2B2B', px: 2, py: 1.5 }}>
-        <Typography sx={{ color: '#888', fontSize: 11, mr: 'auto' }}>
+        <Typography sx={{ color: '#888', fontSize: '0.7rem', mr: 'auto' }}>
           提示：相同 name + type 自动配对；可在右侧下拉手动调整。
         </Typography>
         <Button onClick={onClose} sx={{ color: '#BBB' }}>

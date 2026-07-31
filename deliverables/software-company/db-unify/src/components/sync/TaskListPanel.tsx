@@ -34,13 +34,13 @@ const TaskListPanel: React.FC<Props> = ({ onCreateTask, onToggleEnabled }) => {
 
   return <Box sx={{ p: 2, height: '100%', overflow: 'auto' }}>
     <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
-      <Typography sx={{ color: '#EEE', fontWeight: 600 }}>任务列表</Typography>
-      <Chip size="small" label={list.length} sx={{ ml: 1, height: 20, color: '#BBB' }} />
+      <Typography sx={{ color: 'text.primary', fontWeight: 600 }}>任务列表</Typography>
+      <Chip size="small" label={list.length} sx={{ ml: 1, height: 20, color: 'text.secondary' }} />
       <Box sx={{ flex: 1 }} />
-      <Button size="small" startIcon={<AddIcon />} onClick={onCreateTask} sx={{ color: '#42A5F5' }}>新建任务</Button>
+      <Button size="small" startIcon={<AddIcon />} onClick={onCreateTask} sx={{ color: 'primary.main' }}>新建任务</Button>
     </Box>
     {list.length === 0 && (
-      <Typography sx={{ mt: 6, textAlign: 'center', color: '#777', fontSize: 13 }}>该项目暂无同步任务</Typography>
+      <Typography sx={{ mt: 6, textAlign: 'center', color: 'text.disabled', fontSize: 13 }}>该项目暂无同步任务</Typography>
     )}
     {list.map((task) => {
       const mark = statusMark(task.last_run_status);
@@ -54,10 +54,10 @@ const TaskListPanel: React.FC<Props> = ({ onCreateTask, onToggleEnabled }) => {
           sx={{
             p: 1.5,
             mb: 1,
-            bgcolor: '#3C3F41',
-            border: '1px solid #505050',
+            bgcolor: 'background.paper',
+            border: '1px solid', borderColor: 'divider',
             borderRadius: 1,
-            '&:hover': { borderColor: '#42A5F5', bgcolor: '#424648' },
+            '&:hover': { borderColor: 'primary.main', bgcolor: 'action.hover' },
             cursor: 'pointer',
           }}
           onClick={() => selectTask(task.id)}
@@ -65,10 +65,10 @@ const TaskListPanel: React.FC<Props> = ({ onCreateTask, onToggleEnabled }) => {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
             <Typography sx={{ color: mark.color, fontSize: 18 }}>{mark.text}</Typography>
             <Box sx={{ minWidth: 0, flex: 1 }}>
-              <Typography noWrap sx={{ color: '#EEE', fontSize: 13.5, fontWeight: 600 }}>
+              <Typography noWrap sx={{ color: 'text.primary', fontSize: 13.5, fontWeight: 600 }}>
                 {task.name}
               </Typography>
-              <Typography noWrap sx={{ color: '#888', fontSize: 11.5 }}>
+              <Typography noWrap sx={{ color: 'text.secondary', fontSize: 11.5 }}>
                 {task.source_schema || '默认 schema'} → {task.target_schema || '默认 schema'} ·{' '}
                 {task.write_strategy || 'insert'}
               </Typography>
@@ -80,7 +80,7 @@ const TaskListPanel: React.FC<Props> = ({ onCreateTask, onToggleEnabled }) => {
               sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
               title={enabled ? '已启用自动调度' : '未启用自动调度'}
             >
-              <Typography sx={{ color: enabled ? '#66BB6A' : '#888', fontSize: 11 }}>
+              <Typography sx={{ color: enabled ? 'success.main' : 'text.secondary', fontSize: 11 }}>
                 自动
               </Typography>
               <Switch
@@ -89,8 +89,8 @@ const TaskListPanel: React.FC<Props> = ({ onCreateTask, onToggleEnabled }) => {
                 onChange={(e) => handleToggle(task.id, e.target.checked)}
                 inputProps={{ 'aria-label': '启用自动调度' }}
                 sx={{
-                  '& .MuiSwitch-switchBase.Mui-checked': { color: '#66BB6A' },
-                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#66BB6A' },
+                  '& .MuiSwitch-switchBase.Mui-checked': { color: 'success.main' },
+                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: 'success.main' },
                 }}
               />
             </Box>
@@ -113,18 +113,18 @@ const TaskListPanel: React.FC<Props> = ({ onCreateTask, onToggleEnabled }) => {
                 minWidth: 92,
                 fontSize: 11,
                 py: 0.5,
-                bgcolor: isRunning ? '#555' : '#42A5F5',
-                '&:hover': { bgcolor: isRunning ? '#555' : '#1E88E5' },
+                bgcolor: isRunning ? 'action.disabledBackground' : 'primary.main',
+                '&:hover': { bgcolor: isRunning ? 'action.disabledBackground' : 'primary.dark' },
               }}
             >
               {isRunning ? '运行中...' : '立即运行'}
             </Button>
-            <ArrowForwardIcon sx={{ color: '#777', fontSize: 18 }} />
+            <ArrowForwardIcon sx={{ color: 'text.disabled', fontSize: 18 }} />
           </Box>
 
           {isRunning && progress && (
             <Box sx={{ mt: 1, pl: 4 }}>
-              <Typography sx={{ color: '#90CAF9', fontSize: 11 }} noWrap>
+              <Typography sx={{ color: 'primary.light', fontSize: 11 }} noWrap>
                 {progress.currentTable} ·{' '}
                 {progress.status === 'running'
                   ? '执行中'
@@ -140,8 +140,8 @@ const TaskListPanel: React.FC<Props> = ({ onCreateTask, onToggleEnabled }) => {
                   mt: 0.5,
                   height: 3,
                   borderRadius: 1,
-                  bgcolor: '#555',
-                  '& .MuiLinearProgress-bar': { bgcolor: '#42A5F5' },
+                  bgcolor: 'action.disabledBackground',
+                  '& .MuiLinearProgress-bar': { bgcolor: 'primary.main' },
                 }}
               />
             </Box>
@@ -152,7 +152,7 @@ const TaskListPanel: React.FC<Props> = ({ onCreateTask, onToggleEnabled }) => {
             <Typography
               variant="caption"
               onClick={(e) => e.stopPropagation()}
-              sx={{ display: 'block', mt: 0.75, pl: 4, color: '#888', fontSize: 11 }}
+              sx={{ display: 'block', mt: 0.75, pl: 4, color: 'text.secondary', fontSize: 11 }}
             >
               {nextRunText}
             </Typography>

@@ -131,13 +131,13 @@ function rehydrate(
 /** Autocomplete 内部 TextField 的统一样式（暗色） */
 const darkInputSx = {
   '& .MuiOutlinedInput-root': {
-    color: '#DDD',
-    bgcolor: '#2B2B2B',
-    fontSize: 12,
+    color: 'text.primary',
+    bgcolor: 'background.default',
+    fontSize: '0.75rem',
     minHeight: 32,
-    '& fieldset': { borderColor: '#555' },
-    '&:hover fieldset': { borderColor: '#777' },
-    '&.Mui-focused fieldset': { borderColor: '#42A5F5' },
+    '& fieldset': { borderColor: 'divider' },
+    '&:hover fieldset': { borderColor: 'text.disabled' },
+    '&.Mui-focused fieldset': { borderColor: 'primary.main' },
   },
   '& .MuiInputBase-input': { padding: '5px 6px' },
 } as const;
@@ -329,41 +329,42 @@ const TableMappingEditor: React.FC<TableMappingEditorProps> = ({
           width: 'min(880px, 94vw)',
           maxHeight: '90vh',
           m: 1,
-          bgcolor: '#2B2B2B',
-          color: '#BBBBBB',
-          border: '1px solid #555',
+          bgcolor: '#3C3F41',
+          color: 'text.primary',
+          border: '1px solid',
+          borderColor: 'divider',
         },
       }}
     >
-      <DialogTitle sx={{ p: 0, m: 0, borderBottom: '1px solid #505050', bgcolor: '#3C3F41' }}>
+      <DialogTitle sx={{ p: 0, m: 0, borderBottom: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', px: 2, py: 1.25 }}>
-          <AccountTreeIcon sx={{ color: '#42A5F5', mr: 1.25 }} />
-          <Typography sx={{ color: '#EEE', fontWeight: 600, fontSize: 15 }}>{title}</Typography>
+          <AccountTreeIcon sx={{ color: 'primary.main', mr: 1.25 }} />
+          <Typography sx={{ color: 'text.primary', fontWeight: 600, fontSize: '0.95rem' }}>{title}</Typography>
           <Chip
             size="small"
             label={`${rows.length} 行`}
-            sx={{ ml: 1.5, height: 22, color: '#BBB', bgcolor: '#4A4A4A' }}
+            sx={{ ml: 1.5, height: 22, color: 'text.secondary', bgcolor: 'divider' }}
           />
           <Box sx={{ flex: 1 }} />
-          <IconButton onClick={onClose} sx={{ color: '#BBB' }} size="small">
+          <IconButton onClick={onClose} sx={{ color: 'text.secondary' }} size="small">
             <CloseIcon fontSize="small" />
           </IconButton>
         </Box>
       </DialogTitle>
 
-      <DialogContent sx={{ p: 0, bgcolor: '#2B2B2B' }}>
+      <DialogContent sx={{ p: 0, bgcolor: 'background.default' }}>
         {error && (
-          <Box sx={{ px: 2, py: 1, bgcolor: '#5A3030', color: '#FFCDD2', fontSize: 12 }}>{error}</Box>
+          <Box sx={{ px: 2, py: 1, bgcolor: 'background.default', color: 'error.light', fontSize: '0.75rem' }}>{error}</Box>
         )}
         {(sourceLoading || targetLoading) && (
-          <Box sx={{ px: 2, py: 1, display: 'flex', alignItems: 'center', gap: 1, color: '#999', fontSize: 12 }}>
-            <CircularProgress size={12} sx={{ color: '#42A5F5' }} />
+          <Box sx={{ px: 2, py: 1, display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary', fontSize: '0.75rem' }}>
+            <CircularProgress size={12} sx={{ color: 'primary.main' }} />
             加载表字段…
           </Box>
         )}
 
         <Box sx={{ p: 2 }}>
-          <Typography sx={{ color: '#AAA', fontSize: 11, mb: 1 }}>
+          <Typography sx={{ color: 'text.secondary', fontSize: '0.7rem', mb: 1.5 }}>
             源: {sourceConnectionId}
             {sourceSchema ? ` / ${sourceSchema}` : ''} · 目标: {targetConnectionId}
             {targetSchema ? ` / ${targetSchema}` : ''}
@@ -371,33 +372,33 @@ const TableMappingEditor: React.FC<TableMappingEditorProps> = ({
 
           <TableContainer
             component={Paper}
-            sx={{ bgcolor: '#3C3F41', border: '1px solid #505050', maxHeight: 460 }}
+            sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', maxHeight: 460 }}
           >
             <Table size="small" stickyHeader>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ bgcolor: '#3C3F41', color: '#888', fontSize: 11, borderBottom: '1px solid #505050', width: '34%' }}>
+                  <TableCell sx={{ bgcolor: 'background.paper', color: 'text.secondary', fontSize: '0.7rem', borderBottom: '1px solid', borderColor: 'divider', width: '34%' }}>
                     源字段
                   </TableCell>
-                  <TableCell sx={{ bgcolor: '#3C3F41', color: '#888', fontSize: 11, borderBottom: '1px solid #505050', width: '14%' }}>
+                  <TableCell sx={{ bgcolor: 'background.paper', color: 'text.secondary', fontSize: '0.7rem', borderBottom: '1px solid', borderColor: 'divider', width: '14%' }}>
                     源类型
                   </TableCell>
-                  <TableCell sx={{ bgcolor: '#3C3F41', color: '#888', fontSize: 11, borderBottom: '1px solid #505050', width: 36 }} align="center">
-                    <ArrowForwardIcon sx={{ fontSize: 14, color: '#666' }} />
+                  <TableCell sx={{ bgcolor: 'background.paper', color: 'text.secondary', fontSize: '0.7rem', borderBottom: '1px solid', borderColor: 'divider', width: 36 }} align="center">
+                    <ArrowForwardIcon sx={{ fontSize: 14, color: 'text.disabled' }} />
                   </TableCell>
-                  <TableCell sx={{ bgcolor: '#3C3F41', color: '#888', fontSize: 11, borderBottom: '1px solid #505050', width: '34%' }}>
+                  <TableCell sx={{ bgcolor: 'background.paper', color: 'text.secondary', fontSize: '0.7rem', borderBottom: '1px solid', borderColor: 'divider', width: '34%' }}>
                     目标字段
                   </TableCell>
-                  <TableCell sx={{ bgcolor: '#3C3F41', color: '#888', fontSize: 11, borderBottom: '1px solid #505050', width: '14%' }}>
+                  <TableCell sx={{ bgcolor: 'background.paper', color: 'text.secondary', fontSize: '0.7rem', borderBottom: '1px solid', borderColor: 'divider', width: '14%' }}>
                     目标类型
                   </TableCell>
-                  <TableCell sx={{ bgcolor: '#3C3F41', borderBottom: '1px solid #505050', width: 36 }} />
+                  <TableCell sx={{ bgcolor: 'background.paper', borderBottom: '1px solid', borderColor: 'divider', width: 36 }} />
                 </TableRow>
               </TableHead>
               <TableBody>
                 {rows.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={6} sx={{ borderBottom: 'none', py: 4, textAlign: 'center', color: '#777', fontSize: 12 }}>
+                    <TableCell colSpan={6} sx={{ borderBottom: 'none', py: 4, textAlign: 'center', color: 'text.disabled', fontSize: '0.75rem' }}>
                       {sourceLoading || targetLoading
                         ? '加载中…'
                         : '未配置字段映射（点击「添加行」或「自动匹配同名」）'}
@@ -414,11 +415,11 @@ const TableMappingEditor: React.FC<TableMappingEditorProps> = ({
                     <TableRow
                       key={row.key}
                       sx={{
-                        '&:hover': { bgcolor: '#454749' },
-                        bgcolor: row.manual ? '#3D3A36' : 'transparent',
+                        '&:hover': { bgcolor: 'action.hover' },
+                        bgcolor: row.manual ? 'background.paper' : 'transparent',
                       }}
                     >
-                      <TableCell sx={{ borderBottom: '1px solid #494949', py: 0.5 }}>
+                      <TableCell sx={{ borderBottom: '1px solid', borderColor: 'divider', py: 0.15 }}>
                         {row.manual ? (
                           <Autocomplete
                             size="small"
@@ -433,21 +434,21 @@ const TableMappingEditor: React.FC<TableMappingEditorProps> = ({
                             renderInput={(params) => (
                               <TextField {...params} variant="outlined" placeholder="源字段名" />
                             )}
-                            componentsProps={{ paper: { sx: { bgcolor: '#3C3F41', color: '#DDD' } } }}
+                            componentsProps={{ paper: { sx: { bgcolor: 'background.paper', color: 'text.primary' } } }}
                           />
                         ) : (
-                          <Box sx={{ display: 'flex', alignItems: 'center', minHeight: 32, pl: 1, color: '#DDD', fontSize: 12 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', minHeight: 32, pl: 1, color: 'text.primary', fontSize: '0.75rem' }}>
                             {row.source}
                           </Box>
                         )}
                       </TableCell>
-                      <TableCell sx={{ borderBottom: '1px solid #494949', py: 0.5, color: '#888', fontSize: 11.5 }}>
+                      <TableCell sx={{ borderBottom: '1px solid', borderColor: 'divider', py: 0.15, color: 'text.secondary', fontSize: '0.7rem' }}>
                         {row.sourceType || '-'}
                       </TableCell>
-                      <TableCell sx={{ borderBottom: '1px solid #494949', py: 0.5, color: '#666', textAlign: 'center' }}>
+                      <TableCell sx={{ borderBottom: '1px solid', borderColor: 'divider', py: 0.15, color: 'text.disabled', textAlign: 'center' }}>
                         →
                       </TableCell>
-                      <TableCell sx={{ borderBottom: '1px solid #494949', py: 0.5 }}>
+                      <TableCell sx={{ borderBottom: '1px solid', borderColor: 'divider', py: 0.15 }}>
                         <Autocomplete
                           size="small"
                           options={remainingOptions}
@@ -461,15 +462,15 @@ const TableMappingEditor: React.FC<TableMappingEditorProps> = ({
                           )}
                           sx={darkInputSx}
                           disabled={targetColumns.length === 0}
-                          componentsProps={{ paper: { sx: { bgcolor: '#3C3F41', color: '#DDD' } } }}
+                          componentsProps={{ paper: { sx: { bgcolor: 'background.paper', color: 'text.primary' } } }}
                         />
                       </TableCell>
-                      <TableCell sx={{ borderBottom: '1px solid #494949', py: 0.5, color: '#888', fontSize: 11.5 }}>
+                      <TableCell sx={{ borderBottom: '1px solid', borderColor: 'divider', py: 0.15, color: 'text.secondary', fontSize: '0.7rem' }}>
                         {tc?.type || row.targetType || '-'}
                       </TableCell>
-                      <TableCell sx={{ borderBottom: '1px solid #494949', py: 0.5, pr: 1 }}>
+                      <TableCell sx={{ borderBottom: '1px solid', borderColor: 'divider', py: 0.15, pr: 1 }}>
                         <Tooltip title="删除此行">
-                          <IconButton size="small" onClick={() => removeRow(row.key)} sx={{ color: '#888', '&:hover': { color: '#EF5350' } }}>
+                          <IconButton size="small" onClick={() => removeRow(row.key)} sx={{ color: 'text.secondary', '&:hover': { color: 'error.main' } }}>
                             <DeleteOutlineIcon sx={{ fontSize: 16 }} />
                           </IconButton>
                         </Tooltip>
@@ -487,7 +488,7 @@ const TableMappingEditor: React.FC<TableMappingEditorProps> = ({
               startIcon={<AutoFixHighIcon />}
               onClick={reAutoMatch}
               disabled={sourceColumns.length === 0}
-              sx={{ color: '#BBB', '&:hover': { color: '#42A5F5', borderColor: '#42A5F5' }, border: '1px solid #606060' }}
+              sx={{ color: 'text.secondary', '&:hover': { color: 'primary.main', borderColor: 'primary.main' }, border: '1px solid', borderColor: 'divider' }}
               variant="outlined"
             >
               自动匹配同名
@@ -496,27 +497,27 @@ const TableMappingEditor: React.FC<TableMappingEditorProps> = ({
               size="small"
               startIcon={<AddIcon />}
               onClick={addManualRow}
-              sx={{ color: '#42A5F5', border: '1px solid #42A5F5' }}
+              sx={{ color: 'primary.main', border: '1px solid', borderColor: 'primary.main' }}
               variant="outlined"
             >
               添加行
             </Button>
             <Box sx={{ flex: 1 }} />
-            <Typography sx={{ color: '#888', fontSize: 11 }}>
+            <Typography sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
               共 {rows.length} 行，已配对 {rows.filter((r) => r.source && r.target).length} 行
             </Typography>
           </Box>
 
-          <Divider sx={{ my: 2, borderColor: '#494949' }} />
-          <Typography sx={{ color: '#777', fontSize: 11 }}>
+          <Divider sx={{ my: 1.5, borderColor: 'divider' }} />
+          <Typography sx={{ color: 'text.disabled', fontSize: '0.7rem' }}>
             提示：源列来自源表结构；目标列下拉来自目标表结构。「自动匹配同名」按 name 相同配对；同名后会自动带类型。
             无法匹配的行可点击「添加行」手动创建。「保存」会把当前配对写回表映射。
           </Typography>
         </Box>
       </DialogContent>
 
-      <DialogActions sx={{ px: 2, py: 1.25, borderTop: '1px solid #505050', bgcolor: '#3C3F41' }}>
-        <Button onClick={onClose} sx={{ color: '#BBB' }}>
+      <DialogActions sx={{ px: 2, py: 1.25, borderTop: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
+        <Button onClick={onClose} sx={{ color: 'text.secondary' }}>
           取消
         </Button>
         <Button

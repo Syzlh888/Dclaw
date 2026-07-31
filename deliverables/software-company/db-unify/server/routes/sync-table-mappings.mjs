@@ -31,6 +31,55 @@ const MAX_TABLE_NAME = 255;
 const MAX_WHERE = 4000;
 const MAX_ORDERBY = 256;
 const MAX_COLUMN_MAPPINGS = 500;
+const MAX_CUSTOM_SQL = 16000;
+const MAX_INCREMENTAL_COLUMN = 128;
+const MAX_CHECKPOINT_VALUE = 256;
+const ALLOWED_INCREMENTAL_TYPES = new Set(['timestamp', 'numeric']);
+const IDENTIFIER_PATTERN = /^[A-Za-z_][A-Za-z0-9_.]*$/;
+
+/**
+ * 校验并规范化增量同步配置：
+ *   - incrementalColumn 必须是合法 SQL 标识符（允许 schema.table.col）
+ *   - incrementalType 必须是 timestamp / numeric
+ *   - checkpointValue 长度上限 256
+ * 返回 null 表示「未启用增量」（任一字段未提供）
+ */
+function normalizeIncremental({ incrementalColumn, incrementalType, checkpointValue }) {
+  const colPresent = incrementalColumn !== undefined && incrementalColumn !== null && incrementalColumn !== '';
+  const typePresent = incrementalType !== undefined && incrementalType !== null && incrementalType !== '';
+  const valuePresent = checkpointValue !== undefined && checkpointValue !== null && checkpointValue !== '';
+
+  if (!colPresent && !typePresent && !valuePresent) {
+    return { enabled: false, column: null, type: null, value: null };
+  }
+
+  if (!colPresent) {
+    throw new Error('启用增量同步时，incrementalColumn 必填');
+  }
+  const col = String(incrementalColumn).trim();
+  if (!col) throw new Error('incrementalColumn 不能为空');
+  if (col.length > MAX_INCREMENTAL_COLUMN) {
+    throw new Error(`incrementalColumn 长度不能超过 ${MAX_INCREMENTAL_COLUMN}`);
+  }
+  if (!IDENTIFIER_PATTERN.test(col)) {
+    throw new Error('incrementalColumn 只能包含字母、数字、下划线和点号');
+  }
+
+  const type = typePresent ? String(incrementalType).trim().toLowerCase() : 'timestamp';
+  if (!ALLOWED_INCREMENTAL_TYPES.has(type)) {
+    throw new Error(`incrementalType 必须是 ${Array.from(ALLOWED_INCREMENTAL_TYPES).join(' / ')}`);
+  }
+
+  const value = valuePresent ? String(checkpointValue) : null;
+  if (value != null && value.length > MAX_CHECKPOINT_VALUE) {
+    throw new Error(`checkpointValue 长度不能超过 ${MAX_CHECKPOINT_VALUE}`);
+  }
+  if (type === 'numeric' && value != null && value !== '' && !Number.isFinite(Number(value))) {
+    throw new Error(`incrementalType 为 numeric 时，checkpointValue 必须是合法数字`);
+  }
+
+  return { enabled: true, column: col, type, value: value === '' ? null : value };
+}
 
 function normalizeColumnMappings(input) {
   if (input == null) return [];
@@ -78,10 +127,18 @@ router.post('/', async (req, res) => {
     orderBy,
     columnMappings,
     sequence,
+    customSql,
+    incrementalColumn,
+    incrementalType,
+    checkpointValue,
   } = req.body || {};
 
   if (!taskId) return res.status(400).json({ error: '所属任务 (taskId) 不能为空' });
-  if (!sourceTable || !sourceTable.trim()) return res.status(400).json({ error: '源表 (sourceTable) 不能为空' });
+
+  const hasCustomSql = typeof customSql === 'string' && customSql.trim().length > 0;
+  if (!hasCustomSql && (!sourceTable || !sourceTable.trim())) {
+    return res.status(400).json({ error: '源表 (sourceTable) 或自定义 SQL (customSql) 必须填一个' });
+  }
   if (!targetTable || !targetTable.trim()) return res.status(400).json({ error: '目标表 (targetTable) 不能为空' });
 
   const task = await getById('syncTasks', taskId);
@@ -93,10 +150,26 @@ router.post('/', async (req, res) => {
   if (orderBy != null && typeof orderBy === 'string' && orderBy.length > MAX_ORDERBY) {
     return res.status(400).json({ error: `orderBy 长度不能超过 ${MAX_ORDERBY}` });
   }
+  if (customSql != null && typeof customSql === 'string' && customSql.length > MAX_CUSTOM_SQL) {
+    return res.status(400).json({ error: `customSql 长度不能超过 ${MAX_CUSTOM_SQL}` });
+  }
+  if (customSql != null && String(customSql).trim()) {
+    const trimmed = String(customSql).trim().replace(/;\s*$/, '');
+    if (!/^(SELECT|WITH)\b/i.test(trimmed)) {
+      return res.status(400).json({ error: 'customSql 必须是 SELECT 或 WITH 查询' });
+    }
+  }
 
   let normalizedCols;
   try {
     normalizedCols = normalizeColumnMappings(columnMappings);
+  } catch (e) {
+    return res.status(400).json({ error: e.message });
+  }
+
+  let incremental;
+  try {
+    incremental = normalizeIncremental({ incrementalColumn, incrementalType, checkpointValue });
   } catch (e) {
     return res.status(400).json({ error: e.message });
   }
@@ -112,14 +185,20 @@ router.post('/', async (req, res) => {
   const record = {
     id,
     task_id: taskId,
-    source_table: sourceTable.trim().slice(0, MAX_TABLE_NAME),
+    source_table: hasCustomSql
+      ? (sourceTable ? sourceTable.trim().slice(0, MAX_TABLE_NAME) : '__custom_sql__')
+      : sourceTable.trim().slice(0, MAX_TABLE_NAME),
     target_table: targetTable.trim().slice(0, MAX_TABLE_NAME),
     enabled: enabled === false ? false : true,
     where_clause: whereClause ? String(whereClause) : null,
     orderby: orderBy ? String(orderBy) : null,
     sequence: Math.max(0, Math.floor(nextSequence)),
     sort_order: 0,
+    custom_sql: hasCustomSql ? String(customSql).trim() : null,
     column_mappings: normalizedCols,
+    incremental_column: incremental.column,
+    incremental_type: incremental.type,
+    checkpoint_value: incremental.value,
     created_at: now,
     updated_at: now,
   };
@@ -140,6 +219,10 @@ router.patch('/:id', async (req, res) => {
     orderBy,
     columnMappings,
     sequence,
+    customSql,
+    incrementalColumn,
+    incrementalType,
+    checkpointValue,
   } = req.body || {};
 
   const partial = { updated_at: new Date().toISOString() };
@@ -165,6 +248,16 @@ router.patch('/:id', async (req, res) => {
     }
     partial.orderby = orderBy ? String(orderBy) : null;
   }
+  if (customSql !== undefined) {
+    if (customSql != null && String(customSql).length > MAX_CUSTOM_SQL) {
+      return res.status(400).json({ error: `customSql 长度不能超过 ${MAX_CUSTOM_SQL}` });
+    }
+    const trimmed = customSql == null ? '' : String(customSql).trim();
+    if (trimmed && !/^(SELECT|WITH)\b/i.test(trimmed)) {
+      return res.status(400).json({ error: 'customSql 必须是 SELECT 或 WITH 查询' });
+    }
+    partial.custom_sql = trimmed ? trimmed : null;
+  }
   if (columnMappings !== undefined) {
     try {
       partial.column_mappings = normalizeColumnMappings(columnMappings);
@@ -175,6 +268,20 @@ router.patch('/:id', async (req, res) => {
   if (sequence !== undefined) {
     const n = Number(sequence);
     partial.sequence = Number.isFinite(n) ? Math.max(0, Math.floor(n)) : 0;
+  }
+
+  // 增量同步配置：支持「清空」—— 显式传 null/空串则视为禁用
+  const incrementalTouched =
+    incrementalColumn !== undefined || incrementalType !== undefined || checkpointValue !== undefined;
+  if (incrementalTouched) {
+    try {
+      const inc = normalizeIncremental({ incrementalColumn, incrementalType, checkpointValue });
+      partial.incremental_column = inc.column;
+      partial.incremental_type = inc.type;
+      partial.checkpoint_value = inc.value;
+    } catch (e) {
+      return res.status(400).json({ error: e.message });
+    }
   }
 
   const updated = await update('syncTableMappings', req.params.id, partial);

@@ -36,9 +36,12 @@ interface SyncState {
   createProject: (payload: CreateSyncProjectPayload) => Promise<SyncProject>;
   createTask: (payload: CreateSyncTaskPayload) => Promise<SyncTask>;
   createMapping: (payload: CreateSyncMappingPayload) => Promise<SyncTableMapping>;
+  /** 批量创建：用于「多表向导」一键生成多对 (source, target) 映射。 */
+  createMappings: (payloads: CreateSyncMappingPayload[]) => Promise<SyncTableMapping[]>;
   updateMapping: (id: string, payload: Partial<CreateSyncMappingPayload>) => Promise<SyncTableMapping>;
   deleteProject: (id: string) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
+  updateTask: (id: string, payload: Partial<SyncTask>) => Promise<void>;
   deleteMapping: (id: string) => Promise<void>;
   /** 立即执行任务（订阅 SSE 进度），完成后刷新 task 列表 */
   runTaskNow: (taskId: string) => Promise<void>;
@@ -110,6 +113,21 @@ export const useSyncStore = create<SyncState>((set, get) => ({
     set((state) => ({ mappings: [...state.mappings, item] }));
     return item;
   },
+  /**
+   * 批量创建映射（用于向导式「多源 × 多目标」一次性建多个 sync_table_mapping）。
+   * 按 sequence 顺序逐条调后端；任一失败立刻抛出（已成功的留在 store 里，由调用方决定回滚）。
+   */
+  createMappings: async (payloads: CreateSyncMappingPayload[]) => {
+    const created: SyncTableMapping[] = [];
+    for (let i = 0; i < payloads.length; i += 1) {
+      const payload = { ...payloads[i], sequence: payloads[i].sequence ?? i };
+      const item = await syncService.createMapping(payload);
+      created.push(item);
+      // 增量写进 store，让 UI 立即看到新行
+      set((state) => ({ mappings: [...state.mappings, item] }));
+    }
+    return created;
+  },
   updateMapping: async (id, payload) => {
     const updated = await syncService.updateMapping(id, payload);
     set((state) => ({ mappings: state.mappings.map((m) => (m.id === id ? updated : m)) }));
@@ -139,6 +157,10 @@ export const useSyncStore = create<SyncState>((set, get) => ({
       selectedTaskId: state.selectedTaskId === id ? null : state.selectedTaskId,
       selectedMappingId: state.selectedTaskId === id ? null : state.selectedMappingId,
     }));
+  },
+  updateTask: async (id, payload) => {
+    const updated = await syncService.updateTask(id, payload as any);
+    set((state) => ({ tasks: state.tasks.map((t) => (t.id === id ? updated : t)) }));
   },
   deleteMapping: async (id) => {
     await syncService.deleteMapping(id);

@@ -1,7 +1,7 @@
 /**
  * 步骤 2：选择目标（文件 5 种格式 或 数据库）
  */
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Typography,
@@ -18,22 +18,12 @@ import {
   Button,
   Alert,
   Autocomplete,
-  Paper,
 } from '@mui/material';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import SearchIcon from '@mui/icons-material/Search';
-import CloseIcon from '@mui/icons-material/Close';
-import StorageIcon from '@mui/icons-material/Storage';
-import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
-import IconButton from '@mui/material/IconButton';
 import { useExportStore } from '../../stores/exportStore';
 import { useConnectionStore } from '../../stores/connectionStore';
-import { useGroupStore } from '../../stores/groupStore';
-import { useTreeStore } from '../../stores/treeStore';
 import { apiFetch } from '../../services/apiClient';
 import {
   getFileExtension,
@@ -44,6 +34,7 @@ import {
 } from '../../services/exportService';
 import { FieldMappingDialog, type TableRef } from './FieldMappingDialog';
 import type { FieldMapping } from '../../stores/exportStore';
+import { TreeConnectionSelect } from '../common/TreeConnectionSelect';
 
 const FORMATS: FileFormat[] = ['csv', 'tsv', 'sql', 'json', 'xlsx'];
 const ENCODINGS: FileEncoding[] = ['utf-8', 'gbk', 'gb18030'];
@@ -60,85 +51,6 @@ export const ExportStepTarget: React.FC = () => {
 
   const connectionsMap = useConnectionStore((s) => s.connections);
   const connections = Object.values(connectionsMap);
-  // 读取左侧菜单的完整层级架构
-  const treeNodes = useTreeStore((s) => s.nodes);
-  const treeRootIds = useTreeStore((s) => s.rootNodeIds);
-
-  // 取分组信息（用左侧菜单的 groupStore，不是 IP 段）
-  const groups = useGroupStore((s) => s.groups);
-
-  // 连接选项：复用左侧树的完整层级架构
-  // 数据结构：[{ id: 'path::connId', name, connId, _treePath: ['platform', 'district', 'hospital'] }]
-  // _treePath 用于树形展示
-  type TreeConn = {
-    id: string;
-    name: string;
-    host: string;
-    port: number;
-    database: string;
-    schema: string;
-    connId: string;
-    _treePath: string[]; // 层级路径 ['平台', '预库类型', '县区', '医院']
-    _groupKey: string;   // 用于树形分组（同层级同父节点的归一组）
-  };
-  const connectionOptions = useMemo<TreeConn[]>(() => {
-    if (!treeNodes || Object.keys(treeNodes).length === 0) {
-      // 树还没加载，兜底用 groupStore
-      return connections
-        .map((c) => {
-          const belongsTo = groups.find(g => g.dbConnectionIds.includes(c.id));
-          return {
-            id: c.id,
-            name: c.name || '',
-            host: c.host || '',
-            port: c.port || 0,
-            database: c.database || '',
-            schema: c.schema || '',
-            connId: c.id,
-            _treePath: [belongsTo ? belongsTo.name : '未分组'],
-            _groupKey: belongsTo ? belongsTo.name : '未分组',
-          };
-        });
-    }
-
-    // 递归遍历树节点，收集所有 hospital 节点（叶子，对应 connectionId）
-    const result: TreeConn[] = [];
-    const walk = (nodeId: string, path: string[]) => {
-      const node = treeNodes[nodeId];
-      if (!node) return;
-      const newPath = [...path, node.name];
-      // 只收集叶子节点（医院层，对应具体 connection）
-      if (node.dbConnectionId) {
-        const conn = connectionsMap[node.dbConnectionId];
-        if (conn) {
-          result.push({
-            id: `${nodeId}::${conn.id}`,
-            name: conn.name,
-            host: conn.host,
-            port: conn.port,
-            database: conn.database || '',
-            schema: conn.schema || '',
-            connId: conn.id,
-            _treePath: newPath,  // 包含从根到当前叶子节点的完整路径
-            _groupKey: nodeId,
-          });
-        }
-        // 叶子节点不再递归
-        return;
-      }
-      // 中间节点：递归子节点
-      if (node.childrenIds) {
-        node.childrenIds.forEach((cid: string) => walk(cid, newPath));
-      }
-    };
-    treeRootIds.forEach(rid => walk(rid, []));
-    return result;
-  }, [connections, connectionsMap, groups, treeNodes, treeRootIds]);
-
-  // 树形连接选择器状态
-  const [connDropdownOpen, setConnDropdownOpen] = useState(false);
-  const [connSearchText, setConnSearchText] = useState('');
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set(connectionOptions.map(c => c._groupKey)));
 
   // 连接变更时加载 schemas
   const [targetSchemas, setTargetSchemas] = useState<string[]>([]);
@@ -464,209 +376,23 @@ export const ExportStepTarget: React.FC = () => {
         <Box>
           {/* 目标连接 + Schema 一行 */}
           <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-            {/* 目标连接：搜索 + 分组 */}
-            {/* 树形连接选择器：左侧菜单样式（按 IP 段分组 + 可折叠） */}
-            <Box sx={{ flex: 1, position: 'relative' }}>
-              <TextField
-                size="small"
-                fullWidth
-                label="目标数据库连接"
-                value={
-                  (() => {
-                    const c = connectionOptions.find((co) => co.connId === dbTarget?.connectionId);
-                    return c ? `${c.name} (${c.host}:${c.port})` : '';
-                  })()
-                }
-                placeholder="点击选择..."
-                onClick={() => setConnDropdownOpen(!connDropdownOpen)}
-                sx={{ bgcolor: '#3C3F41', cursor: 'pointer' }}
-                InputLabelProps={{ sx: { color: '#BBBBBB' } }}
-                InputProps={{
-                  readOnly: true,
-                  endAdornment: (
-                    <ExpandMoreIcon
-                      fontSize="small"
-                      sx={{ color: '#888', cursor: 'pointer', transform: connDropdownOpen ? 'rotate(180deg)' : 'none' }}
-                    />
-                  ),
+            {/* 树形连接选择器：公共 TreeConnectionSelect */}
+            <Box sx={{ flex: 1 }}>
+              <TreeConnectionSelect
+                value={dbTarget?.connectionId || ''}
+                onChange={(connId) => {
+                  // 切换目标连接时重置 tableName/tableNameArr 为源表名
+                  const newConn = connectionsMap[connId];
+                  const defaultArr = selectedTables.map((st) => st.tableName);
+                  updateDb({
+                    connectionId: connId,
+                    schemaName: newConn?.schema || '',
+                    tableName: defaultArr[0] || '',
+                    tableNameArr: defaultArr,
+                  });
                 }}
+                label="目标数据库连接"
               />
-              {connDropdownOpen && (
-                <Paper
-                  sx={{
-                    position: 'absolute',
-                    top: '100%',
-                    left: 0,
-                    right: 0,
-                    mt: 0.5,
-                    maxHeight: 320,
-                    overflow: 'auto',
-                    bgcolor: '#3C3F41',
-                    zIndex: 1300,
-                    border: '1px solid #5A5A5A',
-                  }}
-                >
-                  {/* 搜索框：带搜索图标 + 清空按钮 */}
-                  <Box sx={{ p: 1, borderBottom: '1px solid #3A3A3A', bgcolor: '#2F2F2F' }}>
-                    <TextField
-                      size="small"
-                      fullWidth
-                      placeholder="搜索连接名称或 IP..."
-                      value={connSearchText}
-                      onChange={(e) => setConnSearchText(e.target.value)}
-                      autoFocus
-                      InputProps={{
-                        startAdornment: <SearchIcon fontSize="small" sx={{ color: '#888', mr: 0.5 }} />,
-                        endAdornment: connSearchText ? (
-                          <IconButton size="small" onClick={() => setConnSearchText('')} sx={{ p: 0.25 }}>
-                            <CloseIcon sx={{ fontSize: 14, color: '#888' }} />
-                          </IconButton>
-                        ) : undefined,
-                      }}
-                      sx={{
-                        bgcolor: '#252525',
-                        '& .MuiOutlinedInput-root': {
-                          fontSize: 13,
-                          '& fieldset': { borderColor: '#3A3A3A' },
-                          '&:hover fieldset': { borderColor: '#5A5A5A' },
-                        },
-                        '& input': { padding: '6px 4px', color: '#DDD' },
-                        '& input::placeholder': { color: '#777', opacity: 1 },
-                      }}
-                    />
-                  </Box>
-                  {/* 完全复用左侧菜单的树形渲染（展开/折叠状态独立） */}
-                  {(() => {
-                    if (!treeNodes || Object.keys(treeNodes).length === 0) {
-                      return (
-                        <Typography sx={{ color: '#888', p: 2, fontSize: 12, textAlign: 'center' }}>
-                          树数据加载中…
-                        </Typography>
-                      );
-                    }
-                    // 搜索过滤
-                    const matchesSearch = (nodeId: string): boolean => {
-                      if (!connSearchText) return true;
-                      const s = connSearchText.toLowerCase();
-                      const node = treeNodes[nodeId];
-                      if (!node) return false;
-                      if (node.dbConnectionId) {
-                        const conn = connectionsMap[node.dbConnectionId];
-                        if (conn && (conn.name.toLowerCase().includes(s) || (conn.host || '').includes(s))) return true;
-                      }
-                      if (node.name.toLowerCase().includes(s)) return true;
-                      if (node.childrenIds) return node.childrenIds.some(matchesSearch);
-                      return false;
-                    };
-
-                    // 递归渲染节点（与左侧菜单完全一致）
-                    const renderTree = (nodeId: string, depth: number): React.ReactNode => {
-                      if (!matchesSearch(nodeId)) return null;
-                      const node = treeNodes[nodeId];
-                      if (!node) return null;
-                      const isExpanded = expandedGroups.has(nodeId);
-                      const hasChildren = node.childrenIds && node.childrenIds.length > 0;
-
-                      // 叶子：医院（具体 connection）
-                      if (node.dbConnectionId) {
-                        const conn = connectionsMap[node.dbConnectionId];
-                        if (!conn) return null;
-                        const selected = dbTarget?.connectionId === conn.id;
-                        return (
-                          <Box
-                            key={nodeId}
-                            onClick={() => {
-                              // 切换目标连接时重置 tableName/tableNameArr 为源表名
-                              const defaultArr = selectedTables.map((st) => st.tableName);
-                              updateDb({
-                                connectionId: conn.id,
-                                schemaName: conn.schema || '',
-                                tableName: defaultArr[0] || '',
-                                tableNameArr: defaultArr,
-                              });
-                              setConnDropdownOpen(false);
-                            }}
-                            sx={{
-                              pl: 1.5 + depth * 1.2,
-                              pr: 2,
-                              py: 0.6,
-                              cursor: 'pointer',
-                              bgcolor: selected ? '#1565C0' : 'transparent',
-                              color: selected ? '#FFFFFF' : '#E0E0E0',
-                              fontSize: 12.5,
-                              borderLeft: selected ? '3px solid #64B5F6' : '3px solid transparent',
-                              whiteSpace: 'nowrap',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 0.5,
-                              transition: 'background-color 0.15s',
-                              '&:hover': { bgcolor: selected ? '#1565C0' : '#454545' },
-                            }}
-                          >
-                            <StorageIcon sx={{ fontSize: 12, color: selected ? '#FFFFFF' : '#66BB6A' }} />
-                            <span style={{ flex: 1 }}>{conn.name}</span>
-                            <span style={{ fontSize: 11, color: selected ? '#BBDEFB' : '#888' }}>
-                              {conn.host}:{conn.port}
-                            </span>
-                          </Box>
-                        );
-                      }
-                      // 中间节点：分组
-                      return (
-                        <Box key={nodeId}>
-                          <Box
-                            onClick={() => {
-                              if (!hasChildren) return;
-                              const ns = new Set(expandedGroups);
-                              ns.has(nodeId) ? ns.delete(nodeId) : ns.add(nodeId);
-                              setExpandedGroups(ns);
-                            }}
-                            sx={{
-                              bgcolor: depth === 0 ? '#2A2A2A' : '#333333',
-                              color: depth === 0 ? '#FFFFFF' : '#C8C8C8',
-                              fontSize: depth === 0 ? 12.5 : 12,
-                              fontWeight: depth === 0 ? 700 : 500,
-                              lineHeight: '26px',
-                              pl: 0.75 + depth * 1.2,
-                              pr: 1,
-                              cursor: hasChildren ? 'pointer' : 'default',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 0.5,
-                              borderTop: depth === 0 ? '1px solid #1F1F1F' : 'none',
-                              borderBottom: isExpanded ? '1px solid #252525' : 'none',
-                              transition: 'background-color 0.15s',
-                              '&:hover': hasChildren ? { bgcolor: '#3A3A3A' } : {},
-                            }}
-                          >
-                            {hasChildren ? (
-                              <ChevronRightIcon
-                                sx={{
-                                  fontSize: 14,
-                                  color: '#999',
-                                  transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
-                                  transition: 'transform 0.2s',
-                                }}
-                              />
-                            ) : (
-                              <FiberManualRecordIcon sx={{ fontSize: 5, color: '#555', ml: 0.4, mr: 0.4 }} />
-                            )}
-                            {node.name}
-                          </Box>
-                          {isExpanded && hasChildren && (
-                            <Box>
-                              {node.childrenIds.map((cid: string) => renderTree(cid, depth + 1))}
-                            </Box>
-                          )}
-                        </Box>
-                      );
-                    };
-                    return treeRootIds.map((rid: string) => renderTree(rid, 0));
-                  })()}
-                </Paper>
-              )}
             </Box>
 
             {/* Schema：始终显示下拉，没加载完就显示加载提示 */}

@@ -41,9 +41,39 @@ function getTargetConfig(target) {
   return { ...database, ...split, table: split.table, schema: split.schema };
 }
 
+export function resolveMappings({ sourceColumns, sourceDbType, targetDbType, target }) {
+  let mappings = buildFieldMappings(sourceColumns, sourceDbType, targetDbType);
+  const userMappings = Array.isArray(target?.columnMappings) ? target.columnMappings : [];
+  if (userMappings.length > 0) {
+    const colByName = new Map(sourceColumns.map((c) => [c.name ?? c.column_name, c]));
+    mappings = userMappings.map((um) => {
+      const src = colByName.get(um.source);
+      // 兜底：target 名是 id 时视为主键（约定俗成）。同时尊重 sourceColumns 的 primaryKey 字段
+      const isIdLike = um.target && um.target.toLowerCase() === 'id';
+      const derivedPK = Boolean(src?.primaryKey) || isIdLike;
+      return {
+        sourceName: um.source,
+        targetName: um.target,
+        sourceColumn: um.source,
+        targetColumn: um.target,
+        sourceType: src?.type ?? 'text',
+        targetType: src?.type ?? 'text',
+        nullable: src?.nullable !== false,
+        primaryKey: derivedPK,
+        length: src?.length ?? null,
+        precision: src?.precision ?? null,
+        scale: src?.scale ?? null,
+        default: src?.default ?? null,
+        comment: src?.comment || '',
+      };
+    });
+  }
+  return mappings;
+}
+
 export async function createTargetTable({ targetConnection, target, sourceColumns, sourceDbType, targetDbType }) {
   const config = getTargetConfig(target);
-  const mappings = buildFieldMappings(sourceColumns, sourceDbType, targetDbType);
+  const mappings = resolveMappings({ sourceColumns, sourceDbType, targetDbType, target: config });
   if (!mappings.length) throw new Error('无法从源查询获取列结构，不能自动建表');
   const table = qualifiedTable(config.schema, config.table, targetDbType);
   if (config.schema && normalizeDbType(targetDbType) !== 'mysql') {
@@ -90,7 +120,7 @@ export async function exportRowsToDatabase({ sourceConnection, source, targetCon
   const config = getTargetConfig(target);
   const effectiveTargetType = targetDbType || await detectDbType(target.driver || 'postgresql', target.customDriverId);
   const effectiveSourceType = sourceDbType || await detectDbType(source.driver || 'postgresql', source.customDriverId);
-  const mappings = buildFieldMappings(sourceColumns, effectiveSourceType, effectiveTargetType);
+  const mappings = resolveMappings({ sourceColumns, sourceDbType: effectiveSourceType, targetDbType: effectiveTargetType, target: config });
   if (!mappings.length) throw new Error('源查询没有可导出的列');
   const batchSize = Math.min(Math.max(1, Number(options.batchSize) || 10000), 50000);
   const rawStrategy = String(config.writeStrategy || options.writeStrategy || 'insert').toLowerCase();

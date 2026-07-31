@@ -47,6 +47,14 @@ export interface SyncTableMapping {
   orderby?: string | null;
   sequence?: number;
   column_mappings?: SyncColumnMapping[];
+  /** 可选：自定义 SELECT 查询；非空时用此 SQL 取数替代 source_table */
+  custom_sql?: string | null;
+  /** 可选：增量同步字段名（用于跟踪增量位点） */
+  incremental_column?: string | null;
+  /** 可选：增量类型 'timestamp' | 'numeric' */
+  incremental_type?: 'timestamp' | 'numeric' | null;
+  /** 可选：增量位点当前值 */
+  checkpoint_value?: string | null;
   created_at?: string;
   updated_at?: string;
 }
@@ -98,4 +106,12 @@ export interface CreateSyncMappingPayload {
   orderBy?: string;
   columnMappings?: SyncColumnMapping[];
   sequence?: number;
+  /** 可选：自定义 SELECT；与 sourceTable 二选一 */
+  customSql?: string;
+  /** 可选：增量同步字段名（如 updated_at / id） */
+  incrementalColumn?: string | null;
+  /** 可选：增量类型 'timestamp' | 'numeric' */
+  incrementalType?: 'timestamp' | 'numeric' | null;
+  /** 可选：增量位点值（timestamp 字符串 / numeric 字符串） */
+  checkpointValue?: string | null;
 }

@@ -33,3 +33,7 @@ backups/
 server/database.mjs.json-backup
 data.snapshots/
 *.sql.gz
+
+# Local dev test scripts (not for commit)
+setup-test-schema.mjs
+setup-test-schema.cjs
