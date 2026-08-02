@@ -38,6 +38,7 @@ import {
   TextField,
   Tooltip,
   Typography,
+  Checkbox,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
@@ -46,6 +47,7 @@ import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
+import SearchIcon from '@mui/icons-material/Search';
 import { useConnectionStore } from '../../stores/connectionStore';
 import { useSyncStore } from '../../stores/syncStore';
 import { apiFetch } from '../../services/apiClient';
@@ -77,7 +79,7 @@ type PairRow = {
   columnMappings: SyncColumnMapping[];
 };
 
-const STEPS = ['选择连接 / Schema', '配对源/目标表', '字段映射（可选）'] as const;
+const STEPS = ['配对源/目标表', '字段映射（可选）'] as const;
 
 const darkPaperSx = { bgcolor: '#3C3F41', color: 'text.secondary', border: '1px solid', borderColor: 'divider' };
 const fieldSx = { '& .MuiOutlinedInput-root': { color: 'text.primary', bgcolor: 'background.paper', fontSize: 13 }, '& .MuiInputLabel-root': { color: 'text.secondary' } };
@@ -102,6 +104,8 @@ export const MappingWizardDialog: React.FC<Props> = ({
   const [targetConnId, setTargetConnId] = useState('');
   const [sourceSchema, setSourceSchema] = useState('');
   const [targetSchema, setTargetSchema] = useState('');
+  const sourceConnName = connectionsMap[sourceConnId]?.name;
+  const targetConnName = connectionsMap[targetConnId]?.name;
   const [sourceSchemas, setSourceSchemas] = useState<string[]>([]);
   const [targetSchemas, setTargetSchemas] = useState<string[]>([]);
   const [sourceSchemasLoading, setSourceSchemasLoading] = useState(false);
@@ -271,7 +275,7 @@ export const MappingWizardDialog: React.FC<Props> = ({
 
   // 当源/目标任一边变化、但用户没在手动编辑 pairs 时，自动跑一次
   useEffect(() => {
-    if (activeStep !== 1) return;
+    if (activeStep !== 0) return;
     if (selectedSources.length === 0 && selectedTargets.length === 0) {
       setPairs([]);
       return;
@@ -317,44 +321,90 @@ export const MappingWizardDialog: React.FC<Props> = ({
   };
 
   // —— 多选表 Autocomplete（值是字符串数组，不是对象数组） ——
+  // 表多选（带 checkbox + 全选 + 搜索 + 列表）
+  const [tableSearch, setTableSearch] = useState<{ source: string; target: string }>({ source: '', target: '' });
   const tableMultiSelect = (which: 'source' | 'target') => {
     const tables = which === 'source' ? sourceTables : targetTables;
     const loading = which === 'source' ? sourceTablesLoading : targetTablesLoading;
     const value = which === 'source' ? selectedSources : selectedTargets;
     const setValue = which === 'source' ? setSelectedSources : setSelectedTargets;
     const connOk = which === 'source' ? (!!sourceConnId && !!sourceSchema) : (!!targetConnId && !!targetSchema);
+    const search = which === 'source' ? tableSearch.source : tableSearch.target;
+    const setSearch = (v: string) => setTableSearch((s) => ({ ...s, [which]: v }));
+    const allNames = tables.map((t) => t.name);
+    const filtered = allNames.filter((n) => n.toLowerCase().includes(search.toLowerCase()));
+    const allSelected = filtered.length > 0 && filtered.every((n) => value.includes(n));
+    const toggleAll = () => {
+      if (allSelected) {
+        setValue(value.filter((n) => !filtered.includes(n)));
+      } else {
+        const merged = Array.from(new Set([...value, ...filtered]));
+        setValue(merged);
+      }
+    };
+    const toggleOne = (n: string) => {
+      if (value.includes(n)) setValue(value.filter((v) => v !== n));
+      else setValue([...value, n]);
+    };
     return (
-      <Autocomplete
-        multiple
-        size="small"
-        fullWidth
-        options={tables.map((t) => t.name)}
-        value={value}
-        disabled={!connOk}
-        loading={loading}
-        onChange={(_, val) => setValue(val)}
-        renderTags={(tagValue, getTagProps) =>
-          tagValue.map((option, index) => {
-            const { key, ...rest } = getTagProps({ index });
-            return <Chip key={key} label={option} size="small" {...rest} sx={{ bgcolor: 'primary.dark', color: 'common.white', height: 22, fontSize: 11, '& .MuiChip-deleteIcon': { color: 'primary.light' } }} />;
-          })
-        }
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            size="small"
-            label={which === 'source' ? '源表（可多选）' : '目标表（可多选）'}
-            placeholder={!connOk ? '请先选择连接和 Schema' : loading ? '加载中…' : tables.length === 0 ? '未找到可用表' : '点击选择表…'}
-            InputProps={{
-              ...params.InputProps,
-              endAdornment: (<>{loading ? <CircularProgress size={14} sx={{ color: 'text.secondary' }} /> : null}{params.InputProps.endAdornment}</>),
-            }}
-            sx={{ mb: 1.5, '& .MuiOutlinedInput-root': { color: 'text.primary', bgcolor: 'background.paper', fontSize: 13 }, '& .MuiInputLabel-root': { color: 'text.secondary' } }}
-          />
+      <Box sx={{ mb: 1.5 }}>
+        <Typography sx={{ color: 'text.secondary', fontSize: 12, mb: 0.5 }}>{which === 'source' ? '源表（可多选）' : '目标表（可多选）'}</Typography>
+        {!connOk ? (
+          <Typography sx={{ color: 'text.disabled', fontSize: 12, py: 1 }}>请先选择连接和 Schema</Typography>
+        ) : (
+          <>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+              <TextField
+                size="small"
+                fullWidth
+                placeholder="搜索表名..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                InputProps={{
+                  startAdornment: (<InputAdornment position="start"><SearchIcon sx={{ fontSize: 14, color: 'text.disabled' }} /></InputAdornment>),
+                }}
+                sx={{ '& .MuiOutlinedInput-root': { color: 'text.primary', bgcolor: 'background.paper', fontSize: 12 } }}
+              />
+              <Button
+                size="small"
+                variant="text"
+                onClick={toggleAll}
+                disabled={filtered.length === 0}
+                sx={{ color: 'primary.main', textTransform: 'none', minWidth: 80, fontSize: 12, whiteSpace: 'nowrap' }}
+              >
+                {allSelected ? '取消全选' : '全选'}
+              </Button>
+            </Box>
+            <Box sx={{ border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', borderRadius: 1, maxHeight: 220, overflow: 'auto' }}>
+              {loading ? (
+                <Box sx={{ p: 2, textAlign: 'center' }}><CircularProgress size={18} /></Box>
+              ) : filtered.length === 0 ? (
+                <Typography sx={{ p: 1.5, color: 'text.disabled', fontSize: 12, textAlign: 'center' }}>未找到匹配表</Typography>
+              ) : (
+                filtered.map((name) => {
+                  const checked = value.includes(name);
+                  return (
+                    <Box
+                      key={name}
+                      onClick={() => toggleOne(name)}
+                      sx={{
+                        display: 'flex', alignItems: 'center', gap: 1, px: 1, py: 0.5,
+                        cursor: 'pointer',
+                        bgcolor: checked ? 'action.selected' : 'transparent',
+                        '&:hover': { bgcolor: 'action.hover' },
+                      }}
+                    >
+                      <Checkbox checked={checked} size="small" sx={{ p: 0, color: 'text.disabled', '&.Mui-checked': { color: 'primary.main' } }} />
+                      <Typography sx={{ color: 'text.primary', fontSize: 12 }}>{name}</Typography>
+                    </Box>
+                  );
+                })
+              )}
+            </Box>
+            <Typography sx={{ color: 'text.disabled', fontSize: 11, mt: 0.5 }}>已选 {value.length} / {allNames.length}</Typography>
+          </>
         )}
-        ListboxProps={{ sx: { fontSize: 13, '& li': { fontSize: 13, padding: '4px 10px' } } }}
-        slotProps={{ paper: { sx: { bgcolor: 'background.paper', color: 'common.white' } } }}
-      />
+      </Box>
     );
   };
 
@@ -385,7 +435,7 @@ export const MappingWizardDialog: React.FC<Props> = ({
       onError('请先选择源/目标连接和 Schema');
       return;
     }
-    if (activeStep === 1 && !step2Valid) {
+    if (activeStep === 0 && !step2Valid) {
       onError('请为每行配对填写源表和目标表');
       return;
     }
@@ -489,23 +539,9 @@ export const MappingWizardDialog: React.FC<Props> = ({
             <Alert severity="warning" sx={{ mb: 2 }}>请先在左侧选择一个同步任务，再创建表映射。</Alert>
           ) : null}
 
-          {activeStep === 0 && (
-            <Box>
-              <Typography sx={{ color: 'text.secondary', fontSize: 13, mb: 1.5 }}>选择源/目标连接和 Schema。后续步骤的可用表均来自这两个连接。</Typography>
-              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-                <Box>
-                  {<TreeConnectionSelect value={sourceConnId} onChange={(id) => setSourceConnId(id)} label="源连接" required />}
-                  {schemaSelect('source')}
-                </Box>
-                <Box>
-                  {<TreeConnectionSelect value={targetConnId} onChange={(id) => setTargetConnId(id)} label="目标连接" required />}
-                  {schemaSelect('target')}
-                </Box>
-              </Box>
-            </Box>
-          )}
+          {/* 连接/schema 完全继承自当前任务，UI 不再展示 */}
 
-          {activeStep === 1 && (
+          {activeStep === 0 && (
             <Box>
               <RadioGroup row value={sourceKind} onChange={(e) => setSourceKind(e.target.value as 'table' | 'sql')} sx={{ mb: 1.5, color: 'text.secondary' }}>
                 <FormControlLabel value="table" control={<Radio size="small" sx={{ color: 'text.disabled' }} />} label="选中表（多对配对）" sx={{ color: 'text.secondary' }} />

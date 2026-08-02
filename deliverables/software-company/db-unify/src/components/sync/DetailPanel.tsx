@@ -6,6 +6,7 @@ import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import { useSyncStore } from '../../stores/syncStore';
+import { useConnectionStore } from '../../stores/connectionStore';
 import { statusMark } from './ProjectTreePanel';
 
 interface Props {
@@ -26,6 +27,7 @@ const computeNextRun = (task: any) => {
 
 const DetailPanel: React.FC<Props> = ({ onEditColumns, onRunTask }) => {
   const { selection, projects, tasks, mappings, stats, deleteProject, deleteTask, deleteMapping, runningTaskId, updateTask } = useSyncStore();
+  const connectionsMap = useConnectionStore((s) => s.connections);
   const project = selection?.type === 'project' ? projects.find((x) => x.id === selection.id) : undefined;
   const task = selection?.type === 'task' ? tasks.find((x) => x.id === selection.id) : undefined;
   const mapping = selection?.type === 'mapping' ? mappings.find((x) => x.id === selection.id) : undefined;
@@ -73,8 +75,8 @@ const DetailPanel: React.FC<Props> = ({ onEditColumns, onRunTask }) => {
           <Row label="状态" value={<span style={{ color: taskMark.color }}>{taskMark.text} {taskMark.label}</span>} />
           <Row label="描述" value={task.description || task.extra?.description} />
           <Divider sx={{ borderColor: 'divider', my: 1.5 }} />
-          <Row label="源连接 / Schema" value={`${task.source_connection_id} / ${task.source_schema || '默认'}`} />
-          <Row label="目标连接 / Schema" value={`${task.target_connection_id} / ${task.target_schema || '默认'}`} />
+          <Row label="源连接 / Schema" value={`${connectionsMap[task.source_connection_id]?.name || task.source_connection_id} / ${task.source_schema || '默认'}`} />
+          <Row label="目标连接 / Schema" value={`${connectionsMap[task.target_connection_id]?.name || task.target_connection_id} / ${task.target_schema || '默认'}`} />
           <Row label="写入策略" value={task.write_strategy} />
           <Divider sx={{ borderColor: 'divider', my: 1.5 }} />
           <Typography sx={{ color: 'primary.main', fontSize: 11, mb: 1, letterSpacing: 0.5, fontWeight: 600 }}>调度</Typography>

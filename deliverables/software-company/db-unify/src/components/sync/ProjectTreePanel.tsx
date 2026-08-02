@@ -27,7 +27,12 @@ export const statusMark = (status: SyncRunStatus | undefined) => {
 type EditTarget = { type: 'project'; id: string; name: string } | { type: 'task'; id: string; name: string } | null;
 type DeleteTarget = { type: 'project' | 'task' | 'mapping'; id: string; name: string };
 
-const ProjectTreePanel: React.FC<{ onCreateProject: () => void; onCreateTask: () => void }> = ({ onCreateProject, onCreateTask }) => {
+const ProjectTreePanel: React.FC<{
+  onCreateProject: () => void;
+  onCreateTask?: (projectId?: string) => void;
+  onCreateMapping?: (taskId?: string) => void;
+  width?: number;
+}> = ({ onCreateProject, onCreateTask, onCreateMapping, width = 240 }) => {
   const {
     projects, tasks, mappings, loading, selectedProjectId, selectedTaskId, selectedMappingId,
     loadProjects, loadTasks, loadMappings, selectProject, selectTask, selectMapping,
@@ -140,7 +145,7 @@ const ProjectTreePanel: React.FC<{ onCreateProject: () => void; onCreateTask: ()
   };
 
   return (
-    <Box sx={{ width: 240, minWidth: 240, display: 'flex', flexDirection: 'column', bgcolor: 'background.default', borderRight: '1px solid', borderColor: 'divider' }}>
+    <Box sx={{ width, minWidth: width, display: 'flex', flexDirection: 'column', bgcolor: 'background.default', borderRight: '1px solid', borderColor: 'divider' }}>
       {/* ── Search box ── */}
       <Box sx={{ px: 1, pt: 1, pb: 0.75, borderBottom: '1px solid', borderColor: 'divider' }}>
         <TextField
@@ -175,16 +180,15 @@ const ProjectTreePanel: React.FC<{ onCreateProject: () => void; onCreateTask: ()
         同步项目
       </Typography>
 
-      {/* ── Tree ── */}
-      <Box sx={{ flex: 1, overflow: 'auto' }}>
-        {loading && <Box sx={{ p: 2, textAlign: 'center' }}><CircularProgress size={20} /></Box>}
-        {!loading && visibleProjects.length === 0 && (
-          <Typography sx={{ p: 2, fontSize: '0.75rem', color: 'text.secondary', textAlign: 'center' }}>
-            {searchText ? '无匹配结果' : '暂无同步项目'}
-          </Typography>
-        )}
-        <List dense disablePadding>
-          {visibleProjects.map((project) => {
+      {/* ── Tree（无滚动 Box，按钮紧跟最后一个树节点后；外层 AppSidebar 控制滚动） ── */}
+      {loading && <Box sx={{ p: 2, textAlign: 'center' }}><CircularProgress size={20} /></Box>}
+      {!loading && visibleProjects.length === 0 && (
+        <Typography sx={{ p: 2, fontSize: '0.75rem', color: 'text.secondary', textAlign: 'center' }}>
+          {searchText ? '无匹配结果' : '暂无同步项目'}
+        </Typography>
+      )}
+      <List dense disablePadding>
+            {visibleProjects.map((project) => {
             const expanded = isProjectExpanded(project.id);
             const projectTasks = tasks.filter((task) => task.project_id === project.id);
             const completedTasks = projectTasks.filter((t) => t.last_run_status === 'success').length;
@@ -195,34 +199,10 @@ const ProjectTreePanel: React.FC<{ onCreateProject: () => void; onCreateTask: ()
                 <ListItem
                   disablePadding
                   sx={{
-                    borderBottom: '1px solid',
-                    borderColor: 'divider',
                     bgcolor: selected ? 'action.selected' : 'transparent',
                   }}
                   onMouseEnter={() => setHoveredId(project.id)}
                   onMouseLeave={() => setHoveredId(null)}
-                  secondaryAction={
-                    <Box sx={{ display: 'flex', gap: 0.25, mr: 0.5 }}>
-                      <Tooltip title="重命名">
-                        <IconButton
-                          size="small"
-                          onClick={(e) => handleEditOpen(e, { type: 'project', id: project.id, name: project.name })}
-                          sx={{ p: 0.25 }}
-                        >
-                          <EditIcon sx={{ fontSize: 13 }} />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="删除">
-                        <IconButton
-                          size="small"
-                          onClick={(e) => handleDeleteOpen(e, { type: 'project', id: project.id, name: project.name })}
-                          sx={{ p: 0.25 }}
-                        >
-                          <DeleteIcon sx={{ fontSize: 13 }} />
-                        </IconButton>
-                      </Tooltip>
-                    </Box>
-                  }
                 >
                   <ListItemButton
                     dense
@@ -249,14 +229,54 @@ const ProjectTreePanel: React.FC<{ onCreateProject: () => void; onCreateTask: ()
                         '& .MuiListItemText-primary': { fontSize: '0.8rem', fontWeight: selected ? 600 : 400 },
                       }}
                     />
-                    <Typography sx={{ fontSize: '0.65rem', color: 'text.disabled', whiteSpace: 'nowrap', mr: 2 }}>
+                    <Typography sx={{ fontSize: '0.65rem', color: 'text.disabled', whiteSpace: 'nowrap', ml: 0.5, mr: 0.5 }}>
                       ({completedTasks}/{projectTasks.length})
                     </Typography>
+                    {/* ── Action icons — hover 时显示（SQL 编辑器风格） ── */}
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 0.25,
+                        opacity: hoveredId === project.id || selected ? 1 : 0,
+                        transition: 'opacity 0.15s',
+                      }}
+                    >
+                      {onCreateTask && (
+                        <Tooltip title="新建任务">
+                          <IconButton
+                            size="small"
+                            onClick={(e) => { e.stopPropagation(); onCreateTask(project.id); }}
+                            sx={{ p: 0.25 }}
+                          >
+                            <AddIcon sx={{ fontSize: 14 }} />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                      <Tooltip title="重命名">
+                        <IconButton
+                          size="small"
+                          onClick={(e) => handleEditOpen(e, { type: 'project', id: project.id, name: project.name })}
+                          sx={{ p: 0.25 }}
+                        >
+                          <EditIcon sx={{ fontSize: 14 }} />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="删除">
+                        <IconButton
+                          size="small"
+                          onClick={(e) => handleDeleteOpen(e, { type: 'project', id: project.id, name: project.name })}
+                          sx={{ p: 0.25 }}
+                        >
+                          <DeleteIcon sx={{ fontSize: 14 }} />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
                   </ListItemButton>
                 </ListItem>
 
-                {/* ── Task nodes ── */}
-                {expanded && projectTasks.map((task) => {
+                                {/* ── Task nodes ── */}
+                                {expanded && projectTasks.map((task) => {
                   const taskExpanded = isTaskExpanded(task.id);
                   const mark = statusMark(task.last_run_status);
                   const taskIsHovered = hoveredId === task.id;
@@ -266,7 +286,10 @@ const ProjectTreePanel: React.FC<{ onCreateProject: () => void; onCreateTask: ()
                     <React.Fragment key={task.id}>
                       <ListItem
                         disablePadding
-                        sx={{ py: 0, bgcolor: taskSelected ? 'action.selected' : 'transparent' }}
+                        sx={{
+                          py: 0,
+                          bgcolor: taskSelected ? 'action.selected' : 'transparent',
+                        }}
                         onMouseEnter={() => setHoveredId(task.id)}
                         onMouseLeave={() => setHoveredId(null)}
                       >
@@ -296,40 +319,60 @@ const ProjectTreePanel: React.FC<{ onCreateProject: () => void; onCreateTask: ()
                               '& .MuiListItemText-primary': { fontSize: '0.75rem' },
                             }}
                           />
-                          {taskIsHovered && (
-                            <Box sx={{ display: 'flex', gap: 0.25 }}>
-                              <Tooltip title="重命名">
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 0.25,
+                              opacity: taskIsHovered || taskSelected ? 1 : 0,
+                              transition: 'opacity 0.15s',
+                            }}
+                          >
+                            {onCreateMapping && (
+                              <Tooltip title="新建映射">
                                 <IconButton
                                   size="small"
-                                  onClick={(e) => handleEditOpen(e, { type: 'task', id: task.id, name: task.name })}
+                                  onClick={(e) => { e.stopPropagation(); onCreateMapping(task.id); }}
                                   sx={{ p: 0.25 }}
                                 >
-                                  <EditIcon sx={{ fontSize: 13 }} />
+                                  <AddIcon sx={{ fontSize: 14 }} />
                                 </IconButton>
                               </Tooltip>
-                              <Tooltip title="删除">
-                                <IconButton
-                                  size="small"
-                                  onClick={(e) => handleDeleteOpen(e, { type: 'task', id: task.id, name: task.name })}
-                                  sx={{ p: 0.25 }}
-                                >
-                                  <DeleteIcon sx={{ fontSize: 13 }} />
-                                </IconButton>
-                              </Tooltip>
-                            </Box>
-                          )}
+                            )}
+                            <Tooltip title="重命名">
+                              <IconButton
+                                size="small"
+                                onClick={(e) => handleEditOpen(e, { type: 'task', id: task.id, name: task.name })}
+                                sx={{ p: 0.25 }}
+                              >
+                                <EditIcon sx={{ fontSize: 14 }} />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="删除">
+                              <IconButton
+                                size="small"
+                                onClick={(e) => handleDeleteOpen(e, { type: 'task', id: task.id, name: task.name })}
+                                sx={{ p: 0.25 }}
+                              >
+                                <DeleteIcon sx={{ fontSize: 14 }} />
+                              </IconButton>
+                            </Tooltip>
+                          </Box>
                         </ListItemButton>
                       </ListItem>
 
-                      {/* ── Mapping nodes ── */}
-                      {taskExpanded && taskMappings.map((mapping) => {
+                                                                  {/* ── Mapping nodes ── */}
+                                            {taskExpanded && taskMappings.map((mapping) => {
                         const mappingIsHovered = hoveredId === mapping.id;
                         const mappingSelected = selectedMappingId === mapping.id;
                         return (
                           <ListItem
                             key={mapping.id}
                             disablePadding
-                            sx={{ py: 0, bgcolor: mappingSelected ? 'action.selected' : 'transparent' }}
+                            sx={{
+                              py: 0,
+                              bgcolor: mappingSelected ? 'action.selected' : 'transparent',
+                                }}
                             onMouseEnter={() => setHoveredId(mapping.id)}
                             onMouseLeave={() => setHoveredId(null)}
                           >
@@ -373,28 +416,27 @@ const ProjectTreePanel: React.FC<{ onCreateProject: () => void; onCreateTask: ()
               </React.Fragment>
             );
           })}
-        </List>
-      </Box>
-      {/* 新建项目按钮 — 与 SQL编辑器「添加项目」同位置 */}
-      <Box sx={{ px: 1, pt: 0.5, pb: 0.5 }}>
-        <Button
-          fullWidth
-          variant="text"
-          size="small"
-          startIcon={<AddIcon sx={{ fontSize: 14 }} />}
-          onClick={onCreateProject}
-          sx={{
-            fontSize: '0.8rem',
-            color: 'text.secondary',
-            textTransform: 'none',
-            justifyContent: 'flex-start',
-            '&:hover': { bgcolor: 'action.hover', color: 'primary.main' },
-          }}
-        >
-          新建项目
+      </List>
+
+      {/* 新建项目按钮 — 紧跟最后一个树节点后（SQL 编辑器风格） */}
+        <Box sx={{ px: 1, pt: 0.5, pb: 0.5 }}>
+          <Button
+            fullWidth
+            variant="text"
+            size="small"
+            startIcon={<AddIcon sx={{ fontSize: 14 }} />}
+            onClick={onCreateProject}
+            sx={{
+              fontSize: '0.8rem',
+              color: 'text.secondary',
+              textTransform: 'none',
+              justifyContent: 'flex-start',
+              '&:hover': { bgcolor: 'action.hover', color: 'primary.main' },
+            }}
+          >
+            新建项目
         </Button>
       </Box>
-
       {/* ── Edit Dialog ── */}
       <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} maxWidth="xs" fullWidth>
         <DialogTitle sx={{ fontSize: '0.95rem', pb: 1 }}>

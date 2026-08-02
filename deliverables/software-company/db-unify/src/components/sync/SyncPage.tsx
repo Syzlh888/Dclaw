@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, Autocomplete, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Snackbar, TextField, Typography } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import SyncAltIcon from '@mui/icons-material/SyncAlt';
@@ -9,6 +9,7 @@ import DetailPanel from './DetailPanel';
 import TableMappingEditor from './TableMappingEditor';
 import MappingWizardDialog from './MappingWizardDialog';
 import TreeConnectionSelect from '../common/TreeConnectionSelect';
+import ResizableHandle from '../layout/ResizableHandle';
 import { useSyncStore } from '../../stores/syncStore';
 import { useConnectionStore } from '../../stores/connectionStore';
 import { syncService } from '../../services/syncService';
@@ -31,6 +32,19 @@ const SyncContent: React.FC<{ open?: boolean; onClose?: () => void; standalone?:
   const [form, setForm] = useState<FormKind>(null);
   const [values, setValues] = useState<Record<string, string>>({});
   const [editingMappingId, setEditingMappingId] = useState<string | null>(null);
+  // 左侧项目树宽度：从 localStorage 恢复，允许鼠标拖动调整（180 ~ 480 px）
+  const [sidebarWidth, setSidebarWidth] = useState<number>(() => {
+    try {
+      const raw = localStorage.getItem('sync_sidebar_width');
+      const n = raw ? Number(raw) : 240;
+      return Number.isFinite(n) ? Math.max(180, Math.min(480, n)) : 240;
+    } catch {
+      return 240;
+    }
+  });
+  useEffect(() => {
+    try { localStorage.setItem('sync_sidebar_width', String(sidebarWidth)); } catch { /* ignore quota errors */ }
+  }, [sidebarWidth]);
   const selectedProject = store.projects.find((x) => x.id === store.selectedProjectId);
   const selectedTask = store.tasks.find((x) => x.id === store.selectedTaskId);
   const connectionsMap = useConnectionStore((s) => s.connections);
@@ -356,23 +370,28 @@ const SyncContent: React.FC<{ open?: boolean; onClose?: () => void; standalone?:
     catch (error) { useSyncStore.setState({ error: error instanceof Error ? error.message : '切换自动调度失败' }); }
   }, [store]);
 
-  const header = (
-    <Box sx={{ height: 50, px: 2, display: 'flex', alignItems: 'center', borderBottom: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
-      <SyncAltIcon sx={{ color: 'primary.main', mr: 1 }} />
-      <Typography sx={{ color: 'text.primary', fontWeight: 600, fontSize: 16 }}>数据同步中心</Typography>
-      <Typography sx={{ ml: 1.5, color: 'text.disabled', fontSize: 11 }}>{selectedProject?.name}{selectedTask ? ` / ${selectedTask.name}` : ''}</Typography>
-      <Box sx={{ flex: 1 }} />
-      {standalone ? (
-        <Button size="small" onClick={() => onClose?.()} sx={{ color: 'text.secondary' }}>← 返回</Button>
-      ) : (
-        <IconButton onClick={() => onClose?.()} sx={{ color: 'text.secondary' }}><CloseIcon /></IconButton>
-      )}
-    </Box>
-  );
+  const header = null;  // 整行 toolbar 已隐藏（用户要求）
 
   const body = (
     <Box sx={{ flex: 1, minHeight: 0, display: 'flex', overflow: 'hidden' }}>
-      <ProjectTreePanel onCreateProject={() => openForm('project')} onCreateTask={() => openForm('task')} />
+      <Box sx={{ display: 'flex', flexShrink: 0, width: sidebarWidth, minWidth: 180, maxWidth: 480, position: 'relative' }}>
+        <ProjectTreePanel
+          width={sidebarWidth}
+          onCreateProject={() => openForm('project')}
+          onCreateTask={(projectId) => {
+            if (projectId) store.selectProject(projectId);
+            openForm('task');
+          }}
+          onCreateMapping={(taskId) => {
+            if (taskId) store.selectTask(taskId);
+            openMappingWizard();
+          }}
+        />
+        <ResizableHandle
+          direction="vertical"
+          onResize={(delta) => setSidebarWidth((w) => Math.max(180, Math.min(480, w + delta)))}
+        />
+      </Box>
       <Box sx={{ flex: 1, minWidth: 0, bgcolor: 'background.default' }}>
         {store.selectedTaskId ? (
           <MappingListPanel onCreateMapping={openMappingWizard} onEditColumns={handleEditMapping} />
