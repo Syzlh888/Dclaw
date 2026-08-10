@@ -23,6 +23,10 @@ export interface SyncTask {
   poll_interval_seconds?: number;
   enabled?: boolean;
   write_strategy?: 'insert' | 'upsert' | 'replace';
+  /** taskRunner 同时执行的映射数（1~16，默认 3） */
+  max_concurrent?: number;
+  /** 单映射失败时的最大重试次数（0~5，默认 2） */
+  retry_count?: number;
   last_run_at?: string | null;
   last_run_status?: SyncRunStatus;
   last_run_rows?: number;
@@ -55,6 +59,14 @@ export interface SyncTableMapping {
   incremental_type?: 'timestamp' | 'numeric' | null;
   /** 可选：增量位点当前值 */
   checkpoint_value?: string | null;
+  /** 单映射级别：最近一次执行时间 */
+  last_run_at?: string | null;
+  /** 单映射级别：最近一次执行结果 success | failed | running */
+  last_run_status?: SyncRunStatus;
+  /** 单映射级别：最近一次同步行数 */
+  last_run_rows?: number;
+  /** 单映射级别：最近一次失败原因 */
+  last_run_error?: string | null;
   created_at?: string;
   updated_at?: string;
 }
@@ -94,7 +106,29 @@ export interface CreateSyncTaskPayload {
   pollIntervalSeconds?: number;
   enabled?: boolean;
   writeStrategy?: 'insert' | 'upsert' | 'replace';
+  /** taskRunner 同时执行的映射数（1~16） */
+  maxConcurrent?: number;
+  /** 单映射失败时的最大重试次数（0~5） */
+  retryCount?: number;
   description?: string;
+}
+
+export interface SyncRunHistoryEntry {
+  id: string;
+  taskId: string;
+  mappingId: string | null;
+  status: 'success' | 'failed' | 'running' | 'skipped';
+  rowsSynced: number;
+  durationMs: number;
+  attempts: number;
+  errorMessage: string | null;
+  startedAt: string;
+  finishedAt: string | null;
+}
+
+export interface SyncRunHistoryResponse {
+  taskId: string;
+  history: SyncRunHistoryEntry[];
 }
 
 export interface CreateSyncMappingPayload {

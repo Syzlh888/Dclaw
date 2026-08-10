@@ -6,6 +6,8 @@ import type {
   CreateSyncTaskPayload,
   SyncProject,
   SyncProjectStats,
+  SyncRunHistoryEntry,
+  SyncRunStatus,
   SyncSelection,
   SyncTableMapping,
   SyncTask,
@@ -26,10 +28,14 @@ interface SyncState {
   runningTaskId: string | null;
   /** 当前正在执行任务的实时进度（mappingIndex -> progress） */
   runProgress: Record<string, { mappingIndex: number; totalMappings: number; currentTable: string; status: string; rows?: number; pct?: number }>;
+  /** 当前任务的运行历史（taskId -> history[]） */
+  runHistory: Record<string, SyncRunHistoryEntry[]>;
   loadProjects: () => Promise<void>;
   loadTasks: (projectId: string) => Promise<void>;
   loadMappings: (taskId: string) => Promise<void>;
   loadProjectStats: (projectId: string) => Promise<void>;
+  /** 拉取任务的运行历史 */
+  loadHistory: (taskId: string, limit?: number) => Promise<SyncRunHistoryEntry[]>;
   selectProject: (id: string) => Promise<void>;
   selectTask: (id: string) => Promise<void>;
   selectMapping: (id: string) => void;
@@ -44,9 +50,11 @@ interface SyncState {
   updateTask: (id: string, payload: Partial<SyncTask>) => Promise<void>;
   deleteMapping: (id: string) => Promise<void>;
   /** 立即执行任务（订阅 SSE 进度），完成后刷新 task 列表 */
-  runTaskNow: (taskId: string) => Promise<void>;
+  runTaskNow: (taskId: string, options?: { fromScratch?: boolean }) => Promise<void>;
   /** 手动更新任务的 last_run_* 字段（SSE done 后被 runTaskNow 调用） */
   updateTaskLastRun: (taskId: string, payload: { lastRunAt: string; lastRunStatus: string; lastRunRows: number }) => void;
+  /** 同步把 mapping 的 last_run_* 字段刷新到 store（避免再 reload 整列表） */
+  updateMappingLastRun: (mappingId: string, payload: { last_run_at: string; last_run_status: SyncRunStatus; last_run_rows: number; last_run_error?: string | null }) => void;
   clearError: () => void;
 }
 
@@ -56,7 +64,7 @@ export const useSyncStore = create<SyncState>((set, get) => ({
   projects: [], tasks: [], mappings: [], stats: {},
   selectedProjectId: null, selectedTaskId: null, selectedMappingId: null,
   selection: null, loading: false, error: null,
-  runningTaskId: null, runProgress: {},
+  runningTaskId: null, runProgress: {}, runHistory: {},
 
   loadProjects: async () => {
     set({ loading: true, error: null });
@@ -85,6 +93,17 @@ export const useSyncStore = create<SyncState>((set, get) => ({
       const value = await syncService.getProjectStats(projectId);
       set((state) => ({ stats: { ...state.stats, [projectId]: value } }));
     } catch (error) { set({ error: messageOf(error) }); }
+  },
+
+  loadHistory: async (taskId, limit = 100) => {
+    try {
+      const value = await syncService.getHistory(taskId, limit);
+      set((state) => ({ runHistory: { ...state.runHistory, [taskId]: value.history } }));
+      return value.history;
+    } catch (error) {
+      set({ error: messageOf(error) });
+      return [];
+    }
   },
 
   selectProject: async (id) => {
@@ -177,7 +196,13 @@ export const useSyncStore = create<SyncState>((set, get) => ({
     }));
   },
 
-  runTaskNow: async (taskId: string) => {
+  updateMappingLastRun: (mappingId, payload) => {
+    set((state) => ({
+      mappings: state.mappings.map((m) => (m.id === mappingId ? { ...m, ...payload } : m)),
+    }));
+  },
+
+  runTaskNow: async (taskId: string, options) => {
     // 同一时刻只允许一个任务在跑
     if (get().runningTaskId) return;
     set({ runningTaskId: taskId, runProgress: {}, error: null });
@@ -196,6 +221,8 @@ export const useSyncStore = create<SyncState>((set, get) => ({
                 status: progress.status,
                 rows: progress.rows,
                 pct: progress.pct,
+                attempt: progress.attempt,
+                maxAttempts: progress.maxAttempts,
               } },
             }));
           },
@@ -203,9 +230,23 @@ export const useSyncStore = create<SyncState>((set, get) => ({
             // 更新 task 的 last_run_* 字段（前端镜像，与服务端同步）
             get().updateTaskLastRun(taskId, {
               lastRunAt: new Date().toISOString(),
-              lastRunStatus: result.success ? 'success' : 'error',
+              lastRunStatus: result.success ? 'success' : 'failed',
               lastRunRows: result.totalRows,
             });
+            // 把每个 mapping 的 last_run_* 也同步到 store
+            if (Array.isArray(result.mappingResults)) {
+              for (const r of result.mappingResults) {
+                if (!r.mappingId) continue;
+                get().updateMappingLastRun(r.mappingId, {
+                  last_run_at: new Date().toISOString(),
+                  last_run_status: r.status as any,
+                  last_run_rows: r.rowsSynced || 0,
+                  last_run_error: r.error || null,
+                });
+              }
+            }
+            // 刷新该任务的运行历史
+            try { await get().loadHistory(taskId, 100); } catch { /* ignore */ }
             set({ runningTaskId: null });
             // 刷新 tasks 列表（取最新 server 端状态）
             const projId = get().tasks.find((t) => t.id === taskId)?.project_id;
@@ -214,13 +255,19 @@ export const useSyncStore = create<SyncState>((set, get) => ({
             if (projId) {
               try { await get().loadProjectStats(projId); } catch { /* ignore */ }
             }
+            // 刷新当前任务下所有 mapping（last_run_*）
+            if (projId) {
+              try { await get().loadMappings(taskId); } catch { /* ignore */ }
+            }
             resolve();
           },
           onError: (err) => {
             set({ error: err.message, runningTaskId: null });
             resolve();
           },
-        }
+        },
+        undefined,
+        options || {},
       );
     });
   },

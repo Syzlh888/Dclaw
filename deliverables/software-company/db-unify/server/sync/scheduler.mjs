@@ -134,8 +134,8 @@ class SyncScheduler {
 
       console.log(`[SyncScheduler] running task ${task.id} (${task.name}) with ${mappings.length} mappings`);
 
-      // runTask(task, mappings, onProgress=() => {}) —— scheduler 不推送进度
-      const result = await runTask(task, mappings, () => {});
+      // runTask(task, mappings, options, onProgress=() => {}) —— scheduler 不推送进度
+      const result = await runTask(task, mappings, {}, () => {});
 
       // 写回数据库
       await update('syncTasks', task.id, {

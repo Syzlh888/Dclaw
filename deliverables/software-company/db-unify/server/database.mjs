@@ -60,6 +60,7 @@ const COLLECTION_TO_TABLE = {
   syncProjects: 'sync_projects',
   syncTasks: 'sync_tasks',
   syncTableMappings: 'sync_table_mappings',
+  syncRunHistory: 'sync_run_history',
 };
 
 function resolveTable(collection) {

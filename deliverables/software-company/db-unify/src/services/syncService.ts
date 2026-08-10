@@ -5,6 +5,7 @@ import type {
   CreateSyncTaskPayload,
   SyncProject,
   SyncProjectStats,
+  SyncRunHistoryResponse,
   SyncTableMapping,
   SyncTask,
 } from '../types/sync';
@@ -28,11 +29,14 @@ export interface RunTaskProgress {
   mappingId?: string;
   totalMappings: number;
   currentTable: string;
-  status: 'running' | 'success' | 'error';
+  status: 'running' | 'success' | 'error' | 'retrying' | 'started';
   rows?: number;
   totalSourceRows?: number;
   pct?: number;
   error?: string;
+  attempt?: number;
+  maxAttempts?: number;
+  concurrency?: number;
 }
 
 export interface RunTaskDone {
@@ -40,13 +44,31 @@ export interface RunTaskDone {
   totalRows: number;
   durationMs: number;
   errors: { mappingId?: string; error: string }[];
+  mappingResults?: {
+    mappingId?: string;
+    status: string;
+    rowsSynced: number;
+    durationMs: number;
+    attempts: number;
+    error?: string;
+  }[];
 }
 
 export interface RunTaskStreamHandlers {
-  onStart?: (info: { taskId: string; mappingCount: number; startedAt: string }) => void;
+  onStart?: (info: { taskId: string; mappingCount: number; startedAt: string; concurrency?: number; retries?: number; fromScratch?: boolean }) => void;
   onProgress: (progress: RunTaskProgress) => void;
   onDone: (result: RunTaskDone) => void;
   onError: (err: Error) => void;
+}
+
+/** runTaskStream 可选 body 参数 */
+export interface RunTaskStreamOptions {
+  /** true 时清空增量 checkpoint，强制全量 */
+  fromScratch?: boolean;
+  /** 覆盖任务默认并发度 */
+  concurrency?: number;
+  /** 覆盖任务默认重试次数 */
+  retries?: number;
 }
 
 /**
@@ -57,6 +79,7 @@ export function runTaskStream(
   taskId: string,
   handlers: RunTaskStreamHandlers,
   baseUrl?: string,
+  options: RunTaskStreamOptions = {},
 ): AbortController {
   const controller = new AbortController();
   const base = baseUrl || (typeof window !== 'undefined' ? '' : 'http://localhost:3001');
@@ -64,9 +87,18 @@ export function runTaskStream(
   (async () => {
     let res: Response;
     try {
+      const body: Record<string, unknown> = {};
+      if (options.fromScratch) body.fromScratch = true;
+      if (options.concurrency != null) body.concurrency = options.concurrency;
+      if (options.retries != null) body.retries = options.retries;
+      const hasBody = Object.keys(body).length > 0;
       res = await apiFetch(`${base}/api/sync-tasks/${encodeURIComponent(taskId)}/run`, {
         method: 'POST',
-        headers: { Accept: 'text/event-stream' },
+        headers: {
+          Accept: 'text/event-stream',
+          ...(hasBody ? { 'Content-Type': 'application/json' } : {}),
+        },
+        body: hasBody ? JSON.stringify(body) : undefined,
         signal: controller.signal,
       });
     } catch (err) {
@@ -158,6 +190,12 @@ export const syncService = {
   async getMappings(taskId: string): Promise<SyncTableMapping[]> {
     const data = await request<{ mappings: SyncTableMapping[] }>(`/api/sync-table-mappings?task_id=${encodeURIComponent(taskId)}`);
     return data.mappings;
+  },
+
+  /** 拉取任务的运行历史（GET /api/sync-tasks/:id/history） */
+  getHistory: async (taskId: string, limit = 100): Promise<SyncRunHistoryResponse> => {
+    const data = await request<SyncRunHistoryResponse>(`/api/sync-tasks/${encodeURIComponent(taskId)}/history?limit=${encodeURIComponent(String(limit))}`);
+    return data;
   },
 
   getProjectStats: (id: string) => request<SyncProjectStats>(`/api/sync-projects/${encodeURIComponent(id)}/stats`),

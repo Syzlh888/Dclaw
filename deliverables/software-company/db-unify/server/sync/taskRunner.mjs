@@ -1,24 +1,70 @@
 /**
- * 数据同步 · 任务执行器 (v1.5)
+ * 数据同步 · 任务执行器 (v1.6)
  *
  * 职责：
- *   - 串行执行单个 sync_task 下的所有 table_mapping
- *   - 复用 v1.3 exportEngine 的 exportToDatabase (runDatabaseExport)
- *     做真正的源→目标数据搬迁
+ *   - 并发执行单个 sync_task 下的所有 table_mapping（Promise 池，可配并发度）
+ *   - 每个映射失败自动重试（指数退避，默认重试 2 次）
+ *   - 增量同步：失败后下次从 checkpoint 继续；非增量任务失败后默认从 from_scratch=false 时保留 checkpoint 行为
+ *   - 每次执行按 mapping 写入 sync_run_history 历史，并更新 mapping.last_run_*
  *   - 通过 onProgress 回调向调用方 (sync-execute.mjs) 推送每个 mapping 的进度
  *
  * 输入：
- *   task:        sync_tasks 记录 (含 source_connection_id / target_connection_id /
- *                source_schema / target_schema / write_strategy)
- *   mappings:    SyncTableMapping[] (调用方负责过滤 enabled + 排序)
- *   onProgress:  (progress) => void
+ *   task:           sync_tasks 记录 (含 source_connection_id / target_connection_id /
+ *                   source_schema / target_schema / write_strategy /
+ *                   max_concurrent / retry_count)
+ *   mappings:       SyncTableMapping[] (调用方负责过滤 enabled + 排序)
+ *   options:        {
+ *                     fromScratch?: boolean  // true 时清空增量 checkpoint（强制全量）
+ *                     concurrency?: number  // 覆盖 task.max_concurrent
+ *                     retries?:     number  // 覆盖 task.retry_count
+ *                   }
+ *   onProgress:     (progress) => void
  *
  * 输出：
- *   { success, totalRows, durationMs, errors }
+ *   { success, totalRows, durationMs, errors, mappingResults }
+ *   mappingResults: [{ mappingId, status, rowsSynced, durationMs, attempts, error? }]
  */
 import { exportToDatabase } from './exportEngine.mjs';
+import { getById, update, query } from '../database.mjs';
 
 const DEFAULT_WRITE_STRATEGY = 'insert';
+const DEFAULT_MAX_CONCURRENT = 3;
+const MAX_CONCURRENT_LIMIT = 16;
+const DEFAULT_RETRY_COUNT = 2;
+const MAX_RETRY_LIMIT = 5;
+const RETRY_BASE_DELAY_MS = 1000;
+
+/** 规范化并发数（1 ~ 16） */
+function normalizeConcurrency(input, fallback) {
+  const n = Number(input);
+  if (!Number.isFinite(n) || n < 1) return fallback || DEFAULT_MAX_CONCURRENT;
+  return Math.max(1, Math.min(MAX_CONCURRENT_LIMIT, Math.floor(n)));
+}
+
+/** 规范化重试次数（0 ~ 5） */
+function normalizeRetries(input, fallback) {
+  const n = Number(input);
+  if (!Number.isFinite(n) || n < 0) return fallback || DEFAULT_RETRY_COUNT;
+  return Math.max(0, Math.min(MAX_RETRY_LIMIT, Math.floor(n)));
+}
+
+/** 简单的 Promise 池：保持 concurrency 个 worker 同时运行 */
+async function runWithConcurrency(items, concurrency, worker) {
+  const results = new Array(items.length);
+  let cursor = 0;
+  const workers = Array.from({ length: Math.max(1, concurrency) }, async () => {
+    while (true) {
+      const idx = cursor++;
+      if (idx >= items.length) return;
+      results[idx] = await worker(items[idx], idx);
+    }
+  });
+  await Promise.all(workers);
+  return results;
+}
+
+/** 等待（用于重试退避） */
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /** 把 sync_table_mappings 的字段映射拼成 exportEngine 认识的 source/target 对象 */
 function buildSourceAndTarget(task, mapping) {
@@ -33,7 +79,6 @@ function buildSourceAndTarget(task, mapping) {
   };
   if (customSql) {
     source.sql = customSql;
-    // 自定义 SQL 模式下，source.table 用作显示占位（让 lockKey/cache 仍可工作）
     source.table = mapping.source_table || '__custom_sql__';
   } else {
     source.table = mapping.source_table;
@@ -46,7 +91,11 @@ function buildSourceAndTarget(task, mapping) {
   if (!customSql && mapping.incremental_column && mapping.checkpoint_value != null && String(mapping.checkpoint_value).length > 0) {
     const col = String(mapping.incremental_column).replace(/[^A-Za-z0-9_.]/g, '');
     if (col) {
-      const incCond = `${col} > '${String(mapping.checkpoint_value).replaceAll("'", "''")}'`;
+      const incType = String(mapping.incremental_type || 'timestamp').toLowerCase();
+      const raw = String(mapping.checkpoint_value).replaceAll("'", "''");
+      const incCond = incType === 'numeric' && Number.isFinite(Number(raw))
+        ? `${col} > ${Number(raw)}`
+        : `${col} > '${raw}'`;
       source.filter = source.filter ? `${source.filter} AND ${incCond}` : incCond;
     }
   }
@@ -64,8 +113,6 @@ function buildSourceAndTarget(task, mapping) {
     table: mapping.target_table,
     schema: mapping.target_schema || task.target_schema || undefined,
     writeStrategy,
-    // columnMappings 是 JSONB 数组 [{source, target, type?}]，
-    // v1.5 先按导出引擎默认列映射执行；后续版本把 columnMappings 透传到 dbExporter
     columnMappings: Array.isArray(mapping.column_mappings) ? mapping.column_mappings : [],
   };
 
@@ -73,51 +120,117 @@ function buildSourceAndTarget(task, mapping) {
 }
 
 /**
- * 执行单个 sync task
- * @param {Object} task
- * @param {Object[]} mappings
- * @param {(progress: any) => void} onProgress
- * @returns {Promise<{ success: boolean, totalRows: number, durationMs: number, errors: any[] }>}
+ * 写单条 sync_run_history（同时更新 mapping.last_run_*）
+ * 失败仅 console.warn，不影响主流程
  */
-export async function runTask(task, mappings, onProgress = () => {}) {
-  const startTime = Date.now();
-  const errors = [];
-  let totalRows = 0;
-  let hasError = false;
+async function writeHistoryAndMappingStatus({ taskId, mapping, status, rowsSynced, durationMs, attempts, errorMessage, startedAt }) {
+  try {
+    const finishedAtIso = new Date().toISOString();
+    // 1) 写 sync_run_history：直接走 pool.query（不走 database.mjs 的 update；
+    //    因为 sync_run_history 主键是 BIGSERIAL 且无 updated_at，不适合通用 update）
+    const { query: pgQuery } = await import('../db/pool.mjs');
+    await pgQuery(
+      `INSERT INTO sync_run_history
+        (task_id, mapping_id, status, rows_synced, duration_ms, attempts, error_message, started_at, finished_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+      [
+        taskId,
+        mapping?.id || null,
+        status,
+        Number(rowsSynced) || 0,
+        Number(durationMs) || 0,
+        Number(attempts) || 1,
+        errorMessage ? String(errorMessage).slice(0, 4000) : null,
+        startedAt || finishedAtIso,
+        finishedAtIso,
+      ],
+    );
+    // 2) 更新 sync_table_mappings.last_run_*
+    if (mapping?.id) {
+      await update('syncTableMappings', mapping.id, {
+        last_run_at: finishedAtIso,
+        last_run_status: status,
+        last_run_rows: Number(rowsSynced) || 0,
+        last_run_error: errorMessage ? String(errorMessage).slice(0, 4000) : null,
+      });
+    }
+  } catch (err) {
+    console.warn(`[taskRunner] write history failed (mapping=${mapping?.id || '-'})`, err?.message || err);
+  }
+}
 
-  // 串行执行每个 mapping
-  for (let i = 0; i < mappings.length; i++) {
-    const mapping = mappings[i];
-    if (!mapping.enabled) continue;
+/**
+ * 把增量 checkpoint 回写到 mapping（HTTP PATCH 到 sync-table-mappings 路由）。
+ * 失败仅 console.warn，不影响主流程。
+ */
+async function persistCheckpoint(mapping, checkpointValue) {
+  if (!mapping?.id) return;
+  try {
+    const apiPort = Number(process.env.API_PORT) || Number(process.env.PORT) || 3001;
+    const apiHost = process.env.API_HOST || 'localhost';
+    const res = await fetch(`http://${apiHost}:${apiPort}/api/sync-table-mappings/${encodeURIComponent(mapping.id)}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ checkpointValue }),
+    });
+    if (!res.ok) {
+      const errBody = await res.text().catch(() => '');
+      console.warn(`[taskRunner] checkpoint 持久化失败 (HTTP ${res.status}): ${errBody.slice(0, 200)}`);
+    }
+  } catch (e) {
+    console.warn(`[taskRunner] checkpoint 持久化异常: ${e?.message || e}`);
+  }
+}
 
-    const currentTable = mapping.custom_sql
-      ? `(自定义 SQL) → ${mapping.target_table}`
-      : `${mapping.source_table} → ${mapping.target_table}`;
+/**
+ * 执行单个 mapping（含重试 / 增量 checkpoint / 历史写）
+ * 返回 { status, rowsSynced, durationMs, attempts, error? }
+ */
+async function runSingleMapping(task, mapping, options, emit) {
+  const concurrency = options.concurrency; // 仅用于日志
+  const retries = options.retries;
+  const fromScratch = options.fromScratch;
 
+  const baseLabel = mapping.custom_sql
+    ? `(自定义 SQL) → ${mapping.target_table}`
+    : `${mapping.source_table} → ${mapping.target_table}`;
+
+  const startedAt = new Date().toISOString();
+  const mappingStartedAt = Date.now();
+
+  // fromScratch=true 时清空增量 checkpoint（仅对启用增量的 mapping 生效）
+  const effectiveMapping = (fromScratch && mapping.incremental_column)
+    ? { ...mapping, checkpoint_value: null }
+    : mapping;
+
+  let lastError = null;
+  let lastRows = 0;
+  const maxAttempts = retries + 1; // 第 1 次 + retries 次重试
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      onProgress({
-        mappingIndex: i,
+      emit({
         mappingId: mapping.id,
-        totalMappings: mappings.length,
-        currentTable,
+        currentTable: baseLabel,
         status: 'running',
+        attempt,
+        maxAttempts,
         rows: 0,
       });
 
-      const { source, target } = buildSourceAndTarget(task, mapping);
+      const { source, target } = buildSourceAndTarget(task, effectiveMapping);
 
       const result = await exportToDatabase({
         source,
         target,
         options: {},
         onProgress: (p) => {
-          // 把 exportEngine 的细粒度进度透传给上层
-          onProgress({
-            mappingIndex: i,
+          emit({
             mappingId: mapping.id,
-            totalMappings: mappings.length,
-            currentTable,
+            currentTable: baseLabel,
             status: 'running',
+            attempt,
+            maxAttempts,
             rows: p?.writtenRows || 0,
             totalSourceRows: p?.totalRows || 0,
             pct: p?.pct || 0,
@@ -126,51 +239,172 @@ export async function runTask(task, mappings, onProgress = () => {}) {
         isCancelled: () => false,
       });
 
-      totalRows += result.totalRows || 0;
+      lastRows = result.totalRows || 0;
 
-      onProgress({
-        mappingIndex: i,
+      // 成功后回写增量 checkpoint（不影响 custom_sql 模式）
+      if (!mapping.custom_sql && mapping.incremental_column) {
+        await persistCheckpoint(mapping, new Date().toISOString());
+      }
+
+      const durationMs = Date.now() - mappingStartedAt;
+
+      emit({
         mappingId: mapping.id,
-        totalMappings: mappings.length,
-        currentTable,
+        currentTable: baseLabel,
         status: 'success',
-        rows: result.totalRows || 0,
+        attempt,
+        maxAttempts,
+        rows: lastRows,
       });
 
-      // 增量同步：执行成功后回写 checkpoint_value（通过 PATCH 持久化）
-      if (!mapping.custom_sql && mapping.incremental_column) {
-        try {
-          // 端口配置与 server/index.mjs 默认保持一致（3001）；允许通过 env 覆盖
-          // 注意：开发模式下 npm run dev 会同时启动 client (3000) 和 server (3001)，
-          // 此处必须取 server 端口，否则 PATCH 会打错端口导致 checkpoint 静默丢失
-          const apiPort = Number(process.env.API_PORT) || Number(process.env.PORT) || 3001;
-          const apiHost = process.env.API_HOST || 'localhost';
-          const res = await fetch(`http://${apiHost}:${apiPort}/api/sync-table-mappings/${encodeURIComponent(mapping.id)}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ checkpointValue: new Date().toISOString() }),
-          });
-          if (!res.ok) {
-            const errBody = await res.text().catch(() => '');
-            console.warn(`[taskRunner] checkpoint 持久化失败 (HTTP ${res.status}): ${errBody.slice(0, 200)}`);
-          }
-        } catch (e) {
-          // checkpoint 持久化失败不影响本次任务结果，但至少要可见
-          console.warn(`[taskRunner] checkpoint 持久化异常: ${e?.message || e}`);
-        }
-      }
-    } catch (err) {
-      hasError = true;
-      const message = err?.message || String(err);
-      errors.push({ mappingId: mapping.id, error: message });
-      onProgress({
-        mappingIndex: i,
+      await writeHistoryAndMappingStatus({
+        taskId: task.id,
+        mapping,
+        status: 'success',
+        rowsSynced: lastRows,
+        durationMs,
+        attempts: attempt,
+        errorMessage: null,
+        startedAt,
+      });
+
+      return {
         mappingId: mapping.id,
-        totalMappings: mappings.length,
-        currentTable,
-        status: 'error',
+        status: 'success',
+        rowsSynced: lastRows,
+        durationMs,
+        attempts: attempt,
+      };
+    } catch (err) {
+      lastError = err;
+      const message = err?.message || String(err);
+      console.warn(`[taskRunner] mapping ${mapping.id} attempt ${attempt}/${maxAttempts} failed: ${message}`);
+
+      // 最后一次尝试也失败 —— 记历史 + 推进 progress
+      if (attempt >= maxAttempts) {
+        const durationMs = Date.now() - mappingStartedAt;
+        emit({
+          mappingId: mapping.id,
+          currentTable: baseLabel,
+          status: 'error',
+          attempt,
+          maxAttempts,
+          error: message,
+        });
+        await writeHistoryAndMappingStatus({
+          taskId: task.id,
+          mapping,
+          status: 'failed',
+          rowsSynced: lastRows,
+          durationMs,
+          attempts: attempt,
+          errorMessage: message,
+          startedAt,
+        });
+        return {
+          mappingId: mapping.id,
+          status: 'failed',
+          rowsSynced: lastRows,
+          durationMs,
+          attempts: attempt,
+          error: message,
+        };
+      }
+
+      // 还没到最后一次：发 retry 进度事件 + 指数退避
+      emit({
+        mappingId: mapping.id,
+        currentTable: baseLabel,
+        status: 'retrying',
+        attempt,
+        maxAttempts,
         error: message,
       });
+      const delay = RETRY_BASE_DELAY_MS * Math.pow(2, attempt - 1);
+      await sleep(delay);
+    }
+  }
+
+  // 不可达（TypeScript 友好兜底）
+  void concurrency; void lastError;
+  return {
+    mappingId: mapping?.id,
+    status: 'failed',
+    rowsSynced: 0,
+    durationMs: Date.now() - mappingStartedAt,
+    attempts: 0,
+    error: 'unknown',
+  };
+}
+
+/**
+ * 执行单个 sync task（并发执行所有 enabled mappings）
+ * @param {Object} task
+ * @param {Object[]} mappings
+ * @param {Object} options { fromScratch, concurrency, retries }
+ * @param {(progress: any) => void} onProgress
+ * @returns {Promise<{ success, totalRows, durationMs, errors, mappingResults }>}
+ */
+export async function runTask(task, mappings, options = {}, onProgress = () => {}) {
+  const startTime = Date.now();
+  const errors = [];
+  let totalRows = 0;
+  let hasError = false;
+
+  const enabledMappings = mappings.filter((m) => m && m.enabled !== false);
+
+  const concurrency = normalizeConcurrency(
+    options.concurrency ?? task.max_concurrent,
+    DEFAULT_MAX_CONCURRENT,
+  );
+  const retries = normalizeRetries(
+    options.retries ?? task.retry_count,
+    DEFAULT_RETRY_COUNT,
+  );
+
+  // 透传映射索引到进度事件（与旧行为兼容：mappingIndex 是 mappings 列表里的位置）
+  const indexMap = new Map();
+  enabledMappings.forEach((m, i) => indexMap.set(m.id, i));
+
+  const emit = (detail) => {
+    const idx = detail.mappingId ? indexMap.get(detail.mappingId) ?? -1 : -1;
+    onProgress({
+      mappingIndex: idx,
+      mappingId: detail.mappingId,
+      totalMappings: enabledMappings.length,
+      currentTable: detail.currentTable,
+      status: detail.status,
+      rows: detail.rows || 0,
+      totalSourceRows: detail.totalSourceRows,
+      pct: detail.pct,
+      error: detail.error,
+      attempt: detail.attempt,
+      maxAttempts: detail.maxAttempts,
+    });
+  };
+
+  // 开跑前给上层一个 start 帧，方便 UI 显示「并发度 / 总数」
+  onProgress({
+    mappingIndex: -1,
+    totalMappings: enabledMappings.length,
+    currentTable: '',
+    status: 'started',
+    concurrency,
+    retries,
+  });
+
+  const results = await runWithConcurrency(enabledMappings, concurrency, async (mapping) => {
+    return runSingleMapping(task, mapping, { concurrency, retries, fromScratch: !!options.fromScratch }, emit);
+  });
+
+  const mappingResults = [];
+  for (const r of results) {
+    if (!r) continue;
+    mappingResults.push(r);
+    totalRows += r.rowsSynced || 0;
+    if (r.status !== 'success') {
+      hasError = true;
+      if (r.error) errors.push({ mappingId: r.mappingId, error: r.error });
     }
   }
 
@@ -179,7 +413,39 @@ export async function runTask(task, mappings, onProgress = () => {}) {
     totalRows,
     durationMs: Date.now() - startTime,
     errors,
+    mappingResults,
   };
 }
 
-export default { runTask };
+/**
+ * 拉取某 task 的历史记录（按时间倒序，可选 limit）
+ */
+export async function fetchTaskHistory(taskId, { limit = 100 } = {}) {
+  const { query: pgQuery } = await import('../db/pool.mjs');
+  const safeLimit = Math.max(1, Math.min(500, Number(limit) || 100));
+  const r = await pgQuery(
+    `SELECT id, task_id, mapping_id, status, rows_synced, duration_ms, attempts,
+            error_message, started_at, finished_at
+       FROM sync_run_history
+       WHERE task_id = $1
+       ORDER BY started_at DESC
+       LIMIT $2`,
+    [taskId, safeLimit],
+  );
+  return r.rows;
+}
+
+/**
+ * 给定时调度器使用：根据 taskId 拉最新 task + enabled mappings
+ */
+export async function loadTaskAndMappings(taskId) {
+  const task = await getById('syncTasks', taskId);
+  if (!task) return { task: null, mappings: [] };
+  const all = await query('syncTableMappings', (m) => m.task_id === taskId);
+  const mappings = all
+    .filter((m) => m.enabled !== false)
+    .sort((a, b) => (a.sequence ?? 0) - (b.sequence ?? 0));
+  return { task, mappings };
+}
+
+export default { runTask, fetchTaskHistory, loadTaskAndMappings };

@@ -31,6 +31,10 @@ const MIN_POLL_INTERVAL = 5;
 const MAX_POLL_INTERVAL = 86400; // 1 天
 const DEFAULT_POLL_INTERVAL = 60;
 const DEFAULT_WRITE_STRATEGY = 'insert';
+const DEFAULT_MAX_CONCURRENT = 3;
+const MAX_CONCURRENT_LIMIT = 16;
+const DEFAULT_RETRY_COUNT = 2;
+const MAX_RETRY_LIMIT = 5;
 
 function normalizeWriteStrategy(s) {
   if (!s) return DEFAULT_WRITE_STRATEGY;
@@ -44,6 +48,18 @@ function normalizePollInterval(n) {
   if (num < MIN_POLL_INTERVAL) return MIN_POLL_INTERVAL;
   if (num > MAX_POLL_INTERVAL) return MAX_POLL_INTERVAL;
   return Math.floor(num);
+}
+
+function normalizeMaxConcurrent(n) {
+  const num = Number(n);
+  if (!Number.isFinite(num) || num < 1) return DEFAULT_MAX_CONCURRENT;
+  return Math.max(1, Math.min(MAX_CONCURRENT_LIMIT, Math.floor(num)));
+}
+
+function normalizeRetryCount(n) {
+  const num = Number(n);
+  if (!Number.isFinite(num) || num < 0) return DEFAULT_RETRY_COUNT;
+  return Math.max(0, Math.min(MAX_RETRY_LIMIT, Math.floor(num)));
 }
 
 // GET /sync-tasks?project_id=xxx
@@ -73,6 +89,8 @@ router.post('/', async (req, res) => {
     enabled,
     writeStrategy,
     description,
+    maxConcurrent,
+    retryCount,
   } = req.body || {};
 
   if (!projectId) return res.status(400).json({ error: '所属项目 (projectId) 不能为空' });
@@ -100,6 +118,8 @@ router.post('/', async (req, res) => {
     poll_interval_seconds: normalizePollInterval(pollIntervalSeconds),
     enabled: enabled === false ? false : true,
     write_strategy: normalizeWriteStrategy(writeStrategy),
+    max_concurrent: normalizeMaxConcurrent(maxConcurrent),
+    retry_count: normalizeRetryCount(retryCount),
     last_run_at: null,
     last_run_status: null,
     last_run_rows: 0,
@@ -131,6 +151,8 @@ router.patch('/:id', async (req, res) => {
     enabled,
     writeStrategy,
     description,
+    maxConcurrent,
+    retryCount,
   } = req.body || {};
 
   const partial = { updated_at: new Date().toISOString() };
@@ -161,6 +183,8 @@ router.patch('/:id', async (req, res) => {
   if (pollIntervalSeconds !== undefined) partial.poll_interval_seconds = normalizePollInterval(pollIntervalSeconds);
   if (enabled !== undefined) partial.enabled = enabled !== false;
   if (writeStrategy !== undefined) partial.write_strategy = normalizeWriteStrategy(writeStrategy);
+  if (maxConcurrent !== undefined) partial.max_concurrent = normalizeMaxConcurrent(maxConcurrent);
+  if (retryCount !== undefined) partial.retry_count = normalizeRetryCount(retryCount);
   if (description !== undefined) {
     const prevExtra = (existing.extra && typeof existing.extra === 'object') ? existing.extra : {};
     partial.extra = { ...prevExtra, description: description == null ? '' : String(description) };

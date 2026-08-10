@@ -4,7 +4,31 @@ import AddIcon from '@mui/icons-material/Add';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import UpdateIcon from '@mui/icons-material/Update';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import ScheduleIcon from '@mui/icons-material/Schedule';
 import { useSyncStore } from '../../stores/syncStore';
+
+/** 映射级 last_run_status 显示标记 */
+const mappingStatusMark = (status?: string | null) => {
+  if (status === 'success') return { Icon: CheckCircleOutlineIcon, color: 'success.main', tip: '最近同步成功' };
+  if (status === 'failed' || status === 'error') return { Icon: ErrorOutlineIcon, color: 'error.main', tip: '最近同步失败' };
+  if (status === 'running') return { Icon: ScheduleIcon, color: 'primary.main', tip: '正在执行' };
+  return { Icon: ScheduleIcon, color: 'text.disabled', tip: '尚未同步' };
+};
+
+const fmtShortTime = (value?: string | null) => {
+  if (!value) return '-';
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return '-';
+  const now = new Date();
+  const diffMs = now.getTime() - d.getTime();
+  if (diffMs < 0 || diffMs < 60_000) return '刚刚';
+  if (diffMs < 3_600_000) return `${Math.floor(diffMs / 60_000)} 分钟前`;
+  if (diffMs < 86_400_000) return `${Math.floor(diffMs / 3_600_000)} 小时前`;
+  if (diffMs < 7 * 86_400_000) return `${Math.floor(diffMs / 86_400_000)} 天前`;
+  return d.toLocaleString('zh-CN', { hour12: false });
+};
 
 interface Props {
   onCreateMapping: () => void;
@@ -133,43 +157,71 @@ const MappingListPanel: React.FC<Props> = ({ onCreateMapping, onEditColumns }) =
   return <Box sx={{ p: 2, height: '100%', overflow: 'auto' }}>
     <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}><Typography sx={{ color: 'text.primary', fontWeight: 600 }}>表映射</Typography><Chip size="small" label={list.length} sx={{ ml: 1, height: 20, color: 'text.secondary' }} /><Box sx={{ flex: 1 }} /><Button size="small" startIcon={<AddIcon />} onClick={onCreateMapping} sx={{ color: 'primary.main' }}>新建映射</Button></Box>
     {list.length === 0 && <Typography sx={{ mt: 6, textAlign: 'center', color: 'text.disabled', fontSize: 13 }}>该任务暂无表映射</Typography>}
-    {list.map((mapping) => <Box key={mapping.id} sx={{ display: 'flex', alignItems: 'center', gap: 1.25, p: 1.5, mb: 1, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, '&:hover': { borderColor: 'primary.main' } }}>
-      <Box onClick={() => selectMapping(mapping.id)} sx={{ display: 'flex', alignItems: 'center', gap: 1.25, flex: 1, minWidth: 0, cursor: 'pointer' }}>
-        <TableChartIcon sx={{ color: 'primary.light' }} />
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography sx={{ color: 'text.primary', fontSize: 13 }}>{mapping.source_table} → {mapping.target_table}</Typography>
-          <Typography sx={{ color: 'text.secondary', fontSize: 11 }}>
-            {mapping.column_mappings?.length || 0} 个字段 · 顺序 {mapping.sequence ?? 0}
-            {mapping.incremental_column && <span style={{ color: 'primary.light', marginLeft: 8 }}>· 增量:{mapping.incremental_column}</span>}
-          </Typography>
+    {list.map((mapping) => {
+      const statusMark = mappingStatusMark(mapping.last_run_status);
+      const StatusIcon = statusMark.Icon;
+      return <Box key={mapping.id} sx={{ display: 'flex', alignItems: 'center', gap: 1.25, p: 1.5, mb: 1, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, '&:hover': { borderColor: 'primary.main' } }}>
+        <Box onClick={() => selectMapping(mapping.id)} sx={{ display: 'flex', alignItems: 'center', gap: 1.25, flex: 1, minWidth: 0, cursor: 'pointer' }}>
+          <TableChartIcon sx={{ color: 'primary.light' }} />
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography sx={{ color: 'text.primary', fontSize: 13 }}>{mapping.source_table} → {mapping.target_table}</Typography>
+            <Typography sx={{ color: 'text.secondary', fontSize: 11 }}>
+              {mapping.column_mappings?.length || 0} 个字段 · 顺序 {mapping.sequence ?? 0}
+              {mapping.incremental_column && <span style={{ color: 'primary.light', marginLeft: 8 }}>· 增量:{mapping.incremental_column}</span>}
+            </Typography>
+            {/* 单映射级别：最后同步状态 / 时间 / 行数 */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 0.5 }}>
+              <Tooltip title={statusMark.tip}>
+                <StatusIcon sx={{ fontSize: 12, color: statusMark.color }} />
+              </Tooltip>
+              <Typography sx={{ color: statusMark.color, fontSize: 10.5 }}>
+                {mapping.last_run_status === 'success' ? '成功'
+                  : mapping.last_run_status === 'failed' ? '失败'
+                  : mapping.last_run_status === 'running' ? '运行中'
+                  : '未运行'}
+              </Typography>
+              <Typography sx={{ color: 'text.disabled', fontSize: 10.5 }}>·</Typography>
+              <Typography sx={{ color: 'text.secondary', fontSize: 10.5 }} title={mapping.last_run_at || ''}>
+                {fmtShortTime(mapping.last_run_at)}
+              </Typography>
+              {Number(mapping.last_run_rows) > 0 && (
+                <>
+                  <Typography sx={{ color: 'text.disabled', fontSize: 10.5 }}>·</Typography>
+                  <Typography sx={{ color: 'text.secondary', fontSize: 10.5 }}>
+                    {mapping.last_run_rows} 行
+                  </Typography>
+                </>
+              )}
+            </Box>
+          </Box>
+          <Chip size="small" label={mapping.enabled === false ? '停用' : '启用'} color={mapping.enabled === false ? 'default' : 'success'} variant="outlined" sx={{ height: 22 }} />
         </Box>
-        <Chip size="small" label={mapping.enabled === false ? '停用' : '启用'} color={mapping.enabled === false ? 'default' : 'success'} variant="outlined" sx={{ height: 22 }} />
-      </Box>
-      <Tooltip title="字段映射">
-        <IconButton
-          size="small"
-          onClick={(e) => {
-            e.stopPropagation();
-            onEditColumns(mapping.id);
-          }}
-          sx={{ color: 'primary.main', border: '1px solid', borderColor: 'divider', '&:hover': { borderColor: 'primary.main' } }}
-        >
-          <AccountTreeIcon sx={{ fontSize: 16 }} />
-        </IconButton>
-      </Tooltip>
-      <Tooltip title="增量同步">
-        <IconButton
-          size="small"
-          onClick={(e) => {
-            e.stopPropagation();
-            setIncrementalDialogFor(mapping.id);
-          }}
-          sx={{ color: mapping.incremental_column ? 'primary.light' : 'text.secondary', border: '1px solid', borderColor: 'divider', '&:hover': { borderColor: 'primary.main' } }}
-        >
-          <UpdateIcon sx={{ fontSize: 16 }} />
-        </IconButton>
-      </Tooltip>
-    </Box>)}
+        <Tooltip title="字段映射">
+          <IconButton
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation();
+              onEditColumns(mapping.id);
+            }}
+            sx={{ color: 'primary.main', border: '1px solid', borderColor: 'divider', '&:hover': { borderColor: 'primary.main' } }}
+          >
+            <AccountTreeIcon sx={{ fontSize: 16 }} />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="增量同步">
+          <IconButton
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIncrementalDialogFor(mapping.id);
+            }}
+            sx={{ color: mapping.incremental_column ? 'primary.light' : 'text.secondary', border: '1px solid', borderColor: 'divider', '&:hover': { borderColor: 'primary.main' } }}
+          >
+            <UpdateIcon sx={{ fontSize: 16 }} />
+          </IconButton>
+        </Tooltip>
+      </Box>;
+    })}
     <IncrementalDialog open={!!incrementalDialogFor} mapping={incrementalDialogFor ? list.find((m) => m.id === incrementalDialogFor) : null} onClose={() => setIncrementalDialogFor(null)} />
   </Box>;
 };
