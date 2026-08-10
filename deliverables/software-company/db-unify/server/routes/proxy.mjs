@@ -17,6 +17,7 @@
  */
 import { Router } from 'express';
 import { nanoid } from 'nanoid';
+import crypto from 'node:crypto';
 import { getPool } from '../db/pool.mjs';
 import { encryptPasswordGm } from '../crypto-gm.mjs';
 import proxyManager from '../proxy/manager.mjs';
@@ -33,13 +34,19 @@ function genRandomPassword(len = 16) {
   const digits = '23456789';
   const special = '!@#$%^&*()-_=+[]{}';
   const all = upper + lower + digits + special;
-  const pick = (chars) => chars[Math.floor(Math.random() * chars.length)];
+  // CSPRNG：crypto.randomInt 确保不可预测
+  const pick = (chars) => chars[crypto.randomInt(chars.length)];
 
   // 保证每种字符至少一个
   let p = pick(upper) + pick(lower) + pick(digits) + pick(special);
-  for (let i = p.length; i < len; i += 1) p += pick(all);
-  // 打乱顺序
-  return p.split('').sort(() => Math.random() - 0.5).join('');
+  // Fisher-Yates + CSPRNG 打乱
+  const arr = p.split('');
+  for (let i = 0; i < len; i += 1) arr.push(all[crypto.randomInt(all.length)]);
+  for (let i = arr.length - 1; i > 0; i -= 1) {
+    const j = crypto.randomInt(i + 1);
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr.slice(0, len).join('');
 }
 
 /** 生成对外临时账号：proxy_ + 短随机 */
@@ -66,7 +73,8 @@ async function findFreePort(base) {
 /** 从数据库行中取出代理连接（脱敏密码） */
 function serializeProxy(row) {
   if (!row) return null;
-  const { proxy_password: _pw, ...rest } = row;
+  // 脱敏：不暴露 proxy_password 明文（has_password 标记）与内部 real_connection_id（M6）
+  const { proxy_password: _pw, real_connection_id: _rcid, ...rest } = row;
   let allowedIps = rest.allowed_ips;
   if (typeof allowedIps === 'string') {
     try { allowedIps = JSON.parse(allowedIps); } catch { allowedIps = null; }
@@ -121,7 +129,7 @@ router.post('/connections', async (req, res, next) => {
       name, db_type = 'postgresql', real_connection_id,
       audit_mode = 'record', access_mode = 'writable', max_connections = 100,
       allowed_ips, proxy_port_base = DEFAULT_PORT_BASE,
-      expires_at, // 必填，ISO 时间
+      allow_blind = false, expires_at, // 必填，ISO 时间
     } = req.body || {};
 
     if (!name || !real_connection_id || !expires_at) {
@@ -163,11 +171,11 @@ router.post('/connections', async (req, res, next) => {
       `INSERT INTO proxy_connections
         (id, name, db_type, real_connection_id, proxy_port, proxy_username,
          proxy_password, audit_mode, access_mode, max_connections, allowed_ips, proxy_port_base,
-         expires_at, status, created_by)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,'active',$14)
+         allow_blind, expires_at, status, created_by)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,'active',$15)
        RETURNING *`,
       [id, name, db_type, real_connection_id, port, username, encryptedPassword,
-       audit_mode, access_mode, maxConns, allowedIpsJson, base, expires.toISOString(),
+       audit_mode, access_mode, maxConns, allowedIpsJson, base, !!allow_blind, expires.toISOString(),
        req.user?.id || req.user?.username || 'unknown']
     );
 
@@ -205,7 +213,7 @@ router.put('/connections/:id', async (req, res, next) => {
     );
     if (!exist.length) return res.status(404).json({ error: '代理连接不存在' });
 
-    const { name, audit_mode, access_mode, max_connections, allowed_ips, expires_at } = req.body || {};
+    const { name, audit_mode, access_mode, allow_blind, max_connections, allowed_ips, expires_at } = req.body || {};
     const sets = [];
     const params = [];
 
@@ -221,6 +229,9 @@ router.put('/connections/:id', async (req, res, next) => {
         return res.status(400).json({ error: 'access_mode 必须为 readonly 或 writable' });
       }
       params.push(access_mode); sets.push(`access_mode = $${params.length}`);
+    }
+    if (allow_blind !== undefined) {
+      params.push(!!allow_blind); sets.push(`allow_blind = $${params.length}`);
     }
     if (max_connections !== undefined) {
       const m = Math.min(100, Math.max(1, parseInt(max_connections, 10) || 100));

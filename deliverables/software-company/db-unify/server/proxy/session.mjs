@@ -18,6 +18,35 @@ import { classifySql, persistAudit } from './audit.mjs';
 import { decryptPasswordGm } from '../crypto-gm.mjs';
 import { decryptPassword } from '../crypto.mjs';
 
+/** IPv4 字符串 → 无符号 32 位整数 */
+function ipToInt(ip) {
+  const parts = String(ip).split('.');
+  if (parts.length !== 4) return null;
+  let n = 0;
+  for (const p of parts) {
+    const v = Number(p);
+    if (!Number.isInteger(v) || v < 0 || v > 255) return null;
+    n = (n << 8) | v;
+  }
+  return n >>> 0;
+}
+
+/** 判断 clientIp 是否在单个白名单条目（IP 或 CIDR）范围内 */
+function ipInRange(clientIp, entry) {
+  if (typeof entry !== 'string' || !clientIp) return false;
+  const cleanEntry = entry.trim();
+  if (cleanEntry.includes('/')) {
+    const [net, prefixStr] = cleanEntry.split('/');
+    const prefix = Number(prefixStr);
+    const c = ipToInt(clientIp);
+    const n = ipToInt(net);
+    if (c === null || n === null || !Number.isInteger(prefix) || prefix < 0 || prefix > 32) return false;
+    const mask = prefix === 0 ? 0 : (0xffffffff << (32 - prefix)) >>> 0;
+    return (c & mask) === (n & mask);
+  }
+  return ipToInt(clientIp) === ipToInt(cleanEntry);
+}
+
 export class ProxySession {
   /**
    * @param {net.Socket} clientSocket
@@ -38,6 +67,20 @@ export class ProxySession {
     // 根据 db_type 选择协议适配器
     this.adapter = getAdapter(proxyConn.db_type, this);
 
+    // DM/Oracle/SQLServer：服务器先发握手的协议，客户端不会先发数据触发 handleAuth。
+    // 连接建立时立即执行 fail-closed 检查（不允许盲放行则直接拒绝）。
+    if (proxyConn.db_type && ['dm', 'oracle', 'sqlserver'].includes(proxyConn.db_type)) {
+      const r = this.adapter.handleAuth();
+      if (r && r.status === 'error') {
+        this.sendErrorAndClose(r.errorMessage || '该数据库类型暂不支持代理认证');
+        return;
+      }
+      if (r && r.status === 'auth-ok') {
+        this.connectReal();
+        return;
+      }
+    }
+
     this.client.on('data', (c) => this.onClientData(c));
     this.client.on('error', (e) => this.close(`client error: ${e.message}`));
     this.client.on('close', () => this.close('client closed'));
@@ -52,12 +95,13 @@ export class ProxySession {
     if (new Date(p.expires_at).getTime() < Date.now()) {
       return { ok: false, reason: '代理连接已过期' };
     }
-    // IP 白名单
+    // IP 白名单（支持单 IP 与 CIDR 网段）
     const ips = p.allowed_ips;
     if (Array.isArray(ips) && ips.length && this.clientIp) {
-      const ip = this.clientIp.replace(/^::ffff:/, '');
-      if (!ips.some((a) => a === ip || (typeof a === 'string' && a.startsWith(`${ip}/`)))) {
-        return { ok: false, reason: `来源 IP 不在白名单: ${ip}` };
+      const clientIp = this.clientIp.replace(/^::ffff:/, '');
+      const inWhitelist = ips.some((entry) => ipInRange(clientIp, entry));
+      if (!inWhitelist) {
+        return { ok: false, reason: `来源 IP 不在白名单: ${clientIp}` };
       }
     }
     return { ok: true };

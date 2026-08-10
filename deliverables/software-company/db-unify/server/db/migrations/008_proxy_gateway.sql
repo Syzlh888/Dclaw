@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS proxy_connections (
   proxy_port_base    INTEGER      DEFAULT 35000,      -- 端口段起始（可配置）
   expires_at         TIMESTAMPTZ  NOT NULL,           -- 到期时间
   status             VARCHAR(16)  NOT NULL DEFAULT 'active', -- active|expired|revoked
+  allow_blind        BOOLEAN      NOT NULL DEFAULT FALSE,     -- 协议未逆向类型(dm/oracle/sqlserver)是否允许盲转发（自担风险）
   created_by         VARCHAR(64),
   created_at         TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
   revoked_at         TIMESTAMPTZ,

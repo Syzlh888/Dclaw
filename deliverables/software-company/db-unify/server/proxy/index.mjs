@@ -56,6 +56,7 @@ async function loadActiveProxies() {
       proxy_password: r.proxy_password,
       audit_mode: r.audit_mode,
       access_mode: r.access_mode,
+      allow_blind: !!r.allow_blind,
       max_connections: r.max_connections,
       allowed_ips: allowedIps,
       proxy_port_base: r.proxy_port_base,

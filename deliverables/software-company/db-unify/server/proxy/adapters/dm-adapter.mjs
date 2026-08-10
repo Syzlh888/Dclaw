@@ -46,11 +46,23 @@ class DmAdapter {
   }
 
   /**
-   * DM 认证无法解析 → 直接放行（记录为 unknown）。
-   * 返回 auth-ok，不消耗任何字节（后续全部盲转发）。
+   * DM 认证无法解析 → fail-closed（默认拒绝）。
+   *
+   * 安全考量：DM/Oracle/SQLServer 协议未公开，无法在代理层校验临时账号/密码/有效期/IP，
+   * 若盲放行则任意能连到该端口的人可直接以真实库内部账号访问（C1 严重漏洞）。
+   * 因此默认拒绝所有连接，仅当数据库连接显式标记 allow_blind=true 时才放行（管理员自担风险）。
    */
   handleAuth() {
     const s = this.session;
+    // 若关联的真实连接未显式允许盲转发，则拒绝
+    if (!s.proxy?.allow_blind) {
+      return { status: 'error', errorMessage: '该数据库类型暂不支持代理认证（协议未逆向），已被安全拒绝。请联系管理员在真实连接上开启「允许盲转发」以明确承担风险。' };
+    }
+    // 仍执行基础校验（状态/有效期/IP 白名单）
+    const v = s.validate();
+    if (!v.ok) {
+      return { status: 'error', errorMessage: v.reason };
+    }
     s.dmBlind = true; // 标记盲转发
     return { status: 'auth-ok' };
   }
