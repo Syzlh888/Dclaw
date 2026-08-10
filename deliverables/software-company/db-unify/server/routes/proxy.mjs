@@ -285,6 +285,21 @@ router.post('/connections/:id/revoke', async (req, res, next) => {
 });
 
 /**
+ * DELETE /api/proxy/connections/:id
+ * 彻底删除代理连接记录（连带其审计日志），仅用于清理脏数据/已撤销记录。
+ */
+router.delete('/connections/:id', async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const check = await getPool().query('SELECT id FROM proxy_connections WHERE id = $1', [id]);
+    if (!check.rows.length) return res.status(404).json({ error: '代理连接不存在' });
+    await getPool().query('DELETE FROM proxy_audit_logs WHERE proxy_connection_id = $1', [id]);
+    await getPool().query('DELETE FROM proxy_connections WHERE id = $1', [id]);
+    res.json({ success: true, deleted: id });
+  } catch (e) { next(e); }
+});
+
+/**
  * GET /api/proxy/connections/:id/audit
  * 该代理连接的审计记录
  */
