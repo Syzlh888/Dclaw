@@ -35,7 +35,7 @@ import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 
 const SCALE_STEPS = [0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.35, 1.5];
 
-type NavigableView = 'sql-editor' | 'server-resource' | 'comprehensive-query' | 'data-sync';
+type NavigableView = 'sql-editor' | 'server-resource' | 'comprehensive-query' | 'data-sync' | 'db-proxy';
 
 interface Props {
   mainView?: string;
@@ -108,6 +108,7 @@ const AppHeader: React.FC<Props> = ({ mainView, onNavigate, onToggleAI }) => {
           { id: 'sql-editor' as const, label: 'SQL编辑器', icon: <CodeIcon sx={{ fontSize: 16 }} /> },
           { id: 'server-resource' as const, label: '服务器资源管理', icon: <LanIcon sx={{ fontSize: 16 }} /> },
           { id: 'data-sync' as const, label: '数据同步', icon: <SyncAltIcon sx={{ fontSize: 16 }} /> },
+          { id: 'db-proxy' as const, label: '数据库代理', icon: <StorageIcon sx={{ fontSize: 16 }} /> },
         ] as const).map((tab) => {
           const active = mainView === tab.id || (mainView === 'comprehensive-query' && tab.id === 'server-resource');
           return (

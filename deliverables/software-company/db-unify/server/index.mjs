@@ -59,6 +59,7 @@ import syncTasksRouter from './routes/sync-tasks.mjs';
 import syncTableMappingsRouter from './routes/sync-table-mappings.mjs';
 import syncExecuteRouter from './routes/sync-execute.mjs';
 import syncSchedulerRouter from './routes/sync-scheduler.mjs';
+import proxyRouter from './routes/proxy.mjs';
 // v1.6 定时轮询调度器
 import syncScheduler from './sync/scheduler.mjs';
 
@@ -248,6 +249,9 @@ app.use('/api/sync-tasks', authMiddleware, syncExecuteRouter);
 app.use('/api/sync-table-mappings', authMiddleware, syncTableMappingsRouter);
 // v1.6 数据同步：定时轮询调度 API
 app.use('/api/sync-scheduler', authMiddleware, syncSchedulerRouter);
+
+// 数据库代理网关（阶段1：管理 API；阶段2+ 由独立进程 server/proxy/index.mjs 承载对外监听）
+app.use('/api/proxy', authMiddleware, proxyRouter);
 
 
 // ========= 生产环境 SPA 回退 =========
