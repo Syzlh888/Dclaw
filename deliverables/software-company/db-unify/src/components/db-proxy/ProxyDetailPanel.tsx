@@ -19,10 +19,16 @@ interface Props {
   onRevoke: (id: string) => void;
 }
 
-const Row = ({ label, value }: { label: string; value: React.ReactNode }) => (
-  <Box sx={{ py: 0.5 }}>
-    <Typography sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>{label}</Typography>
-    <Typography sx={{ color: 'text.primary', fontSize: '0.8rem' }}>{value || '—'}</Typography>
+const Row = ({
+  label, value, span = 1,
+}: { label: string; value: React.ReactNode; span?: 1 | 2 }) => (
+  <Box sx={{ gridColumn: span === 2 ? 'span 2' : 'auto', minWidth: 0 }}>
+    <Typography sx={{ color: 'text.secondary', fontSize: '0.68rem', fontWeight: 600, lineHeight: 1.2 }}>
+      {label}
+    </Typography>
+    <Box sx={{ color: 'text.primary', fontSize: '0.85rem', mt: 0.15, lineHeight: 1.25, wordBreak: 'break-all' }}>
+      {value || '—'}
+    </Box>
   </Box>
 );
 
@@ -83,49 +89,55 @@ const ProxyDetailPanel: React.FC<Props> = ({ connection, onEdit, onRevoke }) => 
 
       <Divider sx={{ mb: 1, borderColor: 'divider' }} />
 
-      <Row label="对外端口" value={
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-          {connection.proxy_port}
-          <Tooltip title="复制"><IconButton size="small" onClick={() => copy(String(connection.proxy_port))} sx={{ p: 0.2 }}><ContentCopyIcon sx={{ fontSize: 11, color: 'text.disabled' }} /></IconButton></Tooltip>
-        </Box>
-      } />
-      <Row label="临时账号" value={
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-          {connection.proxy_username}
-          <Tooltip title="复制"><IconButton size="small" onClick={() => copy(connection.proxy_username)} sx={{ p: 0.2 }}><ContentCopyIcon sx={{ fontSize: 11, color: 'text.disabled' }} /></IconButton></Tooltip>
-        </Box>
-      } />
-      <Row label="数据库类型" value={connection.db_type} />
-      <Row label="审计模式" value={connection.audit_mode === 'intercept' ? '记录并拦截' : '仅记录'} />
-      <Row label="最大并发" value={connection.max_connections} />
-      <Row label="到期时间" value={connection.expires_at ? timeToLocal(connection.expires_at) : '—'} />
-      <Row label="创建人" value={connection.created_by} />
-      <Row label="创建时间" value={connection.created_at ? timeToLocal(connection.created_at) : '—'} />
-      {connection.last_connected_at && <Row label="最近连接" value={timeToLocal(connection.last_connected_at)} />}
-
-      <Row label="来源IP白名单" value={
-        <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 0.5 }}>
-          {editIps ? (
-            <IpWhitelistEditor value={draftIps} onChange={setDraftIps} label="编辑白名单（回车/逗号添加，删除直接点 chip 的 ×）" />
-          ) : (
-            <>
-              {connection.allowed_ips?.length
-                ? connection.allowed_ips.map((ip) => (
-                    <Chip key={ip} size="small" label={ip} sx={{ height: 18, fontSize: '0.62rem', bgcolor: 'action.hover', color: 'text.primary' }} />
-                  ))
-                : <Typography sx={{ color: 'text.disabled', fontSize: '0.7rem' }}>不限制</Typography>}
-            </>
-          )}
-          {!editIps ? (
-            <Tooltip title="编辑白名单"><IconButton size="small" onClick={startEditIps} sx={{ p: 0.2 }}><EditIcon sx={{ fontSize: 12, color: 'text.disabled' }} /></IconButton></Tooltip>
-          ) : (
-            <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5 }}>
-              <Button size="small" variant="contained" onClick={saveIps} sx={{ textTransform: 'none', fontSize: '0.7rem' }}>保存</Button>
-              <Button size="small" variant="text" onClick={() => setEditIps(false)} sx={{ textTransform: 'none', fontSize: '0.7rem', color: 'text.secondary' }}>取消</Button>
-            </Box>
-          )}
-        </Box>
-      } />
+      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', columnGap: 2, rowGap: 0.75, mb: 1 }}>
+        <Row label="对外端口" value={
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            {connection.proxy_port}
+            <Tooltip title="复制"><IconButton size="small" onClick={() => copy(String(connection.proxy_port))} sx={{ p: 0.2 }}><ContentCopyIcon sx={{ fontSize: 11, color: 'text.disabled' }} /></IconButton></Tooltip>
+          </Box>
+        } />
+        <Row label="临时账号" value={
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            {connection.proxy_username}
+            <Tooltip title="复制"><IconButton size="small" onClick={() => copy(connection.proxy_username)} sx={{ p: 0.2 }}><ContentCopyIcon sx={{ fontSize: 11, color: 'text.disabled' }} /></IconButton></Tooltip>
+          </Box>
+        } />
+        <Row label="数据库类型" value={connection.db_type} />
+        <Row label="审计模式" value={connection.audit_mode === 'intercept' ? '记录并拦截' : '仅记录'} />
+        <Row label="最大并发" value={connection.max_connections} />
+        <Row label="到期时间" value={connection.expires_at ? timeToLocal(connection.expires_at) : '—'} />
+        <Row label="创建人" value={connection.created_by} />
+        <Row label="创建时间" value={connection.created_at ? timeToLocal(connection.created_at) : '—'} />
+        {connection.last_connected_at && (
+          <>
+            <Row label="最近连接" value={timeToLocal(connection.last_connected_at)} />
+            <Box />
+          </>
+        )}
+        <Row label="来源IP白名单" span={2} value={
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', flexWrap: 'wrap', gap: 0.5 }}>
+            {editIps ? (
+              <IpWhitelistEditor value={draftIps} onChange={setDraftIps} label="编辑白名单（回车/逗号添加，删除直接点 chip 的 ×）" />
+            ) : (
+              <>
+                {connection.allowed_ips?.length
+                  ? connection.allowed_ips.map((ip) => (
+                      <Chip key={ip} size="small" label={ip} sx={{ height: 18, fontSize: '0.62rem', bgcolor: 'action.hover', color: 'text.primary' }} />
+                    ))
+                  : <Typography sx={{ color: 'text.disabled', fontSize: '0.7rem' }}>不限制</Typography>}
+              </>
+            )}
+            {!editIps ? (
+              <Tooltip title="编辑白名单"><IconButton size="small" onClick={startEditIps} sx={{ p: 0.2 }}><EditIcon sx={{ fontSize: 12, color: 'text.disabled' }} /></IconButton></Tooltip>
+            ) : (
+              <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5 }}>
+                <Button size="small" variant="contained" onClick={saveIps} sx={{ textTransform: 'none', fontSize: '0.7rem' }}>保存</Button>
+                <Button size="small" variant="text" onClick={() => setEditIps(false)} sx={{ textTransform: 'none', fontSize: '0.7rem', color: 'text.secondary' }}>取消</Button>
+              </Box>
+            )}
+          </Box>
+        } />
+      </Box>
 
       <Divider sx={{ my: 1.5, borderColor: 'divider' }} />
 

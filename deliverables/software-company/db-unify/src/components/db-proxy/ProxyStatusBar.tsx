@@ -22,12 +22,13 @@ const ProxyStatusBar: React.FC = () => {
       sx={{
         display: 'flex',
         alignItems: 'center',
-        gap: 1.5,
+        gap: 1.25,
         px: 1.5,
-        py: 0.75,
+        py: 0.5,
         bgcolor: 'background.paper',
         borderBottom: '1px solid',
         borderColor: 'divider',
+        minHeight: 28,
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>

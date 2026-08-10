@@ -8,19 +8,30 @@ import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
 import DnsIcon from '@mui/icons-material/Dns';
 import { useProxyStore } from '../../stores/proxyStore';
+import type { ProxyStatus } from '../../types/proxy';
 
 interface Props {
   onCreate: () => void;
   onEdit: (id: string) => void;
 }
 
+const STATUS_COLOR: Record<ProxyStatus, string> = {
+  active: 'success.main',
+  revoked: 'error.main',
+  expired: 'warning.main',
+};
+
+const STATUS_TEXT: Record<ProxyStatus, string> = {
+  active: '运行中',
+  revoked: '已撤销',
+  expired: '已过期',
+};
+
 const ProxyListPanel: React.FC<Props> = ({ onCreate, onEdit }) => {
   const { connections, selectedId, selectConnection } = useProxyStore();
   const [searchText, setSearchText] = useState('');
 
   const filtered = connections.filter((c) => c.name.toLowerCase().includes(searchText.toLowerCase()));
-
-  const statusColor = (s: string) => (s === 'active' ? 'success.main' : s === 'revoked' ? 'error.main' : 'warning.main');
 
   return (
     <Box sx={{ width: 260, display: 'flex', flexDirection: 'column', borderRight: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
@@ -74,14 +85,23 @@ const ProxyListPanel: React.FC<Props> = ({ onCreate, onEdit }) => {
               disablePadding
               sx={{ bgcolor: selectedId === c.id ? 'action.selected' : 'transparent' }}
             >
-              <ListItemButton onClick={() => selectConnection(c.id)} sx={{ py: 0.5, px: 1 }}>
-                <DnsIcon sx={{ fontSize: 14, color: 'primary.main', mr: 0.75 }} />
+              <ListItemButton
+                onClick={() => selectConnection(c.id)}
+                sx={{ py: 0.15, px: 1, minHeight: 22, lineHeight: 1.2 }}
+              >
+                <DnsIcon sx={{ fontSize: 13, color: 'primary.main', mr: 0.75 }} />
                 <ListItemText
+                  disableTypography
                   primary={
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <Typography sx={{ fontSize: '0.75rem', color: 'text.primary' }}>{c.name}</Typography>
-                      <Chip size="small" label={c.proxy_port} sx={{ height: 16, fontSize: '0.6rem', bgcolor: 'action.disabledBackground', color: 'text.secondary' }} />
-                      <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: statusColor(c.status) }} />
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, lineHeight: 1.2 }}>
+                      <Typography sx={{ fontSize: '0.75rem', color: 'text.primary', lineHeight: 1.2 }}>{c.name}</Typography>
+                      <Chip size="small" label={c.proxy_port} sx={{ height: 15, fontSize: '0.6rem', bgcolor: 'action.disabledBackground', color: 'text.secondary' }} />
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.4, ml: 'auto' }}>
+                        <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: STATUS_COLOR[c.status] }} />
+                        <Typography sx={{ fontSize: '0.6rem', color: STATUS_COLOR[c.status], lineHeight: 1.2 }}>
+                          {STATUS_TEXT[c.status]}
+                        </Typography>
+                      </Box>
                     </Box>
                   }
                 />
