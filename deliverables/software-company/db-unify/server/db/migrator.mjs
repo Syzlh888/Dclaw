@@ -16,9 +16,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { getPool, withTransaction, closePool } from './pool.mjs';
 
-const __filename = typeof import.meta?.url === 'string'
-  ? fileURLToPath(import.meta.url)
-  : (() => { try { return __filename; } catch { return '/app/server/db'; } })() || '/app/server/db';
+// ESM 下 import.meta.url 是标准获取当前文件 URL 的方法，无需 __filename 后备
+const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const MIGRATIONS_DIR = path.join(__dirname, 'migrations');
 

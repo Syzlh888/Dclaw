@@ -135,7 +135,6 @@ export default function DbInstanceTab({ serverId, instances, ports, serverIps = 
       return;
     }
     const data: any = { ...form, credentials: validCreds };
-    console.log('[sync] handleSave data:', { dbType: data.dbType, dbName: data.dbName, port: data.port, internalIp: data.internalIp, credsCount: validCreds.length });
     setSaveError('');
     
     if (editItem) {
@@ -195,65 +194,49 @@ export default function DbInstanceTab({ serverId, instances, ports, serverIps = 
     // 先清理状态，防止重复调用
     setPendingSaveData(null);
     setParentSelectorOpen(false);
-    
+
     try {
-      console.log('[sync] 开始新增数据库实例:', saveData.dbName, 'serverId:', serverId);
-      console.log('[sync] 请求体:', JSON.stringify({
-        dbType: saveData.dbType,
-        dbName: saveData.dbName,
-        port: saveData.port,
-        internalIp: saveData.internalIp,
-        externalIp: saveData.externalIp,
-        schema: saveData.schema,
-        notes: saveData.notes,
-        credentials: saveData.credentials?.map((c: any) => ({ username: c.username, hasPwd: !!c.password, schema: c.schema })),
-      }));
       // 新增数据库实例
       await addDbInstance(serverId, saveData);
-      console.log('[sync] addDbInstance 完成');
-      
+
       // 获取最新实例数据
       const storeState = useServerStore.getState();
       const serverHost = storeState.serverMap[serverId];
       const latestDbInstances = storeState.dbInstances[serverId] || [];
-      
-      console.log('[sync] serverHost:', serverHost?.name, 'dbInstances count:', latestDbInstances.length);
-      
+
       if (!serverHost) {
-        console.error('[sync] 未找到 serverHost，serverId:', serverId, 'serverMap keys:', Object.keys(storeState.serverMap));
+        console.error('[sync] 未找到 serverHost，serverId:', serverId);
         return;
       }
       if (latestDbInstances.length === 0) {
         console.error('[sync] dbInstances 为空，serverId:', serverId);
         return;
       }
-      
+
       const newInstance = latestDbInstances[latestDbInstances.length - 1];
-      console.log('[sync] 新实例:', newInstance.dbName, 'credentials:', newInstance.credentials?.length);
-      
+
       // 用 saveData 中的原始明文凭据覆盖脱敏后的凭据，否则 syncDbInstance 会把 ****** 当空密码发给后端导致 "连接参数不完整"
       const instanceWithPlainCreds = {
         ...newInstance,
         credentials: saveData.credentials || newInstance.credentials,
       };
-      
+
       // 同步到连接管理和树节点
       try {
         await syncDbInstance(serverHost, instanceWithPlainCreds, parentNodeId);
-        console.log('[sync] syncDbInstance 完成');
       } catch (syncErr) {
         console.error('[sync] 同步到连接管理失败:', syncErr);
       }
-      
+
       // 新增时不需要同步到端口管理——端口信息已记录在数据库实例中
       // 若再 addPort 会导致后端 checkPortUnique 查出端口已被自身实例占用而报 409
-      
+
       setOpen(false);
     } catch (err: any) {
       const httpStatus = err?.response?.status;
       const errMsg = err?.response?.data?.error || err?.message || '保存失败';
       console.error('[sync] 保存失败:', errMsg, 'HTTP', httpStatus);
-      
+
       // 如果是端口冲突(409)，尝试查找已有同名实例并直接同步连接（可能是上次创建成功但同步失败）
       if (httpStatus === 409 && saveData?.dbName) {
         try {
@@ -262,13 +245,11 @@ export default function DbInstanceTab({ serverId, instances, ports, serverIps = 
           const conflicted = (retryStore.dbInstances[serverId] || [])
             .find(d => d.port === saveData.port || d.dbName === saveData.dbName);
           if (conflicted && retryHost) {
-            console.log('[sync] 端口冲突但找到同名实例，改为直接同步连接:', conflicted.dbName);
             const instanceWithPlainCreds = {
               ...conflicted,
               credentials: saveData.credentials || conflicted.credentials,
             };
             await syncDbInstance(retryHost, instanceWithPlainCreds, parentNodeId);
-            console.log('[sync] 重试同步完成');
             setOpen(false);
             return; // 成功，跳过错误提示
           }

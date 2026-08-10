@@ -70,13 +70,24 @@ export class ProxySession {
     // DM/Oracle/SQLServer：服务器先发握手的协议，客户端不会先发数据触发 handleAuth。
     // 连接建立时立即执行 fail-closed 检查（不允许盲放行则直接拒绝）。
     if (proxyConn.db_type && ['dm', 'oracle', 'sqlserver'].includes(proxyConn.db_type)) {
-      const r = this.adapter.handleAuth();
-      if (r && r.status === 'error') {
-        this.sendErrorAndClose(r.errorMessage || '该数据库类型暂不支持代理认证');
-        return;
-      }
-      if (r && r.status === 'auth-ok') {
-        this.connectReal();
+      try {
+        const r = this.adapter.handleAuth();
+        if (r && r.status === 'error') {
+          this.sendErrorAndClose(r.errorMessage || '该数据库类型暂不支持代理认证');
+          return;
+        }
+        if (r && r.status === 'auth-ok') {
+          // connectReal() 是 async；必须在构造函数内捕获异常，
+          // 否则构造器返回后 Promise 失败会变成 unhandledRejection，
+          // 整个会话挂死直到 TCP 超时。
+          this.connectReal().catch((err) => {
+            console.error(`[proxy-session] connectReal failed for ${this.clientIp}:`, err?.message || err);
+            this.sendErrorAndClose(`连接真实数据库失败: ${err?.message || err}`);
+          });
+          return;
+        }
+      } catch (e) {
+        this.sendErrorAndClose(`认证失败: ${e?.message || e}`);
         return;
       }
     }
@@ -117,13 +128,19 @@ export class ProxySession {
     if (this.closed) return;
     this.buf = Buffer.concat([this.buf, chunk]);
 
-    if (this.state === 'startup') {
-      this.handleAuth();
-      return;
-    }
+    try {
+      if (this.state === 'startup') {
+        this.handleAuth();
+        return;
+      }
 
-    if (this.state === 'forwarding' && this.real) {
-      this.forwardClientToReal();
+      if (this.state === 'forwarding' && this.real) {
+        this.forwardClientToReal();
+      }
+    } catch (err) {
+      // 适配器异常不应让进程崩溃
+      console.error(`[proxy-session] onClientData 异常 ${this.clientIp}:`, err.message);
+      this.sendErrorAndClose(`协议处理异常: ${err.message}`);
     }
   }
 
@@ -137,48 +154,72 @@ export class ProxySession {
       return;
     }
     if (r.status === 'auth-ok') {
-      this.connectReal();
+      // connectReal() 是 async；这里同样需要捕获异常防 unhandledRejection
+      this.connectReal().catch((err) => {
+        console.error(`[proxy-session] connectReal failed for ${this.clientIp}:`, err?.message || err);
+        this.sendErrorAndClose(`连接真实数据库失败: ${err?.message || err}`);
+      });
     }
   }
 
   // ---------- 连真实库 ----------
   async connectReal() {
     const r = this.proxy.real;
+    let socket;
+    let leftover;
     try {
-      const { socket, leftover } = await this.adapter.connectReal(r);
-      this.real = socket;
-      this.state = 'forwarding';
-
-      // 认证成功后发给客户端（adapter 返回对应协议的成功包）
-      const successBuf = this.adapter.authSuccess();
-      if (successBuf && successBuf.length) this.client.write(successBuf);
-
-      // 更新 last_connected_at
-      getPool().query(
-        'UPDATE proxy_connections SET last_connected_at = NOW() WHERE id = $1',
-        [this.proxy.id]
-      ).catch(() => {});
-
-      // 记录会话开始（无 SQL）
-      persistAudit({
-        proxyConnectionId: this.proxy.id,
-        proxyUsername: this.proxy.proxy_username,
-        dbType: this.proxy.db_type,
-        realConnectionId: this.proxy.real_connection_id,
-        clientIp: this.clientIp,
-        sessionStart: this.sessionStart,
-      });
-
-      this.real.on('data', (c) => {
-        if (!this.closed) this.client.write(c);
-      });
-      this.real.on('error', (e) => this.close(`real error: ${e.message}`));
-      this.real.on('close', () => this.close('real closed'));
-
-      // 残余数据（握手后剩余，若有则转发）
-      if (leftover && leftover.length) this.real.write(leftover);
+      const result = await this.adapter.connectReal(r);
+      socket = result.socket;
+      leftover = result.leftover;
     } catch (err) {
       this.sendErrorAndClose(`连接真实数据库失败: ${err.message}`);
+      return;
+    }
+    // 竞态保护：await 期间客户端可能已断开
+    if (this.closed) {
+      try { socket.destroy(); } catch { /* ignore */ }
+      return;
+    }
+
+    this.real = socket;
+    this.state = 'forwarding';
+
+    // 认证成功后发给客户端（adapter 返回对应协议的成功包）
+    try {
+      const successBuf = this.adapter.authSuccess();
+      if (successBuf && successBuf.length) this.client.write(successBuf);
+    } catch (e) {
+      this.close(`client write failed after auth: ${e.message}`);
+      return;
+    }
+
+    // 更新 last_connected_at
+    getPool().query(
+      'UPDATE proxy_connections SET last_connected_at = NOW() WHERE id = $1',
+      [this.proxy.id]
+    ).catch(() => {});
+
+    // 记录会话开始（无 SQL）
+    persistAudit({
+      proxyConnectionId: this.proxy.id,
+      proxyUsername: this.proxy.proxy_username,
+      dbType: this.proxy.db_type,
+      realConnectionId: this.proxy.real_connection_id,
+      clientIp: this.clientIp,
+      sessionStart: this.sessionStart,
+    });
+
+    this.real.on('data', (c) => {
+      if (this.closed) return;
+      try { this.client.write(c); } catch { /* socket closed */ }
+    });
+    this.real.on('end', () => this.close('real ended'));
+    this.real.on('error', (e) => this.close(`real error: ${e.message}`));
+    this.real.on('close', () => this.close('real closed'));
+
+    // 残余数据（握手后剩余，若有则转发）
+    if (leftover && leftover.length) {
+      try { this.real.write(leftover); } catch { /* ignore */ }
     }
   }
 

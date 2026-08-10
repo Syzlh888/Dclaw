@@ -1,7 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, Autocomplete, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Snackbar, TextField, Typography } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import SyncAltIcon from '@mui/icons-material/SyncAlt';
+import { Alert, Autocomplete, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Snackbar, TextField, Typography } from '@mui/material';
 import ProjectTreePanel from './ProjectTreePanel';
 import TaskListPanel from './TaskListPanel';
 import MappingListPanel from './MappingListPanel';
@@ -14,6 +12,7 @@ import { useSyncStore } from '../../stores/syncStore';
 import { useConnectionStore } from '../../stores/connectionStore';
 import { syncService } from '../../services/syncService';
 import { apiFetch } from '../../services/apiClient';
+import { useShallow } from 'zustand/react/shallow';
 import type { SyncTableMapping } from '../../types/sync';
 
 interface Props { open?: boolean; onClose?: () => void; standalone?: boolean }
@@ -28,7 +27,32 @@ const SyncPage: React.FC<Props> = ({ open, onClose, standalone }) => {
 };
 
 const SyncContent: React.FC<{ open?: boolean; onClose?: () => void; standalone?: boolean }> = ({ open, onClose, standalone }) => {
-  const store = useSyncStore();
+  // 使用 useShallow：store 变化时只有这些字段变化才 re-render；
+  // 否则 SSE 进度每帧更新 runProgress 都会重渲整个页面
+  const store = useSyncStore(
+    useShallow((s) => ({
+      projects: s.projects,
+      tasks: s.tasks,
+      mappings: s.mappings,
+      stats: s.stats,
+      selectedProjectId: s.selectedProjectId,
+      selectedTaskId: s.selectedTaskId,
+      selectedMappingId: s.selectedMappingId,
+      selection: s.selection,
+      loading: s.loading,
+      error: s.error,
+      runningTaskId: s.runningTaskId,
+      createProject: s.createProject,
+      createTask: s.createTask,
+      selectProject: s.selectProject,
+      selectTask: s.selectTask,
+      selectMapping: s.selectMapping,
+      clearError: s.clearError,
+      updateMapping: s.updateMapping,
+      runTaskNow: s.runTaskNow,
+      loadTasks: s.loadTasks,
+    })),
+  );
   const [form, setForm] = useState<FormKind>(null);
   const [values, setValues] = useState<Record<string, string>>({});
   const [editingMappingId, setEditingMappingId] = useState<string | null>(null);
@@ -364,11 +388,15 @@ const SyncContent: React.FC<{ open?: boolean; onClose?: () => void; standalone?:
     try { await store.updateMapping(editingMappingId, { columnMappings }); setEditingMappingId(null); }
     catch (error) { useSyncStore.setState({ error: error instanceof Error ? error.message : '保存字段映射失败' }); }
   }, [editingMappingId, store]);
-  const handleRunTask = useCallback((taskId: string) => { void store.runTaskNow(taskId); }, [store]);
+  const handleRunTask = useCallback((taskId: string) => { void store.runTaskNow(taskId); }, [store.runTaskNow]);
   const handleToggleEnabled = useCallback(async (taskId: string, enabled: boolean) => {
-    try { await syncService.updateTask(taskId, { enabled }); if (store.selectedProjectId) await store.loadTasks(store.selectedProjectId); }
-    catch (error) { useSyncStore.setState({ error: error instanceof Error ? error.message : '切换自动调度失败' }); }
-  }, [store]);
+    try {
+      await syncService.updateTask(taskId, { enabled });
+      if (store.selectedProjectId) await store.loadTasks(store.selectedProjectId);
+    } catch (error) {
+      useSyncStore.setState({ error: error instanceof Error ? error.message : '切换自动调度失败' });
+    }
+  }, [store.selectedProjectId, store.loadTasks]);
 
   const header = null;  // 整行 toolbar 已隐藏（用户要求）
 

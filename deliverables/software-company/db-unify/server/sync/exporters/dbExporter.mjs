@@ -9,6 +9,7 @@ import {
 } from '../transformer.mjs';
 import { detectDbType, streamBatch } from '../batchReader.mjs';
 import { executeQuery } from '../../routes/connections.mjs';
+import { ExportCancelledError } from '../exportEngine.mjs';
 
 function qualifiedTable(schema, table, dbType) {
   const quote = normalizeDbType(dbType) === 'mysql' ? '`' : '"';
@@ -146,7 +147,7 @@ export async function exportRowsToDatabase({ sourceConnection, source, targetCon
     customDriverId: source.customDriverId,
     dbType: effectiveSourceType,
     onBatch: async (rows) => {
-      if (isCancelled()) throw new Error('导出已取消');
+      if (isCancelled()) throw new ExportCancelledError();
       readRows += rows.length;
       await run(targetConnection, target.driver || 'postgresql', 'BEGIN', target.customDriverId);
       try {

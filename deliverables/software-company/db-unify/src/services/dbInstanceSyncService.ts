@@ -85,20 +85,9 @@ export async function syncDbInstance(
       host, port, database,
       dbInstance: dbInstance.dbName,
       server: serverHost.name,
-      dbInstanceInternalIp: dbInstance.internalIp,
-      serverInternalIp: serverHost.internalIp,
-      serverExternalIp: serverHost.externalIp,
-      serverPublicIp: serverHost.publicIp,
     });
     return;
   }
-
-  // 记录实际使用的连接参数
-  console.log('[sync] 准备创建连接:', {
-    dbInstance: dbInstance.dbName,
-    host, port, database, driver,
-    credentialsCount: dbInstance.credentials?.length || 0,
-  });
 
   // 获取现有连接映射，便于更新
   const existingConnMap = new Map<string, DbConnection>();
@@ -128,7 +117,6 @@ export async function syncDbInstance(
   }
   for (let i = 0; i < dbInstance.credentials.length; i++) {
     const cred = dbInstance.credentials[i];
-    console.log(`[sync] 凭据[${i}]:`, { username: cred.username, hasPassword: !!cred.password, passwordLen: cred.password?.length, schema: cred.schema });
     if (!cred.username) {
       console.warn(`[sync] 跳过凭据[${i}]：没有用户名`);
       continue; // 跳过没有用户名的凭据
@@ -136,7 +124,6 @@ export async function syncDbInstance(
 
     const connName = generateConnectionName(dbInstance, cred, i);
     const password = cred.password === '******' ? undefined : cred.password;
-    console.log(`[sync] 凭据[${i}] 构建参数:`, { connName, username: cred.username, hasPassword: !!password, schema: cred.schema });
 
     const connData: Omit<DbConnection, 'id'> = {
       name: connName,
@@ -152,7 +139,6 @@ export async function syncDbInstance(
       dbInstanceId: dbInstance.id,
       credentialIndex: i,
     };
-    console.log(`[sync] 发送 createConnection:`, JSON.stringify({ name: connData.name, driver: connData.driver, host: connData.host, port: connData.port, username: connData.username, password: connData.password ? '(已设置)' : '(空)', database: connData.database, schema: connData.schema }));
 
     let connId: string | undefined;
 

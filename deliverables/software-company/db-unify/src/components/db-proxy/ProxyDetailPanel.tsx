@@ -58,8 +58,14 @@ const ProxyDetailPanel: React.FC<Props> = ({ connection, onEdit, onRevoke }) => 
   };
 
   const saveIps = async () => {
-    await updateConnection(connection.id, { allowed_ips: draftIps });
-    setEditIps(false);
+    try {
+      await updateConnection(connection.id, { allowed_ips: draftIps });
+      setEditIps(false);
+    } catch (e) {
+      window.dispatchEvent(new CustomEvent('dc:notify', {
+        detail: { message: e instanceof Error ? e.message : '保存失败', severity: 'error' as 'error' },
+      }));
+    }
   };
 
   const timeToLocal = (v: string) => (v ? new Date(v).toLocaleString('zh-CN') : '');

@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
 import {
   Box, Button, List, ListItem, ListItemButton, ListItemText, Typography,
-  IconButton, Tooltip, TextField, InputAdornment, Chip,
+  IconButton, TextField, InputAdornment, Chip,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
 import DnsIcon from '@mui/icons-material/Dns';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
 import { useProxyStore } from '../../stores/proxyStore';
 
 interface Props {
@@ -17,7 +15,7 @@ interface Props {
 }
 
 const ProxyListPanel: React.FC<Props> = ({ onCreate, onEdit }) => {
-  const { connections, selectedId, selectConnection, revokeConnection, loadConnections } = useProxyStore();
+  const { connections, selectedId, selectConnection } = useProxyStore();
   const [searchText, setSearchText] = useState('');
 
   const filtered = connections.filter((c) => c.name.toLowerCase().includes(searchText.toLowerCase()));

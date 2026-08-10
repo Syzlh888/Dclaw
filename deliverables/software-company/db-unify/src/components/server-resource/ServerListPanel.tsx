@@ -943,8 +943,6 @@ const ServerListPanel: React.FC<Props> = ({ onAdd, onImport, onAddProject, width
     const apiInstMap = useServerStore.getState().apiInstances;
     const midInstMap = useServerStore.getState().midInstances;
     const connMap = useConnectionStore.getState().connections;
-    const connNames = servers.slice(0, 2).map(s => ({ server: s.name, connNames: Object.values(connMap).filter(c => c.serverId === s.id).map(c => c.name) }));
-    console.log('[Search] connNames sample:', JSON.stringify(connNames));
     const serverMatch = servers.some(s => serverMatches(s, kw, {
       dbInstances: dbInstMap[s.id] || [],
       appInstances: appInstMap[s.id] || [],

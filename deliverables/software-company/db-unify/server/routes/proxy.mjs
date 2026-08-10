@@ -56,16 +56,17 @@ function genProxyUsername() {
 
 /** 从 base 起递增，找第一个未被 proxy_connections 占用的端口 */
 async function findFreePort(base) {
+  const MAX_ATTEMPTS = 10000;
   let port = base;
-  const guard = 0;
-  while (port < MAX_PORT_BASE) {
+  let attempts = 0;
+  while (port < MAX_PORT_BASE && attempts < MAX_ATTEMPTS) {
+    attempts += 1;
     const { rows } = await getPool().query(
       'SELECT 1 FROM proxy_connections WHERE proxy_port = $1 LIMIT 1',
       [port]
     );
     if (rows.length === 0) return port;
     port += 1;
-    if (guard > 10000) break;
   }
   throw new Error('代理端口段已用尽，无法分配端口');
 }
@@ -73,8 +74,8 @@ async function findFreePort(base) {
 /** 从数据库行中取出代理连接（脱敏密码） */
 function serializeProxy(row) {
   if (!row) return null;
-  // 脱敏：不暴露 proxy_password 明文（has_password 标记）与内部 real_connection_id（M6）
-  const { proxy_password: _pw, real_connection_id: _rcid, ...rest } = row;
+  // 脱敏：不暴露 proxy_password 明文（has_password 标记）；real_connection_id 不是敏感字段，保留
+  const { proxy_password: _pw, ...rest } = row;
   let allowedIps = rest.allowed_ips;
   if (typeof allowedIps === 'string') {
     try { allowedIps = JSON.parse(allowedIps); } catch { allowedIps = null; }

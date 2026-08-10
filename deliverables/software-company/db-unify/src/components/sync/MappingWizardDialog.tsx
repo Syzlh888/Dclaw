@@ -52,6 +52,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import { useConnectionStore } from '../../stores/connectionStore';
 import { useSyncStore } from '../../stores/syncStore';
 import { apiFetch } from '../../services/apiClient';
+import { useShallow } from 'zustand/react/shallow';
 import TableMappingEditor from './TableMappingEditor';
 import TreeConnectionSelect from '../common/TreeConnectionSelect';
 import type { CreateSyncMappingPayload, SyncColumnMapping, SyncTableMapping } from '../../types/sync';
@@ -93,7 +94,13 @@ export const MappingWizardDialog: React.FC<Props> = ({
   onCreated,
   onError,
 }) => {
-  const store = useSyncStore();
+  // 使用 useShallow 避免 SSE 进度事件触发整个向导重渲
+  const store = useSyncStore(
+    useShallow((s) => ({
+      createMapping: s.createMapping,
+      createMappings: s.createMappings,
+    })),
+  );
   const connectionsMap = useConnectionStore((s) => s.connections);
   const connections = useMemo(() => Object.values(connectionsMap), [connectionsMap]);
   

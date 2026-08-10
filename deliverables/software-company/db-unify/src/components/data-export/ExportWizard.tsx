@@ -26,6 +26,7 @@ import {
   buildExportConfig,
   useExportStore,
 } from '../../stores/exportStore';
+import { useShallow } from 'zustand/react/shallow';
 import { ExportStepSource } from './ExportStepSource';
 import { ExportStepTarget } from './ExportStepTarget';
 import { ExportStepOptions } from './ExportStepOptions';
@@ -48,7 +49,31 @@ export const ExportWizard: React.FC<ExportWizardProps> = ({
   open: openProp,
   onClose: onCloseProp,
 }) => {
-  const store = useExportStore();
+  // 使用 useShallow：避免 progress 事件触发整个向导重渲（每帧可能多次）
+  const store = useExportStore(
+    useShallow((s) => ({
+      open: s.open,
+      step: s.step,
+      sourceType: s.sourceType,
+      sql: s.sql,
+      selectedTables: s.selectedTables,
+      target: s.target,
+      source: s.source,
+      options: s.options,
+      errorMessage: s.errorMessage,
+      mode: s.mode,
+      result: s.result,
+      progress: s.progress,
+      openWizard: s.openWizard,
+      closeWizard: s.closeWizard,
+      next: s.next,
+      prev: s.prev,
+      startExecution: s.startExecution,
+      handleProgress: s.handleProgress,
+      finishExecution: s.finishExecution,
+      setError: s.setError,
+    })),
+  );
   const abortRef = useRef<AbortController | null>(null);
 
   const open = openProp ?? store.open;
@@ -112,7 +137,7 @@ export const ExportWizard: React.FC<ExportWizardProps> = ({
     store.startExecution('exporting-' + Date.now());
 
     const controller = await executeExportStream(
-      buildExportConfig(store),
+      buildExportConfig(useExportStore.getState()),
       (evt) => {
         store.handleProgress(evt);
         if (evt.event === 'done') {

@@ -81,12 +81,18 @@ class SyncScheduler {
 
       const elapsed = now - lastRunMs;
 
-      if (elapsed >= intervalMs && !this.isRunning(task.id)) {
-        // 异步触发；不 await —— setInterval 不能阻塞
-        this.runTaskScheduled(task).catch((err) => {
-          console.error(`[SyncScheduler] task ${task.id} failed:`, err);
-        });
-      }
+      // 同步加锁（必须同步设置 running=true）—— 防止 setInterval 重叠 tick 重复调度同一任务
+      const t = this.timers.get(task.id) || {};
+      if (elapsed < intervalMs) continue;
+      if (t.running) continue;
+      t.running = true;
+      t.lastRunAt = Date.now();
+      this.timers.set(task.id, t);
+
+      // 异步触发；不 await —— setInterval 不能阻塞
+      this.runTaskScheduled(task).catch((err) => {
+        console.error(`[SyncScheduler] task ${task.id} failed:`, err);
+      });
     }
   }
 

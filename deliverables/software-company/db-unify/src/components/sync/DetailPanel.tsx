@@ -50,6 +50,10 @@ const DetailPanel: React.FC<Props> = ({ onEditColumns, onRunTask }) => {
     try {
       await updateTask(task.id, { enabled: editEnabled, pollIntervalSeconds: Math.max(5, editInterval) } as any);
       setScheduleOpen(false);
+    } catch (err) {
+      window.dispatchEvent(new CustomEvent('dc:notify', {
+        detail: { message: err instanceof Error ? err.message : '保存失败', severity: 'error' as 'error' },
+      }));
     } finally {
       setSavingSchedule(false);
     }
@@ -58,7 +62,15 @@ const DetailPanel: React.FC<Props> = ({ onEditColumns, onRunTask }) => {
   const handleDelete = async () => {
     const name = project?.name || task?.name || (mapping ? `${mapping.source_table} → ${mapping.target_table}` : '');
     if (!name || !window.confirm(`确认删除"${name}"？此操作不可撤销。`)) return;
-    if (project) await deleteProject(project.id); else if (task) await deleteTask(task.id); else if (mapping) await deleteMapping(mapping.id);
+    try {
+      if (project) await deleteProject(project.id);
+      else if (task) await deleteTask(task.id);
+      else if (mapping) await deleteMapping(mapping.id);
+    } catch (err) {
+      window.dispatchEvent(new CustomEvent('dc:notify', {
+        detail: { message: err instanceof Error ? err.message : '删除失败', severity: 'error' as 'error' },
+      }));
+    }
   };
   const actionSx = { minWidth: 78, flexShrink: 0, borderColor: 'divider', color: 'text.secondary', fontSize: 11, '&:hover': { borderColor: 'primary.main', color: 'primary.main' } };
 

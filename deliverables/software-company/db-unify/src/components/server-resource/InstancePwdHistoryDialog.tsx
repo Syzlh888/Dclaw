@@ -33,7 +33,9 @@ const InstancePwdHistoryDialog: React.FC<Props> = ({ open, serverId, fieldName, 
 
   useEffect(() => {
     if (open && serverId && fieldName) {
-      fetchPasswordHistory(serverId, fieldName).then(d => setHistoryItems(d.history || []));
+      fetchPasswordHistory(serverId, fieldName)
+        .then(d => setHistoryItems(d.history || []))
+        .catch((e) => setError(e instanceof Error ? e.message : '加载密码历史失败'));
       setDecryptedItems(null);
       setVerifyPwd('');
       setError('');

@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { Alert, Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControlLabel, IconButton, MenuItem, Select, Switch, TextField, Tooltip, Typography } from '@mui/material';
+import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControlLabel, IconButton, MenuItem, Select, Switch, TextField, Tooltip, Typography } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import UpdateIcon from '@mui/icons-material/Update';
-import CloseIcon from '@mui/icons-material/Close';
 import { useSyncStore } from '../../stores/syncStore';
 
 interface Props {
@@ -41,7 +40,10 @@ const IncrementalDialog: React.FC<{ open: boolean; mapping: any; onClose: () => 
       } as any);
       onClose();
     } catch (e) {
-      // swallow
+      // 失败要给用户反馈；用 dc:notify 走全局 Snackbar
+      window.dispatchEvent(new CustomEvent('dc:notify', {
+        detail: { message: e instanceof Error ? e.message : '保存失败', severity: 'error' as 'error' },
+      }));
     } finally {
       setSaving(false);
     }

@@ -28,6 +28,7 @@ import { useDriverStore } from '../../stores/driverStore';
 import { fetchSchemas } from '../../services/connectionService';
 import { fetchPlatforms, fetchPredbTypes, fetchDistricts, fetchHospitalByConnection } from '../../services/treeService';
 import { fetchAllDbInstances, decryptDbInstanceCredential } from '../../services/serverService';
+import { apiFetch } from '../../services/apiClient';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Close';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -343,8 +344,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
       setSchemaOptions([]);
       setSchemasFetched(false);
       try {
-        const apiClient = await import('../../services/apiClient');
-        const response = await apiClient.apiFetch(`/api/connection/${connection.id}/schemas`, {
+        const response = await apiFetch(`/api/connection/${connection.id}/schemas`, {
           method: 'POST',
         });
         if (response.ok) {
@@ -416,8 +416,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
       setTestResult(null);
       setTestError('');
       try {
-        const apiClient = await import('../../services/apiClient');
-        const resp = await apiClient.apiFetch(`/api/connections/${connection.id}/test`, { method: 'POST' });
+        const resp = await apiFetch(`/api/connections/${connection.id}/test`, { method: 'POST' });
         if (resp.ok) {
           setTestResult('success');
         } else {
@@ -442,7 +441,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
     setTestResult(null);
     setTestError('');
     try {
-      const response = await (await import('../../services/apiClient')).apiFetch('/api/connections/test', {
+      const response = await apiFetch('/api/connections/test', {
         method: 'POST',
         body: JSON.stringify({ driver, host, port, username, password, database, customDriverId }),
       });

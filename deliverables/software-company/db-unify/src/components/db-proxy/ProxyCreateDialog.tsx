@@ -51,20 +51,27 @@ const ProxyCreateDialog: React.FC<Props> = ({ open, onClose, onCreated }) => {
   const handleCreate = async () => {
     if (!name || !realConnectionId) return;
     setLoading(true);
-    const created = await createConnection({
-      name,
-      real_connection_id: realConnectionId,
-      db_type: dbType,
-      audit_mode: auditMode,
-      access_mode: accessMode,
-      max_connections: maxConnections,
-      allowed_ips: allowedIps,
-      expires_at: computeExpiresAt(),
-    });
-    setLoading(false);
-    if (created) {
-      setResult({ username: created.proxy_username, password: created.proxy_password || '', port: created.proxy_port });
-      onCreated(created.proxy_password || '');
+    try {
+      const created = await createConnection({
+        name,
+        real_connection_id: realConnectionId,
+        db_type: dbType,
+        audit_mode: auditMode,
+        access_mode: accessMode,
+        max_connections: maxConnections,
+        allowed_ips: allowedIps,
+        expires_at: computeExpiresAt(),
+      });
+      if (created) {
+        setResult({ username: created.proxy_username, password: created.proxy_password || '', port: created.proxy_port });
+        onCreated(created.proxy_password || '');
+      }
+    } catch (e) {
+      window.dispatchEvent(new CustomEvent('dc:notify', {
+        detail: { message: e instanceof Error ? e.message : '创建失败', severity: 'error' as 'error' },
+      }));
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -136,6 +143,17 @@ const ProxyCreateDialog: React.FC<Props> = ({ open, onClose, onCreated }) => {
             <TextField size="small" label="最大并发" type="number" value={maxConnections} onChange={(e) => setMaxConnections(Number(e.target.value))} />
           )}
         </Box>
+        {durationType === 'custom' && (
+          <TextField
+            fullWidth
+            size="small"
+            label="最大并发"
+            type="number"
+            value={maxConnections}
+            onChange={(e) => setMaxConnections(Number(e.target.value))}
+            sx={{ mb: 1.5 }}
+          />
+        )}
 
         <IpWhitelistEditor value={allowedIps} onChange={setAllowedIps} label="来源 IP 白名单（多 IP/网段，回车或逗号添加，留空不限制）" />
       </DialogContent>

@@ -8,6 +8,7 @@ import {
   updateConnection,
   deleteConnection,
 } from '../services/connectionApiService';
+import { apiFetch } from '../services/apiClient';
 // 注意：addConnection 不再自动创建 tree 节点，由调用方（DatabaseTree.handleConnectionSave）负责，传入正确的 connDialogParentId。
 // 修复历史 bug：之前自动找第一个 district 作父节点，导致用户在「前置软件」点「+」创建，连接却跑到「市直」下。
 
@@ -213,13 +214,13 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
       for (const [id] of Object.entries(connections)) {
         try {
           // 通过连接 ID 测试（后端从数据库取真实密码，避免密码脱敏问题）
-          const resp = await (await import('../services/apiClient')).apiFetch(`/api/connections/${id}/test`, {
+          const resp = await apiFetch(`/api/connections/${id}/test`, {
             method: 'POST',
           });
           const status = resp.ok ? ConnectionStatus.Online : ConnectionStatus.Error;
           // 持久化状态到后端数据库
           try {
-            await (await import('../services/apiClient')).apiFetch(`/api/connections/${id}/status`, {
+            await apiFetch(`/api/connections/${id}/status`, {
               method: 'PATCH',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ status }),

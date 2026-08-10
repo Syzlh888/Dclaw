@@ -21,9 +21,14 @@ const ProxyPage: React.FC = () => {
 
   const handleRevoke = async () => {
     if (!revokeTarget) return;
-    await revokeConnection(revokeTarget);
+    const target = revokeTarget;
     setRevokeTarget(null);
-    setSnackbar('代理连接已撤销');
+    try {
+      await revokeConnection(target);
+      setSnackbar('代理连接已撤销');
+    } catch (e) {
+      setSnackbar(e instanceof Error ? `撤销失败：${e.message}` : '撤销失败');
+    }
   };
 
   return (

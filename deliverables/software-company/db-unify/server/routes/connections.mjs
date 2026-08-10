@@ -621,62 +621,70 @@ router.post('/:id/ddl', async (req, res) => {
       let ddl = '';
 
       if (realDriver === 'mysql') {
-        const result = await executeQuery(dbClient, conn.driver, `SHOW CREATE TABLE \`${table}\``, 30000, conn.custom_driver_id);
+        // MySQL 标识符只能字符串拼接：先清洗防止反引号注入
+        const mysqlTbl = String(table).replace(/`/g, '');
+        const result = await executeQuery(dbClient, conn.driver, `SHOW CREATE TABLE \`${mysqlTbl}\``, 30000, conn.custom_driver_id);
         if (result.rows.length > 0) {
           ddl = result.rows[0]['Create Table'] || '';
         }
       } else {
         // PostgreSQL 及兼容数据库（瀚高、高斯、金仓等）
+        // 拆分并清洗 schema / table，校验只允许标识符字符
+        const rawTbl = String(table);
+        const dotIdx = rawTbl.lastIndexOf('.');
+        const pgTblName = (dotIdx >= 0 ? rawTbl.slice(dotIdx + 1) : rawTbl).replace(/[^A-Za-z0-9_]/g, '');
+        const pgSchemaName = dotIdx >= 0 ? rawTbl.slice(0, dotIdx).replace(/[^A-Za-z0-9_]/g, '') : (conn.schema_name || 'public');
+        if (!pgTblName) throw new Error('非法表名');
         try {
           // 尝试 SHOW CREATE TABLE（部分 PG 兼容数据库支持此语法）
-          const result = await executeQuery(dbClient, conn.driver, `SHOW CREATE TABLE "${table}"`, 30000, conn.custom_driver_id);
+          const result = await executeQuery(dbClient, conn.driver, `SHOW CREATE TABLE "${pgTblName}"`, 30000, conn.custom_driver_id);
           if (result.rows.length > 0) {
             ddl = result.rows[0]['Create Table'] || result.rows[0]['create_table'] || '';
           }
         } catch {
-          // Fallback 1: pg_get_ddl (PG 16+)
+          // Fallback 1: pg_get_ddl (PG 16+) —— 用 $1 参数化
           try {
             const result = await executeQuery(dbClient, conn.driver,
-              `SELECT pg_catalog.pg_get_ddl(c.oid) AS ddl FROM pg_catalog.pg_class c WHERE c.relname = '${table.replace(/.*\./, '')}'`,
-              30000, conn.custom_driver_id);
+              `SELECT pg_catalog.pg_get_ddl(c.oid) AS ddl FROM pg_catalog.pg_class c WHERE c.relname = $1`,
+              30000, conn.custom_driver_id, [pgTblName]);
             if (result.rows.length > 0) {
               ddl = result.rows[0].ddl || '';
             }
           } catch {}
           if (!ddl) {
             // Fallback 2: 从 information_schema 重建 DDL（兼容 PG 9+ / 瀚高 / 金仓等）
-            const tblName = table.replace(/.*\./, '').replace(/"/g, '');
-            const schemaName = table.includes('.') ? table.replace(/\..*/, '').replace(/"/g, '') : (conn.schema_name || 'public');
             try {
               const colResult = await executeQuery(dbClient, conn.driver,
                 `SELECT column_name, data_type, COALESCE(character_maximum_length, numeric_precision) AS col_length,
                         is_nullable, column_default, ordinal_position
                  FROM information_schema.columns
-                 WHERE table_schema = '${schemaName}' AND table_name = '${tblName}'
+                 WHERE table_schema = $1 AND table_name = $2
                  ORDER BY ordinal_position`,
-                30000, conn.custom_driver_id);
+                30000, conn.custom_driver_id, [pgSchemaName, pgTblName]);
               if (colResult.rows.length > 0) {
                 // 查主键
                 let pkCols = [];
                 try {
+                  // regclass 也参数化；PG 把 'schema."table"' 解析为 regclass 类型
+                  const qualifiedIdent = `"${pgSchemaName.replace(/"/g, '""')}"."${pgTblName.replace(/"/g, '""')}"`;
                   const pkResult = await executeQuery(dbClient, conn.driver,
                     `SELECT a.attname
                      FROM pg_catalog.pg_index i
                      JOIN pg_catalog.pg_attribute a ON a.attrelid = i.indrelid AND a.attnum = ANY(i.indkey)
-                     WHERE i.indrelid = '${schemaName}.${tblName}'::regclass AND i.indisprimary
+                     WHERE i.indrelid = $1::regclass AND i.indisprimary
                      ORDER BY a.attnum`,
-                    15000, conn.custom_driver_id);
+                    15000, conn.custom_driver_id, [qualifiedIdent]);
                   pkCols = (pkResult.rows || []).map((r) => r.attname).filter(Boolean);
                 } catch {}
                 const cols = colResult.rows.map((r) => {
-                  let col = `"${r.column_name}" ${r.data_type}`;
+                  let col = `"${String(r.column_name).replace(/"/g, '""')}" ${r.data_type}`;
                   if (r.col_length) col += `(${r.col_length})`;
                   if (pkCols.includes(r.column_name)) col += ' PRIMARY KEY';
                   if (r.is_nullable === 'NO') col += ' NOT NULL';
                   if (r.column_default) col += ` DEFAULT ${r.column_default}`;
                   return col;
                 });
-                ddl = `CREATE TABLE "${schemaName}"."${tblName}" (\n  ${cols.join(',\n  ')}\n);`;
+                ddl = `CREATE TABLE "${pgSchemaName}"."${pgTblName}" (\n  ${cols.join(',\n  ')}\n);`;
               }
             } catch (e2) {
               console.error(`[ddl] Fallback 2 failed:`, e2?.message || e2);
@@ -686,9 +694,10 @@ router.post('/:id/ddl', async (req, res) => {
       }
 
       if (!ddl) {
+        console.warn(`[ddl] table=${table} 未生成 DDL（驱动=${realDriver}）`);
+      } else {
+        console.log(`[ddl] table=${table} ddl_length=${ddl.length}`);
       }
-
-      console.log(`[ddl] table=${table} ddl_length=${ddl.length}`);
       res.json({ ddl });
     } finally {
       await closeConnection(dbClient, conn.driver, conn.custom_driver_id).catch(() => {});
@@ -712,8 +721,13 @@ router.post('/:id/ddl/grants', async (req, res) => {
   if (!table) return res.status(400).json({ error: '表名不能为空' });
 
   const password = decryptPassword(conn.password_encrypted || '');
-  const tblName = table.replace(/.*\./, '').replace(/"/g, '');
-  const schemaName = schema || (table.includes('.') ? table.replace(/\..*/, '').replace(/"/g, '') : 'public');
+  // 严格清洗 schema / table，仅允许字母/数字/下划线
+  const rawTblForGrants = String(table);
+  const dotIdxForGrants = rawTblForGrants.lastIndexOf('.');
+  const tblName = (dotIdxForGrants >= 0 ? rawTblForGrants.slice(dotIdxForGrants + 1) : rawTblForGrants).replace(/[^A-Za-z0-9_]/g, '');
+  const providedSchema = schema ? String(schema).replace(/[^A-Za-z0-9_]/g, '') : '';
+  const schemaName = providedSchema || (dotIdxForGrants >= 0 ? rawTblForGrants.slice(0, dotIdxForGrants).replace(/[^A-Za-z0-9_]/g, '') : 'public');
+  if (!tblName) return res.status(400).json({ error: '非法表名', owner: '', grants: [] });
 
   try {
     const dbClient = await createDbConnection({
@@ -729,24 +743,24 @@ router.post('/:id/ddl/grants', async (req, res) => {
       try { realDriver = await resolveRealDriver(conn.driver, conn.custom_driver_id); } catch {}
 
       if (realDriver === 'postgresql') {
-        // 查询表所有者
+        // 查询表所有者 —— 全部参数化
         const ownerResult = await executeQuery(dbClient, conn.driver,
           `SELECT pg_catalog.pg_get_userbyid(c.relowner) AS owner
            FROM pg_catalog.pg_class c
            JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
-           WHERE c.relname = '${tblName}' AND n.nspname = '${schemaName}'`,
-          15000, conn.custom_driver_id);
+           WHERE c.relname = $1 AND n.nspname = $2`,
+          15000, conn.custom_driver_id, [tblName, schemaName]);
         if (ownerResult.rows.length > 0) {
           owner = ownerResult.rows[0].owner || '';
         }
 
-        // 查询表级权限
+        // 查询表级权限 —— 参数化
         const privResult = await executeQuery(dbClient, conn.driver,
           `SELECT grantee, privilege_type
            FROM information_schema.table_privileges
-           WHERE table_schema = '${schemaName}' AND table_name = '${tblName}'
+           WHERE table_schema = $1 AND table_name = $2
            ORDER BY grantee, privilege_type`,
-          15000, conn.custom_driver_id);
+          15000, conn.custom_driver_id, [schemaName, tblName]);
         const privMap = {};
         for (const r of privResult.rows) {
           if (!privMap[r.grantee]) privMap[r.grantee] = [];

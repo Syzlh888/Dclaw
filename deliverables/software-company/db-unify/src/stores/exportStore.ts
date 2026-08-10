@@ -154,9 +154,6 @@ export const useExportStore = create<ExportState>((set, get) => ({
 
   openWizard: (initial) => {
     const init = initial || {};
-    console.log('[openWizard] called with init:', init);
-    console.log('[openWizard] init.tables:', (init as any).tables);
-    console.log('[openWizard] init.tables length:', (init as any).tables?.length);
     const setObj: any = {
       open: true,
       step: 0,
@@ -176,7 +173,6 @@ export const useExportStore = create<ExportState>((set, get) => ({
     if ('sql' in init) setObj.sql = init.sql || '';
     if ('type' in init) setObj.sourceType = init.type || 'table';
     set(setObj);
-    console.log('[openWizard] after set, store has selectedTables length:', get().selectedTables.length);
   },
 
   closeWizard: () => set({ open: false }),

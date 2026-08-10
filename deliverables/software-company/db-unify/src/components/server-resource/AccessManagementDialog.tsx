@@ -172,7 +172,11 @@ export default function AccessManagementDialog({ open, onClose }: Props) {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
-    }).then(() => loadEntries());
+    })
+      .then(() => loadEntries())
+      .catch((e) => {
+        setPwdVerifyError(e instanceof Error ? e.message : '保存失败');
+      });
   };
 
   // 复制密码
@@ -261,11 +265,15 @@ export default function AccessManagementDialog({ open, onClose }: Props) {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
-    }).then(() => {
-      loadEntries();
-      setPwdChangeOpen(false);
-      setPwdChangeTarget(null);
-    });
+    })
+      .then(() => {
+        loadEntries();
+        setPwdChangeOpen(false);
+        setPwdChangeTarget(null);
+      })
+      .catch((e) => {
+        setPwdVerifyError(e instanceof Error ? e.message : '保存失败');
+      });
   };
 
   // 密码历史
@@ -279,8 +287,11 @@ export default function AccessManagementDialog({ open, onClose }: Props) {
     setHistoryOpen(true);
     // 预加载历史（不包含明文）
     apiFetch(`/api/access/${entry.id}/password-history`)
-      .then(r => r.json())
-      .then(d => setHistoryItems(d.history || []));
+      .then(r => r.json().catch(() => ({})))
+      .then(d => setHistoryItems(d.history || []))
+      .catch((e) => {
+        setHistoryVfyError(e instanceof Error ? e.message : '加载密码历史失败');
+      });
   };
 
   const handleHistoryDecrypt = async () => {

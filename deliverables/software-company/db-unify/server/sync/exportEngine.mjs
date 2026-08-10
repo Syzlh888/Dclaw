@@ -121,7 +121,6 @@ async function countRows(connection, driver, sql, params, customDriverId) {
 }
 
 function resolveOutputPath(file) {
-  console.log('[resolveOutputPath] file=', JSON.stringify(file));
   const output = String(file?.path || '').trim();
   if (!output) throw new Error('文件导出路径不能为空');
   if (path.isAbsolute(output)) return output;

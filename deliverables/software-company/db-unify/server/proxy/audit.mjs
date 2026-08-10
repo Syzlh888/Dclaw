@@ -12,7 +12,14 @@ import { getPool } from '../db/pool.mjs';
 
 /** 分类 + 风险分级 + 是否危险 */
 export function classifySql(sql) {
-  const s = (sql || '').trim();
+  const raw = (sql || '').trim();
+  // 先剥离行注释(-- ...\n)和块注释(/* ... */)，避免注释里藏 DDL 绕过检测
+  // 同时也避免普通带注释 SQL（如 SELECT 1 -- 解释）被误判为危险
+  const s = raw
+    .replace(/\/\*[\s\S]*?\*\//g, ' ')
+    .replace(/--[^\n]*/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
   const keyword = (s.split(/[\s;(]/)[0] || '').toUpperCase();
 
   let sqlType = 'OTHER';
@@ -25,15 +32,15 @@ export function classifySql(sql) {
   else if (/^(DELETE|TRUNCATE)\b/i.test(s)) sqlType = 'DELETE';
   else if (/^(CREATE|DROP|ALTER|GRANT|REVOKE|COMMENT|RENAME|LOCK|UNLOCK|MERGE|CALL|EXEC|EXECUTE)\b/i.test(s)) sqlType = 'DDL';
 
-  // 只读判定：SELECT/WITH/SHOW/EXPLAIN/DESCRIBE/DESC 等仅查询语句
-  // 兼容 MySQL（SHOW/DESCRIBE/EXPLAIN/HELP/SET 只读查询）与达梦（同 SQL 关键字）
-  const readOnly = /^(SELECT|WITH|SHOW|EXPLAIN|DESCRIBE|DESC|TABLE|VALUES|HELP|SET|USE|PRAGMA)\b/i.test(s);
+  // 只读判定：SELECT/WITH/SHOW/EXPLAIN/DESCRIBE/DESC/HELP/PRAGMA 等
+  // 注意：TABLE/SET/USE 是非只读命令（如 SET autocommit, USE schema 等可能改会话状态），
+  // 且 TABLE 在 PG/MySQL 中是 DDL（CREATE TABLE ...）,故不放在只读列表
+  const readOnly = /^(SELECT|WITH|SHOW|EXPLAIN|DESCRIBE|DESC|HELP|VALUES|PRAGMA)\b/i.test(s);
 
-  // 危险 SQL：DROP/TRUNCATE/ALTER/GRANT/REVOKE / DELETE 无 WHERE / 注释规避
+  // 危险 SQL：剥离注释后再判定，避免注释规避
   if (
     /^\s*(DROP|TRUNCATE|ALTER|GRANT|REVOKE|RENAME)\b/i.test(s) ||
-    (/^\s*DELETE\b/i.test(s) && !/\bWHERE\b/i.test(s)) ||
-    /(--|\/\*)/.test(s)
+    (/^\s*DELETE\b/i.test(s) && !/\bWHERE\b/i.test(s))
   ) {
     dangerous = true;
     riskLevel = 'high';
@@ -62,15 +69,4 @@ export function persistAudit({
     console.error('[proxy-audit] 写入审计失败:', err.message);
   });
   return q;
-}
-
-/** 记录一条会话开始（不带 SQL，仅会话信息） */
-export function recordSessionStart({
-  proxyConnectionId, proxyUsername, dbType, realConnectionId, clientIp,
-}) {
-  return persistAudit({
-    proxyConnectionId, proxyUsername, dbType, realConnectionId, clientIp,
-    sessionStart: new Date().toISOString(), sqlText: null, sqlType: null,
-    affectedRows: null, status: 'success', riskLevel: null, errorMessage: null,
-  });
 }

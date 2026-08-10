@@ -25,6 +25,9 @@ const SYNC_INTERVAL_MS = parseInt(process.env.PROXY_SYNC_INTERVAL_MS, 10) || 100
 /** port -> { proxy, server, sessions:Set } */
 const listeners = new Map();
 
+/** sync 重叠保护：sync() 是 async，前一次未完成时不并发 */
+let syncRunning = false;
+
 function log(...args) {
   console.log(`[proxy-gateway]`, ...args);
 }
@@ -126,6 +129,9 @@ function stopListener(port, reason) {
 
 /** 周期性同步：加载 active 连接，启停监听，标记过期 */
 async function sync() {
+  // 防止上一次 sync 还没结束，下一次 tick 又触发（避免 active listener 重叠）
+  if (syncRunning) return;
+  syncRunning = true;
   try {
     const actives = await loadActiveProxies();
     const activePorts = new Set();
@@ -150,9 +156,14 @@ async function sync() {
       `UPDATE proxy_connections
        SET status = 'expired'
        WHERE status = 'active' AND expires_at <= NOW()`
-    ).catch(() => {});
+    ).catch((e) => {
+      // 过期标记失败不应阻塞后续同步，但需要可观测
+      console.warn('[proxy-gateway] 标记过期连接失败:', e?.message);
+    });
   } catch (err) {
     log('同步失败:', err.message);
+  } finally {
+    syncRunning = false;
   }
 }
 
@@ -177,8 +188,16 @@ async function main() {
   };
   process.on('SIGTERM', () => shutdown('SIGTERM'));
   process.on('SIGINT', () => shutdown('SIGINT'));
-  process.on('uncaughtException', (err) => log('[uncaughtException]', err.message));
-  process.on('unhandledRejection', (r) => log('[unhandledRejection]', r?.message || r));
+  // 独立代理进程：uncaughtException 后进程状态可能已不一致（如 DB pool 泄漏），
+  // 不能仅 log 后继续。最安全的做法是 log 后退出，让 supervisor 重启。
+  process.on('uncaughtException', (err) => {
+    log('[uncaughtException]', err?.stack || err?.message || err);
+    shutdown('uncaughtException');
+  });
+  process.on('unhandledRejection', (r) => {
+    log('[unhandledRejection]', r?.stack || r?.message || r);
+    shutdown('unhandledRejection');
+  });
 
   log(`代理网关运行中，同步周期 ${SYNC_INTERVAL_MS}ms`);
 }

@@ -109,20 +109,25 @@ export async function exportProxyAuditCsv(
   if (params.start) qs.set('start', params.start);
   if (params.end) qs.set('end', params.end);
   const s = qs.toString();
-  const response = await apiFetch(`/api/proxy/audit/export${s ? `?${s}` : ''}`);
-  if (!response.ok) {
-    const data = await response.json().catch(() => ({}));
-    throw new Error((data as { error?: string }).error || `导出失败 (${response.status})`);
+  let url: string | null = null;
+  try {
+    const response = await apiFetch(`/api/proxy/audit/export${s ? `?${s}` : ''}`);
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error((data as { error?: string }).error || `导出失败 (${response.status})`);
+    }
+    const blob = await response.blob();
+    url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `proxy-audit-${Date.now()}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  } finally {
+    // revoke 必须在 click 后异步执行；放 finally 防止 leak
+    if (url) setTimeout(() => URL.revokeObjectURL(url as string), 0);
   }
-  const blob = await response.blob();
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `proxy-audit-${Date.now()}.csv`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
 }
 
 // ========= 进程生命周期 =========

@@ -140,12 +140,24 @@ export async function runTask(task, mappings, onProgress = () => {}) {
       // 增量同步：执行成功后回写 checkpoint_value（通过 PATCH 持久化）
       if (!mapping.custom_sql && mapping.incremental_column) {
         try {
-          await fetch(`http://localhost:${process.env.PORT || 3000}/api/sync-table-mappings/${encodeURIComponent(mapping.id)}`, {
+          // 端口配置与 server/index.mjs 默认保持一致（3001）；允许通过 env 覆盖
+          // 注意：开发模式下 npm run dev 会同时启动 client (3000) 和 server (3001)，
+          // 此处必须取 server 端口，否则 PATCH 会打错端口导致 checkpoint 静默丢失
+          const apiPort = Number(process.env.API_PORT) || Number(process.env.PORT) || 3001;
+          const apiHost = process.env.API_HOST || 'localhost';
+          const res = await fetch(`http://${apiHost}:${apiPort}/api/sync-table-mappings/${encodeURIComponent(mapping.id)}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ checkpointValue: new Date().toISOString() }),
           });
-        } catch (e) { /* swallow - 持久化失败不影响本次任务结果 */ }
+          if (!res.ok) {
+            const errBody = await res.text().catch(() => '');
+            console.warn(`[taskRunner] checkpoint 持久化失败 (HTTP ${res.status}): ${errBody.slice(0, 200)}`);
+          }
+        } catch (e) {
+          // checkpoint 持久化失败不影响本次任务结果，但至少要可见
+          console.warn(`[taskRunner] checkpoint 持久化异常: ${e?.message || e}`);
+        }
       }
     } catch (err) {
       hasError = true;

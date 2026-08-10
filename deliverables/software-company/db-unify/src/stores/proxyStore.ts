@@ -36,6 +36,9 @@ interface ProxyState {
   processStatus: ProxyProcessStatus | null;
   processLoading: boolean;
   processError: string | null;
+  // 请求令牌（防竞态：过期响应丢弃）
+  _auditReqId: number;
+  _statusReqId: number;
 
   loadConnections: () => Promise<void>;
   createConnection: (payload: CreateProxyConnectionPayload) => Promise<ProxyConnection | null>;
@@ -69,6 +72,10 @@ export const useProxyStore = create<ProxyState>((set, get) => ({
   processStatus: null,
   processLoading: false,
   processError: null,
+
+  /** 请求序号：用于丢弃过期的审计/状态请求（防止快速切换时顺序错乱） */
+  _auditReqId: 0,
+  _statusReqId: 0,
 
   loadConnections: async () => {
     set({ loading: true, error: null });
@@ -124,7 +131,8 @@ export const useProxyStore = create<ProxyState>((set, get) => ({
     const { selectedId, auditFilters } = get();
     if (!selectedId) return;
     const page = opts?.page ?? get().auditPage;
-    set({ auditLoading: true });
+    const reqId = get()._auditReqId + 1;
+    set({ auditLoading: true, _auditReqId: reqId });
     try {
       const mergedFilters = { ...auditFilters, ...(opts?.filters || {}) };
       const data = await fetchProxyAudit({
@@ -136,9 +144,14 @@ export const useProxyStore = create<ProxyState>((set, get) => ({
         page,
         pageSize: 20,
       });
-      set({ auditLogs: data.logs, auditTotal: data.total, auditPage: data.page, auditLoading: false });
+      // 仅当 reqId 未被更新（即后续没有新请求）才写入结果
+      if (get()._auditReqId === reqId) {
+        set({ auditLogs: data.logs, auditTotal: data.total, auditPage: data.page, auditLoading: false });
+      }
     } catch (e) {
-      set({ auditLoading: false, error: (e as Error).message });
+      if (get()._auditReqId === reqId) {
+        set({ auditLoading: false, error: (e as Error).message });
+      }
     }
   },
 
@@ -159,11 +172,17 @@ export const useProxyStore = create<ProxyState>((set, get) => ({
   },
 
   loadProcessStatus: async () => {
+    const reqId = get()._statusReqId + 1;
+    set({ _statusReqId: reqId });
     try {
       const status = await fetchProxyProcessStatus();
-      set({ processStatus: status, processError: null });
+      if (get()._statusReqId === reqId) {
+        set({ processStatus: status, processError: null });
+      }
     } catch (e) {
-      set({ processError: (e as Error).message });
+      if (get()._statusReqId === reqId) {
+        set({ processError: (e as Error).message });
+      }
     }
   },
 

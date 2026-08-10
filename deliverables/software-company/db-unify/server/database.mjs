@@ -70,18 +70,29 @@ function resolveTable(collection) {
 
 // ============================================================
 // 列信息缓存 —— 用来区分 "已知列" vs "未知字段(进 extra JSONB)"
+// schema+table 一起作 key；TTL 5 分钟避免 schema 变更后误判
 // ============================================================
-const columnCache = {};
+const COLUMN_CACHE_TTL_MS = 5 * 60 * 1000;
+const columnCache = new Map(); // key -> { columns: string[], expiresAt: number }
 
-async function getTableColumns(table) {
-  if (columnCache[table]) return columnCache[table];
+async function getTableColumns(table, schema = 'public') {
+  const key = `${schema}.${table}`;
+  const hit = columnCache.get(key);
+  if (hit && hit.expiresAt > Date.now()) return hit.columns;
   const r = await pgQuery(
     `SELECT column_name FROM information_schema.columns
-       WHERE table_schema = 'public' AND table_name = $1`,
-    [table]
+       WHERE table_schema = $1 AND table_name = $2`,
+    [schema, table]
   );
-  columnCache[table] = r.rows.map((x) => x.column_name);
-  return columnCache[table];
+  const columns = r.rows.map((x) => x.column_name);
+  columnCache.set(key, { columns, expiresAt: Date.now() + COLUMN_CACHE_TTL_MS });
+  return columns;
+}
+
+/** 进程内手动失效（如 ALTER TABLE 之后）；可接受无参数清空全部 */
+export function invalidateColumnCache(table, schema) {
+  if (!table) columnCache.clear();
+  else columnCache.delete(`${schema || 'public'}.${table}`);
 }
 
 // ============================================================

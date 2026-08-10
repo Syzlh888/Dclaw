@@ -28,7 +28,6 @@ export function useExecution() {
   const setLoadingMore = useEditorStore((s) => s.setLoadingMore);
   const updateResultMeta = useEditorStore((s) => s.updateResultMeta);
   const config = useExecutionStore((s) => s.config);
-  const treeSelectedDbIds = useTreeStore((s) => s.selectedDbIds);
   const tabDbIds = useEditorStore((s) => s.tabDbIds);
   const activeGroupId = useGroupStore((s) => s.activeGroupId);
   const getActiveDbIds = useGroupStore((s) => s.getActiveDbIds);
@@ -203,8 +202,8 @@ export function useExecution() {
             }
             useEditorStore.getState().saveSnapshotToTab(activeTabId);
             setExecuting(false);
-            // Browser notification
-            if ('Notification' in window && Notification.permission === 'granted') {
+            // 仅在页面被切到后台时才发桌面通知，避免应用前台时也弹出系统通知
+            if (typeof document !== 'undefined' && document.hidden && 'Notification' in window && Notification.permission === 'granted') {
               const successCount = event.summary.success;
               const totalCount = event.summary.total;
               new Notification('DClaw 数据钳 执行完成', {

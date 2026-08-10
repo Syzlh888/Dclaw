@@ -220,7 +220,9 @@ export function connectRealAsClient(cfg) {
         } else if (msg.type === 'Z') {
           if (resolved) return;
           resolved = true;
+          // 握手完成：清空本函数的监听器，让 session 接管 socket
           sock.removeAllListeners('error');
+          sock.removeAllListeners('data');
           resolve({ socket: sock, leftover: buf });
           return;
         }

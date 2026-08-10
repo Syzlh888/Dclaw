@@ -17,6 +17,20 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { getPool } from '../db/pool.mjs';
 
+// 注册兜底异常处理：仅在主进程内生效（被 child_process 加载时同样安全）。
+// uncaughtException 后进程可能处于不一致状态（如 DB pool 半连接），
+// 必须 log + 退出，让 supervisor 重启，避免脏状态长期留存。
+process.on('uncaughtException', (err) => {
+  // eslint-disable-next-line no-console
+  console.error('[proxy-manager] uncaughtException:', err?.stack || err?.message || err);
+  process.exit(1);
+});
+process.on('unhandledRejection', (r) => {
+  // eslint-disable-next-line no-console
+  console.error('[proxy-manager] unhandledRejection:', r?.stack || r?.message || r);
+  process.exit(1);
+});
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /** 日志文件：默认 server/proxy/proxy.log，可用 PROXY_LOG_DIR 覆盖 */
@@ -137,6 +151,7 @@ async function restart() {
 function checkPort(port, host = '127.0.0.1') {
   return new Promise((resolve) => {
     const sock = net.connect({ port, host });
+    sock.unref();
     const done = (v) => { try { sock.destroy(); } catch { /* ignore */ } resolve(v); };
     sock.setTimeout(PORT_CHECK_TIMEOUT_MS);
     sock.once('connect', () => done(true));

@@ -400,21 +400,10 @@ const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseInden
             tables = [{ connectionId: connection.id, tableName: table.name, schemaName }];
           }
 
-          console.log('[export-data] right-click table:', table.name);
-          console.log('[export-data] selectedTables Set:', Array.from(selectedTables));
-          console.log('[export-data] selectedTableList:', selectedTableList);
-          console.log('[export-data] tables to export:', tables);
-
-          const storeState = useExportStore.getState();
-          console.log('[export-data] BEFORE openWizard, store selectedTables:', storeState.selectedTables);
-
           useExportStore.getState().openWizard({
             connectionId: connection.id,
             tables,
           });
-
-          const storeAfter = useExportStore.getState();
-          console.log('[export-data] AFTER openWizard, store selectedTables:', storeAfter.selectedTables);
         },
       },
       {

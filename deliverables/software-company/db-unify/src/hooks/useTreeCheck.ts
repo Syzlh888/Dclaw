@@ -1,7 +1,6 @@
 import { useCallback } from 'react';
 import { useTreeStore } from '../stores/treeStore';
 import { useEditorStore } from '../stores/editorStore';
-import { CheckState } from '../types/tree';
 
 /**
  * Hook that encapsulates tree check logic.
