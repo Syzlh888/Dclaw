@@ -10,12 +10,14 @@ import {
   createProxyConnection,
   updateProxyConnection,
   revokeProxyConnection,
-  fetchProxyAuditByConnection,
+  fetchProxyAudit,
+  exportProxyAuditCsv,
   fetchProxyProcessStatus,
   startProxyProcess,
   stopProxyProcess,
   restartProxyProcess,
 } from '../services/proxyService';
+import type { ProxyAuditFilter } from '../services/proxyService';
 
 interface ProxyState {
   connections: ProxyConnection[];
@@ -25,7 +27,11 @@ interface ProxyState {
 
   selectedId: string | null;
   auditLogs: ProxyAuditLog[];
+  auditTotal: number;
+  auditPage: number;
+  auditPageSize: number;
   auditLoading: boolean;
+  auditFilters: { sql_type?: string; status?: string; start?: string; end?: string };
 
   processStatus: ProxyProcessStatus | null;
   processLoading: boolean;
@@ -36,7 +42,9 @@ interface ProxyState {
   updateConnection: (id: string, patch: Partial<CreateProxyConnectionPayload>) => Promise<void>;
   revokeConnection: (id: string) => Promise<void>;
   selectConnection: (id: string | null) => void;
-  loadAudit: (id: string) => Promise<void>;
+  loadAudit: (opts?: { page?: number; filters?: Partial<ProxyAuditFilter> }) => Promise<void>;
+  setAuditFilters: (filters: Partial<ProxyAuditFilter>) => void;
+  exportAudit: () => Promise<void>;
 
   loadProcessStatus: () => Promise<void>;
   startProcess: () => Promise<void>;
@@ -52,7 +60,11 @@ export const useProxyStore = create<ProxyState>((set, get) => ({
 
   selectedId: null,
   auditLogs: [],
+  auditTotal: 0,
+  auditPage: 1,
+  auditPageSize: 20,
   auditLoading: false,
+  auditFilters: {},
 
   processStatus: null,
   processLoading: false,
@@ -99,17 +111,50 @@ export const useProxyStore = create<ProxyState>((set, get) => ({
   },
 
   selectConnection: (id) => {
-    set({ selectedId: id });
-    if (id) get().loadAudit(id);
+    set({ selectedId: id, auditPage: 1, auditFilters: {}, auditLogs: [], auditTotal: 0 });
+    if (id) get().loadAudit({ page: 1 });
   },
 
-  loadAudit: async (id) => {
+  setAuditFilters: (filters) => {
+    set({ auditFilters: { ...get().auditFilters, ...filters }, auditPage: 1 });
+    get().loadAudit({ page: 1 });
+  },
+
+  loadAudit: async (opts) => {
+    const { selectedId, auditFilters } = get();
+    if (!selectedId) return;
+    const page = opts?.page ?? get().auditPage;
     set({ auditLoading: true });
     try {
-      const logs = await fetchProxyAuditByConnection(id);
-      set({ auditLogs: logs, auditLoading: false });
+      const mergedFilters = { ...auditFilters, ...(opts?.filters || {}) };
+      const data = await fetchProxyAudit({
+        proxy_connection_id: selectedId,
+        sql_type: mergedFilters.sql_type || undefined,
+        status: mergedFilters.status || undefined,
+        start: mergedFilters.start || undefined,
+        end: mergedFilters.end || undefined,
+        page,
+        pageSize: 20,
+      });
+      set({ auditLogs: data.logs, auditTotal: data.total, auditPage: data.page, auditLoading: false });
     } catch (e) {
       set({ auditLoading: false, error: (e as Error).message });
+    }
+  },
+
+  exportAudit: async () => {
+    const { selectedId, auditFilters } = get();
+    if (!selectedId) return;
+    try {
+      await exportProxyAuditCsv({
+        proxy_connection_id: selectedId,
+        sql_type: auditFilters.sql_type || undefined,
+        status: auditFilters.status || undefined,
+        start: auditFilters.start || undefined,
+        end: auditFilters.end || undefined,
+      });
+    } catch (e) {
+      set({ error: (e as Error).message });
     }
   },
 

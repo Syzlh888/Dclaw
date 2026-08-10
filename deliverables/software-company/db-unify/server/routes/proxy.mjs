@@ -9,6 +9,7 @@
  * - POST   /api/proxy/connections/:id/revoke  撤销（标记 revoked）
  * - GET    /api/proxy/connections/:id/audit   该代理连接的审计记录
  * - GET    /api/proxy/audit                   审计查询（多条件 + 分页）
+ * - GET    /api/proxy/audit/export            审计导出（CSV，UTF-8 BOM 兼容 Excel 中文）
  *
  * 端口分配：从 proxy_port_base（默认 35000）递增找未被 proxy_connections 占用的端口
  * 随机密码：>=12 位，含大小写字母 + 数字 + 特殊字符
@@ -300,19 +301,21 @@ router.get('/connections/:id/audit', async (req, res, next) => {
 
 /**
  * GET /api/proxy/audit
- * 审计查询：按 proxy_connection_id / proxy_username / client_ip / 时间范围筛选 + 分页
+ * 审计查询：按 proxy_connection_id / proxy_username / client_ip / sql_type / status / 时间范围筛选 + 分页
  */
 router.get('/audit', async (req, res, next) => {
   try {
     const page = Math.max(1, parseInt(req.query.page, 10) || 1);
     const pageSize = Math.min(100, Math.max(1, parseInt(req.query.pageSize, 10) || 20));
-    const { proxy_connection_id, proxy_username, client_ip, start, end } = req.query;
+    const { proxy_connection_id, proxy_username, client_ip, sql_type, status, start, end } = req.query;
 
     const where = [];
     const params = [];
     if (proxy_connection_id) { params.push(proxy_connection_id); where.push(`proxy_connection_id = $${params.length}`); }
     if (proxy_username) { params.push(proxy_username); where.push(`proxy_username = $${params.length}`); }
     if (client_ip) { params.push(client_ip); where.push(`client_ip = $${params.length}::inet`); }
+    if (sql_type) { params.push(sql_type); where.push(`sql_type = $${params.length}`); }
+    if (status) { params.push(status); where.push(`status = $${params.length}`); }
     if (start) { params.push(start); where.push(`executed_at >= $${params.length}`); }
     if (end) { params.push(end); where.push(`executed_at <= $${params.length}`); }
     const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
@@ -332,6 +335,74 @@ router.get('/audit', async (req, res, next) => {
       listParams
     );
     res.json({ logs: rows, total, page, pageSize });
+  } catch (e) { next(e); }
+});
+
+/** 构造审计导出的过滤条件（与 /audit 相同，无分页） */
+function buildAuditExportFilter(query) {
+  const { proxy_connection_id, sql_type, status, start, end } = query;
+  const where = [];
+  const params = [];
+  if (proxy_connection_id) { params.push(proxy_connection_id); where.push(`proxy_connection_id = $${params.length}`); }
+  if (sql_type) { params.push(sql_type); where.push(`sql_type = $${params.length}`); }
+  if (status) { params.push(status); where.push(`status = $${params.length}`); }
+  if (start) { params.push(start); where.push(`executed_at >= $${params.length}`); }
+  if (end) { params.push(end); where.push(`executed_at <= $${params.length}`); }
+  return { whereSql: where.length ? `WHERE ${where.join(' AND ')}` : '', params };
+}
+
+/** 转义 CSV 字段：含逗号/引号/换行时加引号并双写内部引号 */
+function csvEscape(value) {
+  if (value === null || value === undefined) return '';
+  const s = String(value);
+  if (/[",\r\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+  return s;
+}
+
+/**
+ * GET /api/proxy/audit/export?proxy_connection_id=&sql_type=&status=&start=&end=
+ * 导出审计记录为 CSV（UTF-8 BOM，Excel 中文兼容），Content-Disposition attachment
+ */
+router.get('/audit/export', async (req, res, next) => {
+  try {
+    const { whereSql, params } = buildAuditExportFilter(req.query);
+    const { rows } = await getPool().query(
+      `SELECT proxy_connection_id, proxy_username, db_type, client_ip,
+              sql_type, sql_text, status, risk_level, error_message, executed_at
+       FROM proxy_audit_logs
+       ${whereSql}
+       ORDER BY executed_at DESC`,
+      params
+    );
+
+    const header = [
+      'proxy_connection_id', 'proxy_username', 'db_type', 'client_ip', 'sql_type',
+      'sql_text', 'status', 'risk_level', 'error_message', 'executed_at',
+    ];
+    const lines = [header.join(',')];
+    for (const r of rows) {
+      lines.push([
+        csvEscape(r.proxy_connection_id),
+        csvEscape(r.proxy_username),
+        csvEscape(r.db_type),
+        csvEscape(r.client_ip),
+        csvEscape(r.sql_type),
+        csvEscape(r.sql_text),
+        csvEscape(r.status),
+        csvEscape(r.risk_level),
+        csvEscape(r.error_message),
+        csvEscape(r.executed_at),
+      ].join(','));
+    }
+    // UTF-8 BOM 使 Excel 正确识别 UTF-8 中文
+    const csv = '\uFEFF' + lines.join('\r\n');
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="proxy-audit-${Date.now()}.csv"`
+    );
+    res.send(csv);
   } catch (e) { next(e); }
 });
 

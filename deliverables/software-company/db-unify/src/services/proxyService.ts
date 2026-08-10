@@ -65,11 +65,25 @@ export async function revokeProxyConnection(id: string): Promise<ProxyConnection
 }
 
 // ========= 审计 =========
+export interface ProxyAuditFilter {
+  proxy_connection_id?: string;
+  sql_type?: string;
+  status?: string;
+  start?: string;
+  end?: string;
+  page?: number;
+  pageSize?: number;
+}
+
 export async function fetchProxyAudit(
-  params: { proxy_connection_id?: string; page?: number; pageSize?: number } = {}
+  params: ProxyAuditFilter = {}
 ): Promise<ProxyAuditResponse> {
   const qs = new URLSearchParams();
   if (params.proxy_connection_id) qs.set('proxy_connection_id', params.proxy_connection_id);
+  if (params.sql_type) qs.set('sql_type', params.sql_type);
+  if (params.status) qs.set('status', params.status);
+  if (params.start) qs.set('start', params.start);
+  if (params.end) qs.set('end', params.end);
   if (params.page) qs.set('page', String(params.page));
   if (params.pageSize) qs.set('pageSize', String(params.pageSize));
   const s = qs.toString();
@@ -79,6 +93,36 @@ export async function fetchProxyAudit(
 export async function fetchProxyAuditByConnection(id: string): Promise<ProxyAuditLog[]> {
   const r = await request<{ logs: ProxyAuditLog[] }>(`/api/proxy/connections/${id}/audit`);
   return r.logs;
+}
+
+/**
+ * 导出审计记录为 CSV（浏览器下载）。
+ * 后端返回 attachment；这里用带鉴权的 fetch 取 blob 再触发下载。
+ */
+export async function exportProxyAuditCsv(
+  params: Omit<ProxyAuditFilter, 'page' | 'pageSize'> = {}
+): Promise<void> {
+  const qs = new URLSearchParams();
+  if (params.proxy_connection_id) qs.set('proxy_connection_id', params.proxy_connection_id);
+  if (params.sql_type) qs.set('sql_type', params.sql_type);
+  if (params.status) qs.set('status', params.status);
+  if (params.start) qs.set('start', params.start);
+  if (params.end) qs.set('end', params.end);
+  const s = qs.toString();
+  const response = await apiFetch(`/api/proxy/audit/export${s ? `?${s}` : ''}`);
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error((data as { error?: string }).error || `导出失败 (${response.status})`);
+  }
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `proxy-audit-${Date.now()}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 // ========= 进程生命周期 =========

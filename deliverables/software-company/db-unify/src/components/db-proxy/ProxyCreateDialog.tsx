@@ -7,6 +7,7 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import { useConnectionStore } from '../../stores/connectionStore';
 import { useProxyStore } from '../../stores/proxyStore';
+import IpWhitelistEditor from './IpWhitelistEditor';
 import type { AccessMode, AuditMode } from '../../types/proxy';
 
 interface Props {
@@ -27,7 +28,7 @@ const ProxyCreateDialog: React.FC<Props> = ({ open, onClose, onCreated }) => {
   const [auditMode, setAuditMode] = useState<AuditMode>('record');
   const [accessMode, setAccessMode] = useState<AccessMode>('writable');
   const [maxConnections, setMaxConnections] = useState(10);
-  const [allowedIps, setAllowedIps] = useState('');
+  const [allowedIps, setAllowedIps] = useState<string[]>([]);
   const [durationType, setDurationType] = useState<'1h' | '8h' | '24h' | 'custom'>('1h');
   const [customHours, setCustomHours] = useState(1);
 
@@ -37,7 +38,7 @@ const ProxyCreateDialog: React.FC<Props> = ({ open, onClose, onCreated }) => {
     if (open) {
       setName(''); setRealConnectionId(''); setDbType('postgresql');
       setAuditMode('record'); setAccessMode('writable'); setMaxConnections(10);
-      setAllowedIps(''); setDurationType('1h'); setCustomHours(1);
+      setAllowedIps([]); setDurationType('1h'); setCustomHours(1);
       setResult(null); setLoading(false);
     }
   }, [open]);
@@ -57,7 +58,7 @@ const ProxyCreateDialog: React.FC<Props> = ({ open, onClose, onCreated }) => {
       audit_mode: auditMode,
       access_mode: accessMode,
       max_connections: maxConnections,
-      allowed_ips: allowedIps ? allowedIps.split(',').map((s) => s.trim()).filter(Boolean) : [],
+      allowed_ips: allowedIps,
       expires_at: computeExpiresAt(),
     });
     setLoading(false);
@@ -136,7 +137,7 @@ const ProxyCreateDialog: React.FC<Props> = ({ open, onClose, onCreated }) => {
           )}
         </Box>
 
-        <TextField fullWidth size="small" label="来源 IP 白名单（逗号分隔，留空不限制）" value={allowedIps} onChange={(e) => setAllowedIps(e.target.value)} />
+        <IpWhitelistEditor value={allowedIps} onChange={setAllowedIps} label="来源 IP 白名单（多 IP/网段，回车或逗号添加，留空不限制）" />
       </DialogContent>
 
       <DialogActions sx={{ px: 3, pb: 2 }}>
