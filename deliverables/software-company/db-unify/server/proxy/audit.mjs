@@ -20,17 +20,18 @@ export function classifySql(sql) {
   let dangerous = false;
 
   if (/^(SELECT|WITH)\b/i.test(s)) sqlType = 'SELECT';
-  else if (/^(INSERT|COPY)\b/i.test(s)) sqlType = 'INSERT';
+  else if (/^(INSERT|REPLACE|COPY)\b/i.test(s)) sqlType = 'INSERT';
   else if (/^UPDATE\b/i.test(s)) sqlType = 'UPDATE';
-  else if (/^DELETE\b/i.test(s)) sqlType = 'DELETE';
-  else if (/^(CREATE|DROP|ALTER|TRUNCATE|GRANT|REVOKE|COMMENT)\b/i.test(s)) sqlType = 'DDL';
+  else if (/^(DELETE|TRUNCATE)\b/i.test(s)) sqlType = 'DELETE';
+  else if (/^(CREATE|DROP|ALTER|GRANT|REVOKE|COMMENT|RENAME|LOCK|UNLOCK|MERGE|CALL|EXEC|EXECUTE)\b/i.test(s)) sqlType = 'DDL';
 
   // 只读判定：SELECT/WITH/SHOW/EXPLAIN/DESCRIBE/DESC 等仅查询语句
-  const readOnly = /^(SELECT|WITH|SHOW|EXPLAIN|DESCRIBE|DESC|TABLE|VALUES)\b/i.test(s);
+  // 兼容 MySQL（SHOW/DESCRIBE/EXPLAIN/HELP/SET 只读查询）与达梦（同 SQL 关键字）
+  const readOnly = /^(SELECT|WITH|SHOW|EXPLAIN|DESCRIBE|DESC|TABLE|VALUES|HELP|SET|USE|PRAGMA)\b/i.test(s);
 
   // 危险 SQL：DROP/TRUNCATE/ALTER/GRANT/REVOKE / DELETE 无 WHERE / 注释规避
   if (
-    /^\s*(DROP|TRUNCATE|ALTER|GRANT|REVOKE)\b/i.test(s) ||
+    /^\s*(DROP|TRUNCATE|ALTER|GRANT|REVOKE|RENAME)\b/i.test(s) ||
     (/^\s*DELETE\b/i.test(s) && !/\bWHERE\b/i.test(s)) ||
     /(--|\/\*)/.test(s)
   ) {

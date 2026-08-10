@@ -1,26 +1,22 @@
 /**
- * 代理网关 — 单连接会话处理
+ * 代理网关 — 单连接会话处理（协议适配器模式）
  *
  * 流程：
- *  1. 读取客户端 StartupMessage，取 proxy_username
- *  2. 校验：端口对应代理连接、账号匹配、status=active、未过期、IP 白名单、并发<=max
- *  3. 请求明文密码 → 校验（国密解密 proxy_password 比对）
- *  4. 通过后以内部账号连真实库（PG 客户端握手，支持 cleartext/md5）
- *  5. 双向转发；客户端→真实库方向扫描 Q/P 消息提取 SQL，写入审计；
+ *  1. 根据 proxy.db_type 选择对应协议适配器（pg / mysql / dm）
+ *  2. 认证阶段：调 adapter.handleAuth()（PG 握手 / MySQL 握手 / DM 盲放行）
+ *  3. 校验：端口对应代理连接、账号匹配、status=active、未过期、IP 白名单、并发<=max
+ *  4. 密码校验：adapter 内完成（PG 明文 / MySQL scramble / DM 不校验）
+ *  5. 通过后以内部账号连真实库（adapter.connectReal），认证成功发 adapter.authSuccess()
+ *  6. 双向转发；客户端→真实库方向调 adapter.extractSqls() 提取 SQL，写审计；
  *     若 audit_mode=intercept 且危险 SQL → 发送错误并断开（不转发）
+ *
+ * 铁律：只改代码，不验收。适配器必须实现统一接口。
  */
 import { getPool } from '../db/pool.mjs';
-import {
-  parseStartup, nextMessage, extractSqlFromMessage,
-  authCleartext, authOk, readyForQuery, parameterStatus, backendKeyData,
-  errorResponse, connectRealAsClient,
-} from './protocol.mjs';
+import { getAdapter } from './adapters/index.mjs';
 import { classifySql, persistAudit } from './audit.mjs';
 import { decryptPasswordGm } from '../crypto-gm.mjs';
 import { decryptPassword } from '../crypto.mjs';
-
-let nextPid = 1000;
-let nextKey = 1;
 
 export class ProxySession {
   /**
@@ -34,10 +30,13 @@ export class ProxySession {
     this.onClosed = onClosed;
     this.real = null;
     this.buf = Buffer.alloc(0);
-    this.state = 'startup'; // startup -> password -> forwarding
+    this.state = 'startup'; // startup -> forwarding
     this.sessionStart = new Date().toISOString();
     this.clientIp = clientSocket.remoteAddress || null;
     this.closed = false;
+
+    // 根据 db_type 选择协议适配器
+    this.adapter = getAdapter(proxyConn.db_type, this);
 
     this.client.on('data', (c) => this.onClientData(c));
     this.client.on('error', (e) => this.close(`client error: ${e.message}`));
@@ -64,34 +63,18 @@ export class ProxySession {
     return { ok: true };
   }
 
+  /** 解密代理临时密码（国密） */
+  decryptProxyPassword() {
+    return decryptPasswordGm(this.proxy.proxy_password);
+  }
+
   // ---------- 客户端数据 ----------
   onClientData(chunk) {
     if (this.closed) return;
     this.buf = Buffer.concat([this.buf, chunk]);
 
     if (this.state === 'startup') {
-      // StartupMessage 长度在开头，等待完整
-      if (this.buf.length < 8) return;
-      const length = this.buf.readInt32BE(0);
-      if (this.buf.length < length) return;
-      const startup = parseStartup(this.buf);
-      this.buf = this.buf.subarray(length);
-      this.handleStartup(startup);
-      return;
-    }
-
-    if (this.state === 'password') {
-      // PasswordMessage
-      const msg = nextMessage(this.buf);
-      if (!msg) return;
-      this.buf = this.buf.subarray(msg.consumed);
-      if (msg.type !== 'p') {
-        this.sendErrorAndClose('认证失败：未收到密码消息');
-        return;
-      }
-      let pw = msg.payload.toString('utf8');
-      while (pw.endsWith('\0')) pw = pw.slice(0, -1);
-      this.handlePassword(pw);
+      this.handleAuth();
       return;
     }
 
@@ -100,69 +83,31 @@ export class ProxySession {
     }
   }
 
-  handleStartup(startup) {
-    if (!startup) {
-      this.sendErrorAndClose('无法解析启动消息');
+  /** 认证阶段：交给适配器处理 */
+  handleAuth() {
+    const r = this.adapter.handleAuth();
+    if (!r) return;
+    if (r.status === 'wait') return;
+    if (r.status === 'error') {
+      this.sendErrorAndClose(r.errorMessage || '认证失败');
       return;
     }
-    if (startup.sslRequest) {
-      // 不支持 SSL：回复 'N'（拒绝），客户端会在同一连接上继续发送真正的 StartupMessage
-      this.client.write(Buffer.from('N'));
-      return;
+    if (r.status === 'auth-ok') {
+      this.connectReal();
     }
-    if (startup.cancel || startup.unknown) {
-      this.sendErrorAndClose('不支持的启动消息');
-      return;
-    }
-    const username = startup.params && startup.params.user;
-    const v = this.validate();
-    if (!v.ok) {
-      this.sendErrorAndClose(v.reason);
-      return;
-    }
-    if (!username || username !== this.proxy.proxy_username) {
-      this.sendErrorAndClose('临时账号无效');
-      return;
-    }
-    // 并发校验
-    if (this.proxy.currentConnections >= this.proxy.max_connections) {
-      this.sendErrorAndClose(`超过最大并发连接数（${this.proxy.max_connections}）`);
-      return;
-    }
-    this.state = 'password';
-    this.client.write(authCleartext());
-  }
-
-  handlePassword(password) {
-    const expected = decryptPasswordGm(this.proxy.proxy_password);
-    if (!expected || password !== expected) {
-      this.sendErrorAndClose('临时密码错误');
-      return;
-    }
-    this.connectReal();
   }
 
   // ---------- 连真实库 ----------
   async connectReal() {
     const r = this.proxy.real;
     try {
-      const { socket, leftover } = await connectRealAsClient({
-        host: r.host,
-        port: r.port,
-        user: r.username,
-        password: r.password,
-        database: r.database_name,
-      });
+      const { socket, leftover } = await this.adapter.connectReal(r);
       this.real = socket;
       this.state = 'forwarding';
-      this.client.write(Buffer.concat([
-        authOk(),
-        parameterStatus('server_version', '16.0'),
-        parameterStatus('client_encoding', 'UTF8'),
-        parameterStatus('server_encoding', 'UTF8'),
-        backendKeyData(nextPid++, nextKey++),
-        readyForQuery('I'),
-      ]));
+
+      // 认证成功后发给客户端（adapter 返回对应协议的成功包）
+      const successBuf = this.adapter.authSuccess();
+      if (successBuf && successBuf.length) this.client.write(successBuf);
 
       // 更新 last_connected_at
       getPool().query(
@@ -186,7 +131,7 @@ export class ProxySession {
       this.real.on('error', (e) => this.close(`real error: ${e.message}`));
       this.real.on('close', () => this.close('real closed'));
 
-      // 残余数据（理论上握手后无数据，若有则转发）
+      // 残余数据（握手后剩余，若有则转发）
       if (leftover && leftover.length) this.real.write(leftover);
     } catch (err) {
       this.sendErrorAndClose(`连接真实数据库失败: ${err.message}`);
@@ -195,44 +140,40 @@ export class ProxySession {
 
   // ---------- 转发 + 审计 ----------
   forwardClientToReal() {
-    for (;;) {
-      const msg = nextMessage(this.buf);
-      if (!msg) break;
-      // 审计并可能拦截 Q/P 消息
-      if (msg.type === 'Q' || msg.type === 'P') {
-        const sql = extractSqlFromMessage(msg);
-        if (sql) {
-          const cls = classifySql(sql);
-          // readonly 模式：只允许 SELECT/WITH/SHOW/EXPLAIN 等只读操作
-          const readOnlyViolation = this.proxy.access_mode === 'readonly' && !cls.readOnly;
-          const blocked = readOnlyViolation || (this.proxy.audit_mode === 'intercept' && cls.dangerous);
-          persistAudit({
-            proxyConnectionId: this.proxy.id,
-            proxyUsername: this.proxy.proxy_username,
-            dbType: this.proxy.db_type,
-            realConnectionId: this.proxy.real_connection_id,
-            clientIp: this.clientIp,
-            sessionStart: this.sessionStart,
-            sqlText: sql,
-            sqlType: cls.sqlType,
-            status: blocked ? 'blocked' : 'success',
-            riskLevel: cls.riskLevel,
-            errorMessage: blocked
-              ? (readOnlyViolation ? '只读代理不允许写操作' : '危险 SQL 已被代理拦截')
-              : null,
-          });
-          if (blocked) {
-            this.sendErrorAndClose(
-              readOnlyViolation
-                ? `只读代理不允许执行写操作：${sql.slice(0, 200)}`
-                : `危险 SQL 已被代理拦截（${cls.riskLevel}）：${sql.slice(0, 200)}`
-            );
-            return;
-          }
+    const msgs = this.adapter.extractSqls();
+    for (const m of msgs) {
+      // 审计并可能拦截
+      if (m.sql) {
+        const cls = this.adapter.classifySql(m.sql) || classifySql(m.sql);
+        // readonly 模式：只允许 SELECT/WITH/SHOW/EXPLAIN 等只读操作
+        const readOnlyViolation = this.proxy.access_mode === 'readonly' && !cls.readOnly;
+        const blocked = readOnlyViolation || (this.proxy.audit_mode === 'intercept' && cls.dangerous);
+        persistAudit({
+          proxyConnectionId: this.proxy.id,
+          proxyUsername: this.proxy.proxy_username,
+          dbType: this.proxy.db_type,
+          realConnectionId: this.proxy.real_connection_id,
+          clientIp: this.clientIp,
+          sessionStart: this.sessionStart,
+          sqlText: m.sql,
+          sqlType: cls.sqlType,
+          status: blocked ? 'blocked' : 'success',
+          riskLevel: cls.riskLevel,
+          errorMessage: blocked
+            ? (readOnlyViolation ? '只读代理不允许写操作' : '危险 SQL 已被代理拦截')
+            : null,
+        });
+        if (blocked) {
+          this.sendErrorAndClose(
+            readOnlyViolation
+              ? `只读代理不允许执行写操作：${m.sql.slice(0, 200)}`
+              : `危险 SQL 已被代理拦截（${cls.riskLevel}）：${m.sql.slice(0, 200)}`
+          );
+          return;
         }
       }
-      const raw = this.buf.subarray(0, msg.consumed);
-      this.buf = this.buf.subarray(msg.consumed);
+      const raw = this.buf.subarray(0, m.consumed);
+      this.buf = this.buf.subarray(m.consumed);
       this.real.write(raw);
     }
   }
@@ -241,7 +182,8 @@ export class ProxySession {
   sendErrorAndClose(msg) {
     console.error(`[proxy-session] 拒绝连接 ${this.clientIp} (${this.proxy?.proxy_username}): ${msg}`);
     try {
-      this.client.write(errorResponse(msg));
+      const errBuf = this.adapter.buildAuthError(msg);
+      if (errBuf && errBuf.length) this.client.write(errBuf);
     } catch { /* ignore */ }
     this.close(msg);
   }

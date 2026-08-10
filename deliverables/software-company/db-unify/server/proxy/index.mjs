@@ -18,7 +18,7 @@ import net from 'node:net';
 import { getPool, closePool } from '../db/pool.mjs';
 import { decryptPassword } from '../crypto.mjs';
 import { ProxySession } from './session.mjs';
-import { errorResponse } from './protocol.mjs';
+import { getAdapter } from './adapters/index.mjs';
 
 const SYNC_INTERVAL_MS = parseInt(process.env.PROXY_SYNC_INTERVAL_MS, 10) || 10000;
 
@@ -84,7 +84,12 @@ function startListener(proxy) {
     const entry = listeners.get(proxy.proxy_port);
     if (!entry) { socket.destroy(); return; }
     if (entry.sessions.size >= entry.proxy.max_connections) {
-      try { socket.write(errorResponse(`超过最大并发连接数（${entry.proxy.max_connections}）`)); } catch { /* ignore */ }
+      try {
+        // 用适配器构造对应该 db_type 的错误响应（PG: ErrorResponse, MySQL: ERR 包, DM: 空→直接断开）
+        const adapter = getAdapter(entry.proxy.db_type, { client: socket, proxy: entry.proxy });
+        const errBuf = adapter.buildAuthError(`超过最大并发连接数（${entry.proxy.max_connections}）`);
+        if (errBuf && errBuf.length) socket.write(errBuf);
+      } catch { /* ignore */ }
       socket.destroy();
       return;
     }
