@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box, Button, Chip, CircularProgress, Divider, Typography, Tooltip, IconButton,
   MenuItem, Select, FormControl, InputLabel, TextField,
@@ -9,9 +9,11 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import { useProxyStore } from '../../stores/proxyStore';
 import IpWhitelistEditor from './IpWhitelistEditor';
-import type { ProxyConnection } from '../../types/proxy';
+import StatsOverview from './StatsOverview';
+import type { HealthStatus, ProxyConnection } from '../../types/proxy';
 
 interface Props {
   connection: ProxyConnection | null;
@@ -34,6 +36,17 @@ const Row = ({
 
 const statusColor = (s: string) => (s === 'active' ? 'success.main' : s === 'revoked' ? 'error.main' : 'warning.main');
 
+const HEALTH_COLOR: Record<HealthStatus, string> = {
+  ok: 'success.main',
+  fail: 'error.main',
+  unknown: 'text.disabled',
+};
+const HEALTH_TEXT: Record<HealthStatus, string> = {
+  ok: '健康',
+  fail: '异常',
+  unknown: '未检查',
+};
+
 const SQL_TYPES = ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'DDL', 'OTHER'];
 const STATUS_OPTS = ['success', 'failed', 'blocked'];
 
@@ -41,10 +54,18 @@ const ProxyDetailPanel: React.FC<Props> = ({ connection, onEdit, onRevoke }) => 
   const {
     auditLogs, auditTotal, auditPage, auditPageSize, auditLoading,
     auditFilters, loadAudit, setAuditFilters, exportAudit, updateConnection,
+    healthMap, triggerHealthCheck,
   } = useProxyStore();
 
   const [editIps, setEditIps] = useState(false);
   const [draftIps, setDraftIps] = useState<string[]>([]);
+
+  // 进入连接时刷新一次健康状态（确保概览点状态最新）
+  useEffect(() => {
+    if (connection?.id) {
+      // 已有定时器在 ListPanel 周期刷新，这里仅做即时拉取一次
+    }
+  }, [connection?.id]);
 
   if (!connection) {
     return (
@@ -76,18 +97,41 @@ const ProxyDetailPanel: React.FC<Props> = ({ connection, onEdit, onRevoke }) => 
 
   const timeToLocal = (v: string) => (v ? new Date(v).toLocaleString('zh-CN') : '');
 
+  const hs = (healthMap[connection.id]?.health_status as HealthStatus) || 'unknown';
+  const lastCheck = healthMap[connection.id]?.last_health_check_at;
+  const lastError = healthMap[connection.id]?.last_error;
+
   return (
     <Box sx={{ flex: 1, overflow: 'auto', bgcolor: 'background.default', p: 1.5 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
         <Typography sx={{ color: 'text.primary', fontWeight: 600, fontSize: '0.95rem' }}>{connection.name}</Typography>
         <Chip size="small" label={connection.status} sx={{ ml: 1, height: 20, fontSize: '0.65rem', color: statusColor(connection.status) }} />
         <Chip size="small" label={connection.access_mode === 'readonly' ? '只读' : '可写'} sx={{ ml: 0.5, height: 20, fontSize: '0.65rem', color: 'primary.main' }} />
+        <Tooltip title={`健康状态：${HEALTH_TEXT[hs]}${lastCheck ? `（${timeToLocal(lastCheck)}）` : ''}${lastError ? `\n最近错误：${lastError}` : ''}`}>
+          <Chip
+            size="small"
+            label={
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.4 }}>
+                <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: HEALTH_COLOR[hs] }} />
+                {HEALTH_TEXT[hs]}
+              </Box>
+            }
+            sx={{ ml: 0.5, height: 20, fontSize: '0.65rem', bgcolor: 'action.disabledBackground', color: HEALTH_COLOR[hs] }}
+          />
+        </Tooltip>
         <Box sx={{ flex: 1 }} />
+        <Tooltip title="立即探测健康">
+          <IconButton size="small" onClick={() => triggerHealthCheck(connection.id)} sx={{ p: 0.5 }}>
+            <RefreshIcon sx={{ fontSize: 14 }} />
+          </IconButton>
+        </Tooltip>
         <Tooltip title="编辑"><IconButton size="small" onClick={() => onEdit(connection.id)} sx={{ p: 0.5 }}><EditIcon sx={{ fontSize: 14 }} /></IconButton></Tooltip>
         <Tooltip title="撤销"><IconButton size="small" onClick={() => onRevoke(connection.id)} sx={{ p: 0.5 }}><DeleteIcon sx={{ fontSize: 14 }} /></IconButton></Tooltip>
       </Box>
 
       <Divider sx={{ mb: 1, borderColor: 'divider' }} />
+
+      <StatsOverview connectionId={connection.id} />
 
       <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', columnGap: 2, rowGap: 0.75, mb: 1 }}>
         <Row label="对外端口" value={
@@ -114,6 +158,14 @@ const ProxyDetailPanel: React.FC<Props> = ({ connection, onEdit, onRevoke }) => 
             <Box />
           </>
         )}
+        <Row label="健康检查" value={
+          <Box>
+            <Typography sx={{ color: 'text.primary', fontSize: '0.75rem' }}>
+              {lastCheck ? timeToLocal(lastCheck) : '尚未检查'}
+              {lastError ? ` · ${lastError}` : ''}
+            </Typography>
+          </Box>
+        } />
         <Row label="来源IP白名单" span={2} value={
           <Box sx={{ display: 'flex', alignItems: 'flex-start', flexWrap: 'wrap', gap: 0.5 }}>
             {editIps ? (

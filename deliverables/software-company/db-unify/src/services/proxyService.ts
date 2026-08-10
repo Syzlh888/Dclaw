@@ -4,8 +4,11 @@ import type {
   ProxyAuditLog,
   ProxyAuditResponse,
   ProxyConnection,
+  ProxyDangerRule,
+  ProxyHealth,
   ProxyListResponse,
   ProxyProcessStatus,
+  ProxyStatsResponse,
 } from '../types/proxy';
 
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
@@ -153,6 +156,83 @@ export async function stopProxyProcess(): Promise<ProxyProcessStatus> {
 
 export async function restartProxyProcess(): Promise<ProxyProcessStatus> {
   return request<ProxyProcessStatus>('/api/proxy/process/restart', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: '{}',
+  });
+}
+
+// ========= 健康检查 =========
+export async function fetchProxyHealth(id: string): Promise<ProxyHealth> {
+  return request<ProxyHealth>(`/api/proxy/connections/${id}/health`);
+}
+
+export async function triggerProxyHealthCheck(id: string): Promise<{ id: string; ok: boolean; errMsg: string | null }> {
+  return request<{ id: string; ok: boolean; errMsg: string | null }>(
+    `/api/proxy/connections/${id}/health`,
+    { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }
+  );
+}
+
+export async function fetchProxyHealthAll(): Promise<{ connections: ProxyHealth[] }> {
+  return request<{ connections: ProxyHealth[] }>('/api/proxy/health/all');
+}
+
+// ========= 统计 =========
+export async function fetchProxyStats(params: { from?: string; to?: string; connection_id?: string } = {}): Promise<ProxyStatsResponse> {
+  const qs = new URLSearchParams();
+  if (params.from) qs.set('from', params.from);
+  if (params.to) qs.set('to', params.to);
+  if (params.connection_id) qs.set('connection_id', params.connection_id);
+  const s = qs.toString();
+  return request<ProxyStatsResponse>(`/api/proxy/stats${s ? `?${s}` : ''}`);
+}
+
+// ========= 危险SQL规则 =========
+export async function fetchProxyRules(): Promise<{ rules: ProxyDangerRule[] }> {
+  return request<{ rules: ProxyDangerRule[] }>('/api/proxy/rules');
+}
+
+export interface ProxyRulePayload {
+  keyword: string;
+  risk_level: 'low' | 'medium' | 'high';
+  action: 'block' | 'warn';
+  enabled: boolean;
+  sort_order: number;
+  description?: string;
+}
+
+export async function createProxyRule(payload: ProxyRulePayload): Promise<{ rule: ProxyDangerRule }> {
+  return request<{ rule: ProxyDangerRule }>('/api/proxy/rules', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateProxyRule(id: string, patch: Partial<ProxyRulePayload>): Promise<{ rule: ProxyDangerRule }> {
+  return request<{ rule: ProxyDangerRule }>(`/api/proxy/rules/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(patch),
+  });
+}
+
+export async function toggleProxyRule(id: string): Promise<{ rule: ProxyDangerRule }> {
+  return request<{ rule: ProxyDangerRule }>(`/api/proxy/rules/${id}/toggle`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: '{}',
+  });
+}
+
+export async function deleteProxyRule(id: string): Promise<{ success: boolean }> {
+  return request<{ success: boolean }>(`/api/proxy/rules/${id}`, { method: 'DELETE' });
+}
+
+// ========= 审计清理 =========
+export async function runProxyAuditCleanup(): Promise<{ success: boolean; deleted?: number; before?: number; after?: number }> {
+  return request('/api/proxy/audit/cleanup', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: '{}',

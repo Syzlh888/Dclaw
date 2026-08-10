@@ -1,16 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Dialog, DialogActions, DialogContent, DialogTitle, Button, Typography, Snackbar, Alert } from '@mui/material';
+import {
+  Box, Tabs, Tab, Dialog, DialogActions, DialogContent, DialogTitle,
+  Button, Typography, Snackbar, Alert, Tooltip,
+} from '@mui/material';
+import CleaningServicesIcon from '@mui/icons-material/CleaningServices';
 import { useProxyStore } from '../../stores/proxyStore';
 import ProxyStatusBar from './ProxyStatusBar';
 import ProxyListPanel from './ProxyListPanel';
 import ProxyDetailPanel from './ProxyDetailPanel';
 import ProxyCreateDialog from './ProxyCreateDialog';
+import DangerRulesPanel from './DangerRulesPanel';
 
 const ProxyPage: React.FC = () => {
-  const { connections, selectedId, loadConnections, loadProcessStatus, revokeConnection } = useProxyStore();
+  const { connections, selectedId, loadConnections, loadProcessStatus, revokeConnection, runAuditCleanup } = useProxyStore();
   const [createOpen, setCreateOpen] = useState(false);
   const [revokeTarget, setRevokeTarget] = useState<string | null>(null);
   const [snackbar, setSnackbar] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'detail' | 'rules'>('detail');
 
   const selected = connections.find((c) => c.id === selectedId) || null;
 
@@ -31,16 +37,61 @@ const ProxyPage: React.FC = () => {
     }
   };
 
+  const handleCleanup = async () => {
+    try {
+      const r = await runAuditCleanup();
+      if (r) setSnackbar(`清理完成：删除 ${r.deleted} 条审计记录`);
+    } catch (e) {
+      setSnackbar(e instanceof Error ? `清理失败：${e.message}` : '清理失败');
+    }
+  };
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', bgcolor: 'background.default' }}>
       <ProxyStatusBar />
       <Box sx={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
         <ProxyListPanel onCreate={() => setCreateOpen(true)} onEdit={(id) => { useProxyStore.getState().selectConnection(id); }} />
-        <ProxyDetailPanel
-          connection={selected}
-          onEdit={(id) => useProxyStore.getState().selectConnection(id)}
-          onRevoke={(id) => setRevokeTarget(id)}
-        />
+        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', minHeight: 30 }}>
+            <Tabs
+              value={activeTab}
+              onChange={(_, v) => setActiveTab(v)}
+              sx={{
+                minHeight: 30,
+                '& .MuiTab-root': { minHeight: 30, fontSize: '0.7rem', py: 0.15, px: 1.25, textTransform: 'none' },
+                '& .MuiTabs-indicator': { height: 2 },
+              }}
+            >
+              <Tab value="detail" label="连接详情" />
+              <Tab value="rules" label="危险SQL规则" />
+            </Tabs>
+            <Box sx={{ flex: 1 }} />
+            {activeTab === 'detail' && (
+              <Tooltip title="手动触发审计日志清理（按当前 retention 配置）">
+                <Button
+                  size="small"
+                  variant="text"
+                  startIcon={<CleaningServicesIcon sx={{ fontSize: 13 }} />}
+                  onClick={handleCleanup}
+                  sx={{ color: 'text.secondary', textTransform: 'none', fontSize: '0.65rem', mr: 0.5 }}
+                >
+                  清理审计
+                </Button>
+              </Tooltip>
+            )}
+          </Box>
+          <Box sx={{ flex: 1, overflow: 'hidden', display: 'flex' }}>
+            {activeTab === 'detail' ? (
+              <ProxyDetailPanel
+                connection={selected}
+                onEdit={(id) => useProxyStore.getState().selectConnection(id)}
+                onRevoke={(id) => setRevokeTarget(id)}
+              />
+            ) : (
+              <DangerRulesPanel />
+            )}
+          </Box>
+        </Box>
       </Box>
 
       <ProxyCreateDialog

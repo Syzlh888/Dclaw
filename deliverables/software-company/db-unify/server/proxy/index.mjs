@@ -19,6 +19,8 @@ import { getPool, closePool } from '../db/pool.mjs';
 import { decryptPassword } from '../crypto.mjs';
 import { ProxySession } from './session.mjs';
 import { getAdapter } from './adapters/index.mjs';
+import { startAuditCleanupLoop } from './cleanup.mjs';
+import { startHealthCheckLoop } from './healthcheck.mjs';
 
 const SYNC_INTERVAL_MS = parseInt(process.env.PROXY_SYNC_INTERVAL_MS, 10) || 10000;
 
@@ -180,8 +182,15 @@ async function main() {
   await sync();
   setInterval(sync, SYNC_INTERVAL_MS);
 
+  // 阶段5：审计日志归档清理
+  const cancelCleanup = startAuditCleanupLoop({ log, error: console.error });
+  // 阶段6：代理连接健康检查
+  const cancelHealth = startHealthCheckLoop({ log, error: console.error });
+
   const shutdown = async (sig) => {
     log(`收到 ${sig}，正在关闭...`);
+    cancelCleanup();
+    cancelHealth();
     for (const [port] of [...listeners]) stopListener(port, '进程退出');
     await closePool();
     process.exit(0);
