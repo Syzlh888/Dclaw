@@ -8,7 +8,8 @@ import {
   updateConnection,
   deleteConnection,
 } from '../services/connectionApiService';
-import { useTreeStore } from './treeStore';
+// 注意：addConnection 不再自动创建 tree 节点，由调用方（DatabaseTree.handleConnectionSave）负责，传入正确的 connDialogParentId。
+// 修复历史 bug：之前自动找第一个 district 作父节点，导致用户在「前置软件」点「+」创建，连接却跑到「市直」下。
 
 interface ConnectionState {
   connections: Record<string, DbConnection>;
@@ -97,22 +98,10 @@ export const useConnectionStore = create<ConnectionState>((set, get) => ({
         connections: { ...state.connections, [created.id]: newConn },
       }));
 
-      // 自动关联到应用分组下的 Hospital 节点
-      try {
-        const treeStore = useTreeStore.getState();
-        const { nodes } = treeStore;
-        const allNodes: any[] = Object.values(nodes as any);
-        const appDistrict = allNodes.find(
-          (n) => n.type === 'district' && (n.name === '应用' || n.name === 'default')
-        ) || allNodes.find((n) => n.type === 'district');
-        if (appDistrict) {
-          await treeStore.addHospitalNode(appDistrict.id, created.name, created.id);
-          await treeStore.loadTree();
-          console.log('[addConnection] tree 节点已创建:', created.name);
-        }
-      } catch (treeErr) {
-        console.warn('[addConnection] tree 关联失败:', treeErr);
-      }
+      // 注意：tree 节点的创建由调用方负责（DatabaseTree.handleConnectionSave 已传正确父节点）。
+      // 之前这里会自动找第一个 district，导致用户在「前置软件」点「+」新建连接，
+      // 连接却跑到「市直」下 — 因为「市直」是第一个 district。
+      // 此逻辑移除，tree 节点的父节点完全由 UI 选择决定。
 
       return created.id;
     } catch (err) {

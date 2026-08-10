@@ -55,7 +55,7 @@ interface RoleManagerProps {
   schemaName?: string;
 }
 
-const PRIVILEGES = ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'ALTER', 'CREATE', 'DROP', 'ALL'];
+const PRIVILEGES = ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'TRUNCATE', 'ALTER', 'CREATE', 'DROP', 'ALL'];
 
 const RoleManager: React.FC<RoleManagerProps> = ({ open, connectionId, onClose, schemaName }) => {
   const [roles, setRoles] = useState<RoleInfo[]>([]);
@@ -497,7 +497,7 @@ const RoleManager: React.FC<RoleManagerProps> = ({ open, connectionId, onClose, 
                       }}
                       sx={{ fontSize: '0.62rem', py: 0, minHeight: 20, textTransform: 'none' }}
                     >
-                      授予权限
+                      + 批量授权
                     </Button>
                   </Box>
 
@@ -673,7 +673,7 @@ const RoleManager: React.FC<RoleManagerProps> = ({ open, connectionId, onClose, 
         PaperProps={{ sx: { bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1 } }}
       >
         <DialogTitle sx={{ color: 'text.primary', fontSize: '0.85rem', fontWeight: 600, pb: 1 }}>
-          授予权限
+          批量授权
         </DialogTitle>
         <DialogContent sx={{ pt: '8px !important' }}>
           {/* Privilege multi-select chips */}
