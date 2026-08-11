@@ -218,7 +218,7 @@ export default function UserManagementDialog({ open, onClose }: Props) {
                         variant="outlined"
                       />
                     </TableCell>
-                    <TableCell sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+                    <TableCell sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', color: 'text.secondary' }}>
                       {u.last_login_at ? new Date(u.last_login_at).toLocaleString() : '从未登录'}
                     </TableCell>
                     <TableCell align="right">
@@ -254,7 +254,7 @@ export default function UserManagementDialog({ open, onClose }: Props) {
 
       {/* 编辑/新建弹窗 */}
       <Dialog open={editOpen} onClose={() => setEditOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontSize: '1rem', fontWeight: 600 }}>
+        <DialogTitle sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))', fontWeight: 600 }}>
           {isCreate ? '新建用户' : `编辑用户: ${form.username}`}
         </DialogTitle>
         <DialogContent sx={{ pt: 2 }}>
@@ -332,7 +332,7 @@ export default function UserManagementDialog({ open, onClose }: Props) {
 
       {/* 重置密码弹窗 */}
       <Dialog open={resetOpen} onClose={() => setResetOpen(false)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontSize: '1rem', fontWeight: 600 }}>
+        <DialogTitle sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))', fontWeight: 600 }}>
           重置密码: {resetTarget?.username}
         </DialogTitle>
         <DialogContent sx={{ pt: 2 }}>

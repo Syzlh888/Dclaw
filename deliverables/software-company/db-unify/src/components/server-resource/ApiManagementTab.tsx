@@ -97,39 +97,39 @@ export default function ApiManagementTab({ serverId, instances, appInstances, se
       ) : (
         <TableContainer><Table size="small">
           <TableHead><TableRow>
-            <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>IP</TableCell>
-            <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>端口</TableCell>
-            <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>API 地址</TableCell>
-            <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>所属应用</TableCell>
-            <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>加密</TableCell>
-            <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>加密方式</TableCell>
-            <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>说明</TableCell>
-            <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>操作</TableCell>
+            <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>IP</TableCell>
+            <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>端口</TableCell>
+            <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>API 地址</TableCell>
+            <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>所属应用</TableCell>
+            <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>加密</TableCell>
+            <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>加密方式</TableCell>
+            <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>说明</TableCell>
+            <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>操作</TableCell>
           </TableRow></TableHead>
           <TableBody>
             {instances.map(a => (
               <TableRow key={a.id}>
-                <TableCell sx={{ fontSize: '0.7rem' }}>{a.ip || '-'}</TableCell>
-                <TableCell sx={{ fontSize: '0.7rem' }}>{a.port || '-'}</TableCell>
-                <TableCell sx={{ fontSize: '0.7rem' }}>
+                <TableCell sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}>{a.ip || '-'}</TableCell>
+                <TableCell sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}>{a.port || '-'}</TableCell>
+                <TableCell sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}>
                   <span style={{ color: theme.palette.primary.dark, wordBreak: 'break-all' }}>{a.apiAddress}</span>
                 </TableCell>
-                <TableCell sx={{ fontSize: '0.7rem' }}>{a.applicationName || '-'}</TableCell>
+                <TableCell sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}>{a.applicationName || '-'}</TableCell>
                 <TableCell>
                   {a.encrypted
-                    ? <VerifiedUserIcon sx={{ fontSize: '1rem', color: 'success.main' }} />
-                    : <PublicIcon sx={{ fontSize: '1rem', color: 'text.secondary' }} />}
+                    ? <VerifiedUserIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))', color: 'success.main' }} />
+                    : <PublicIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))', color: 'text.secondary' }} />}
                 </TableCell>
-                <TableCell sx={{ fontSize: '0.7rem' }}>{a.encrypted ? (a.encryptionMethod || '-') : '-'}</TableCell>
-                <TableCell sx={{ fontSize: '0.7rem', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <TableCell sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}>{a.encrypted ? (a.encryptionMethod || '-') : '-'}</TableCell>
+                <TableCell sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {a.notes || '-'}
                 </TableCell>
                 <TableCell>
-                  <Tooltip title="编辑"><IconButton size="small" onClick={() => openEdit(a)}><EditIcon sx={{ fontSize: '1rem' }} /></IconButton></Tooltip>
+                  <Tooltip title="编辑"><IconButton size="small" onClick={() => openEdit(a)}><EditIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} /></IconButton></Tooltip>
                   <Tooltip title="删除"><IconButton size="small" onClick={() => {
                     if (!confirm('确认删除该API？')) return;
                     delApi(serverId, a.id);
-                  }} sx={{ color: 'error.main' }}><DeleteIcon sx={{ fontSize: '1rem' }} /></IconButton></Tooltip>
+                  }} sx={{ color: 'error.main' }}><DeleteIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} /></IconButton></Tooltip>
                 </TableCell>
               </TableRow>
             ))}

@@ -32,15 +32,15 @@ const TaskListPanel: React.FC<Props> = ({ onCreateTask, onToggleEnabled }) => {
     }
   };
 
-  return <Box sx={{ p: 2, height: '100%', overflow: 'auto' }}>
-    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
+  return <Box sx={{ p: 1.25, height: '100%', overflow: 'auto' }}>
+    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
       <Typography sx={{ color: 'text.primary', fontWeight: 600 }}>任务列表</Typography>
-      <Chip size="small" label={list.length} sx={{ ml: 1, height: 20, color: 'text.secondary' }} />
+      <Chip size="small" label={list.length} sx={{ ml: 1, height: 18, color: 'text.secondary' }} />
       <Box sx={{ flex: 1 }} />
       <Button size="small" startIcon={<AddIcon />} onClick={onCreateTask} sx={{ color: 'primary.main' }}>新建任务</Button>
     </Box>
     {list.length === 0 && (
-      <Typography sx={{ mt: 6, textAlign: 'center', color: 'text.disabled', fontSize: '0.8125rem' }}>该项目暂无同步任务</Typography>
+      <Typography sx={{ mt: 5, textAlign: 'center', color: 'text.disabled', fontSize: 'calc(0.78rem * var(--dc-scale, 1))' }}>该项目暂无同步任务</Typography>
     )}
     {list.map((task) => {
       const mark = statusMark(task.last_run_status);
@@ -52,8 +52,8 @@ const TaskListPanel: React.FC<Props> = ({ onCreateTask, onToggleEnabled }) => {
         <Box
           key={task.id}
           sx={{
-            p: 1.5,
-            mb: 1,
+            p: 1,
+            mb: 0.75,
             bgcolor: 'background.paper',
             border: '1px solid', borderColor: 'divider',
             borderRadius: 1,
@@ -62,13 +62,13 @@ const TaskListPanel: React.FC<Props> = ({ onCreateTask, onToggleEnabled }) => {
           }}
           onClick={() => selectTask(task.id)}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
-            <Typography sx={{ color: mark.color, fontSize: '1.125rem' }}>{mark.text}</Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography sx={{ color: mark.color, fontSize: 'calc(1rem * var(--dc-scale, 1))' }}>{mark.text}</Typography>
             <Box sx={{ minWidth: 0, flex: 1 }}>
-              <Typography noWrap sx={{ color: 'text.primary', fontSize: '0.8438rem', fontWeight: 600 }}>
+              <Typography noWrap sx={{ color: 'text.primary', fontSize: 'calc(0.78rem * var(--dc-scale, 1))', fontWeight: 600 }}>
                 {task.name}
               </Typography>
-              <Typography noWrap sx={{ color: 'text.secondary', fontSize: '0.7188rem' }}>
+              <Typography noWrap sx={{ color: 'text.secondary', fontSize: 'calc(0.66rem * var(--dc-scale, 1))' }}>
                 {task.source_schema || '默认 schema'} → {task.target_schema || '默认 schema'} ·{' '}
                 {task.write_strategy || 'insert'}
               </Typography>
@@ -80,7 +80,7 @@ const TaskListPanel: React.FC<Props> = ({ onCreateTask, onToggleEnabled }) => {
               sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
               title={enabled ? '已启用自动调度' : '未启用自动调度'}
             >
-              <Typography sx={{ color: enabled ? 'success.main' : 'text.secondary', fontSize: '0.6875rem' }}>
+              <Typography sx={{ color: enabled ? 'success.main' : 'text.secondary', fontSize: 'calc(0.62rem * var(--dc-scale, 1))' }}>
                 自动
               </Typography>
               <Switch
@@ -98,7 +98,7 @@ const TaskListPanel: React.FC<Props> = ({ onCreateTask, onToggleEnabled }) => {
             <Chip
               size="small"
               label={enabled === false ? '已停用' : mark.label}
-              sx={{ height: 22, color: mark.color, bgcolor: `${mark.color}18` }}
+              sx={{ height: 18, fontSize: 'calc(0.62rem * var(--dc-scale, 1))', color: mark.color, bgcolor: `${mark.color}18` }}
             />
             <Button
               size="small"
@@ -110,21 +110,21 @@ const TaskListPanel: React.FC<Props> = ({ onCreateTask, onToggleEnabled }) => {
                 runTaskNow(task.id);
               }}
               sx={{
-                minWidth: 92,
-                fontSize: '0.6875rem',
-                py: 0.5,
+                minWidth: 84,
+                fontSize: 'calc(0.62rem * var(--dc-scale, 1))',
+                py: 0.25,
                 bgcolor: isRunning ? 'action.disabledBackground' : 'primary.main',
                 '&:hover': { bgcolor: isRunning ? 'action.disabledBackground' : 'primary.dark' },
               }}
             >
               {isRunning ? '运行中...' : '立即运行'}
             </Button>
-            <ArrowForwardIcon sx={{ color: 'text.disabled', fontSize: '1.125rem' }} />
+            <ArrowForwardIcon sx={{ color: 'text.disabled', fontSize: 'calc(1rem * var(--dc-scale, 1))' }} />
           </Box>
 
           {isRunning && progress && (
-            <Box sx={{ mt: 1, pl: 4 }}>
-              <Typography sx={{ color: 'primary.light', fontSize: '0.6875rem' }} noWrap>
+            <Box sx={{ mt: 0.75, pl: 3 }}>
+              <Typography sx={{ color: 'primary.light', fontSize: 'calc(0.62rem * var(--dc-scale, 1))' }} noWrap>
                 {progress.currentTable} ·{' '}
                 {progress.status === 'running'
                   ? '执行中'
@@ -137,7 +137,7 @@ const TaskListPanel: React.FC<Props> = ({ onCreateTask, onToggleEnabled }) => {
                 variant={progress.pct != null ? 'determinate' : 'indeterminate'}
                 value={progress.pct || 0}
                 sx={{
-                  mt: 0.5,
+                  mt: 0.4,
                   height: 3,
                   borderRadius: 1,
                   bgcolor: 'action.disabledBackground',
@@ -152,7 +152,7 @@ const TaskListPanel: React.FC<Props> = ({ onCreateTask, onToggleEnabled }) => {
             <Typography
               variant="caption"
               onClick={(e) => e.stopPropagation()}
-              sx={{ display: 'block', mt: 0.75, pl: 4, color: 'text.secondary', fontSize: '0.6875rem' }}
+              sx={{ display: 'block', mt: 0.5, pl: 3, color: 'text.secondary', fontSize: 'calc(0.62rem * var(--dc-scale, 1))' }}
             >
               {nextRunText}
             </Typography>

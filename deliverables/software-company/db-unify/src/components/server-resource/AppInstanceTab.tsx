@@ -225,16 +225,16 @@ export default function AppInstanceTab({ serverId, instances, ports, serverIps }
       ) : (
         <TableContainer><Table size="small">
           <TableHead><TableRow>
-            <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>IP</TableCell>
-            <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>名称</TableCell>
-            <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>端口</TableCell>
-            <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>URL</TableCell>
-            <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>用户</TableCell>
-            <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>密码</TableCell>
-            <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>负责人</TableCell>
-            <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>电话</TableCell>
-            <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>备注</TableCell>
-            <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>操作</TableCell>
+            <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>IP</TableCell>
+            <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>名称</TableCell>
+            <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>端口</TableCell>
+            <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>URL</TableCell>
+            <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>用户</TableCell>
+            <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>密码</TableCell>
+            <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>负责人</TableCell>
+            <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>电话</TableCell>
+            <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>备注</TableCell>
+            <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>操作</TableCell>
           </TableRow></TableHead>
           <TableBody>
             {instances.map(a => {
@@ -245,57 +245,57 @@ export default function AppInstanceTab({ serverId, instances, ports, serverIps }
                 const isRevealed = decryptedCache.has(pwdKey) && revealedPwds.has(pwdKey);
                 return (
                   <TableRow key={pwdKey}>
-                    {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: '0.7rem' }}>{a.ip || '-'}</TableCell>}
-                    {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: '0.7rem' }}>{a.name}</TableCell>}
-                    {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: '0.7rem' }}>{a.port || '-'}</TableCell>}
-                    {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: '0.7rem' }}><a href={a.url} target="_blank" rel="noreferrer" style={{ color: theme.palette.primary.dark }}>{a.url}</a></TableCell>}
-                    <TableCell sx={{ fontSize: '0.7rem' }}>{cred.username || '-'}</TableCell>
-                    <TableCell sx={{ fontSize: '0.75rem' }}>
+                    {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}>{a.ip || '-'}</TableCell>}
+                    {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}>{a.name}</TableCell>}
+                    {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}>{a.port || '-'}</TableCell>}
+                    {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}><a href={a.url} target="_blank" rel="noreferrer" style={{ color: theme.palette.primary.dark }}>{a.url}</a></TableCell>}
+                    <TableCell sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}>{cred.username || '-'}</TableCell>
+                    <TableCell sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3, flexWrap: 'nowrap' }}>
-                            <Typography sx={{ fontFamily: 'monospace', fontSize: '0.75rem', minWidth: 90, userSelect: isRevealed ? 'text' : 'none', letterSpacing: isRevealed ? '0' : '2px' }}>
+                            <Typography sx={{ fontFamily: 'monospace', fontSize: 'calc(0.75rem * var(--dc-scale, 1))', minWidth: 90, userSelect: isRevealed ? 'text' : 'none', letterSpacing: isRevealed ? '0' : '2px' }}>
                           {getDisplayPassword(pwdKey, cred.password || '')}
                         </Typography>
                         <Tooltip title="复制密码">
                           <IconButton size="small" onClick={() => handleCopyPassword(pwdKey, cred._index, cred.username || '')}>
-                            <ContentCopyIcon sx={{ fontSize: '0.9375rem', color: 'primary.main' }} />
+                            <ContentCopyIcon sx={{ fontSize: 'calc(0.9375rem * var(--dc-scale, 1))', color: 'primary.main' }} />
                           </IconButton>
                         </Tooltip>
                         <Tooltip title="修改密码">
                           <IconButton size="small" onClick={() => openPwdChange(a, ci, cred.username || '')}>
-                            <LockResetIcon sx={{ fontSize: '0.9375rem', color: 'warning.main' }} />
+                            <LockResetIcon sx={{ fontSize: 'calc(0.9375rem * var(--dc-scale, 1))', color: 'warning.main' }} />
                           </IconButton>
                         </Tooltip>
                         <Tooltip title={isRevealed ? '隐藏密码' : '查看密码（需二次验证）'}>
                           <IconButton size="small" onClick={() => requestViewPassword(pwdKey, cred._index, cred.username || '')}>
-                            {isRevealed ? <VisibilityOffIcon sx={{ fontSize: '0.9375rem' }} /> : <VisibilityIcon sx={{ fontSize: '0.9375rem' }} />}
+                            {isRevealed ? <VisibilityOffIcon sx={{ fontSize: 'calc(0.9375rem * var(--dc-scale, 1))' }} /> : <VisibilityIcon sx={{ fontSize: 'calc(0.9375rem * var(--dc-scale, 1))' }} />}
                           </IconButton>
                         </Tooltip>
                         <Tooltip title="密码历史">
                           <IconButton size="small" onClick={() => cred.username ? setCredHistoryDialog({ instance: a, credIndex: ci, username: cred.username }) : null}>
-                            <HistoryIcon sx={{ fontSize: '0.9375rem' }} />
+                            <HistoryIcon sx={{ fontSize: 'calc(0.9375rem * var(--dc-scale, 1))' }} />
                           </IconButton>
                         </Tooltip>
                         {credCount > 1 && (
                           <Tooltip title="删除此凭据">
                             <IconButton size="small" onClick={() => handleDeleteCredential(a, ci)} sx={{ color: 'error.main' }}>
-                              <DeleteIcon sx={{ fontSize: '0.9375rem' }} />
+                              <DeleteIcon sx={{ fontSize: 'calc(0.9375rem * var(--dc-scale, 1))' }} />
                             </IconButton>
                           </Tooltip>
                         )}
                       </Box>
                     </TableCell>
-                    {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: '0.7rem' }}>{a.contactPerson || '-'}</TableCell>}
-                    {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: '0.7rem' }}>{a.contactPhone || '-'}</TableCell>}
-                    <TableCell sx={{ fontSize: '0.7rem', maxWidth: 120 }}>{(cred as any).notes || a.notes || '-'}</TableCell>
+                    {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}>{a.contactPerson || '-'}</TableCell>}
+                    {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}>{a.contactPhone || '-'}</TableCell>}
+                    <TableCell sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))', maxWidth: 120 }}>{(cred as any).notes || a.notes || '-'}</TableCell>
                     {ci === 0 && (
                       <TableCell rowSpan={credCount} sx={{ verticalAlign: 'middle', textAlign: 'center' }}>
                         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
-                          <Tooltip title="编辑"><IconButton size="small" onClick={() => openEdit(a)}><EditIcon sx={{ fontSize: '1rem' }} /></IconButton></Tooltip>
+                          <Tooltip title="编辑"><IconButton size="small" onClick={() => openEdit(a)}><EditIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} /></IconButton></Tooltip>
                           <Tooltip title="删除"><IconButton size="small" onClick={() => {
                             if (!confirm('确认删除？')) return;
                             del(serverId, a.id);
                             // 端口记录同步由后端自动清理
-                          }} sx={{ color: 'error.main' }}><DeleteIcon sx={{ fontSize: '1rem' }} /></IconButton></Tooltip>
+                          }} sx={{ color: 'error.main' }}><DeleteIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} /></IconButton></Tooltip>
                         </Box>
                       </TableCell>
                     )}
@@ -330,21 +330,21 @@ export default function AppInstanceTab({ serverId, instances, ports, serverIps }
             <Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                 <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>用户凭据</Typography>
-                <Button size="small" variant="outlined" sx={{ minWidth: 32, p: '2px 6px', fontSize: '0.7rem' }} onClick={addCred}>+ 添加</Button>
+                <Button size="small" variant="outlined" sx={{ minWidth: 32, p: '2px 6px', fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }} onClick={addCred}>+ 添加</Button>
               </Box>
               {credentials.map((cred, i) => (
                 <Box key={i} sx={{ display: 'flex', gap: 1, mb: 1, alignItems: 'flex-start', p: 1.5, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
                   <TextField size="small" label="用户名" value={cred.username} onChange={e => updateCred(i, 'username', e.target.value)} sx={{ flex: 1 }} />
                   <TextField size="small" label="密码" type="password" autoComplete="new-password" value={cred.password} onChange={e => updateCred(i, 'password', e.target.value)} sx={{ flex: 1 }} />
                   <TextField size="small" label="备注" value={cred.notes} onChange={e => updateCred(i, 'notes', e.target.value)} sx={{ flex: 2 }} />
-                  <Button size="small" variant="outlined" onClick={() => setShowPwdGen(showPwdGen === i ? null : i)} sx={{ minWidth: 56, flexShrink: 0, fontSize: '0.7rem', height: 40 }}>生成</Button>
+                  <Button size="small" variant="outlined" onClick={() => setShowPwdGen(showPwdGen === i ? null : i)} sx={{ minWidth: 56, flexShrink: 0, fontSize: 'calc(0.7rem * var(--dc-scale, 1))', height: 40 }}>生成</Button>
                   <Tooltip title="密码历史">
                     <IconButton size="small" onClick={() => cred.username ? setCredHistoryOpen({ index: i, username: cred.username }) : null} sx={{ flexShrink: 0, height: 40, width: 40 }}>
-                      <HistoryIcon sx={{ fontSize: '1rem' }} />
+                      <HistoryIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} />
                     </IconButton>
                   </Tooltip>
                   {credentials.length > 1 && (
-                    <IconButton size="small" onClick={() => removeCred(i)} sx={{ color: 'error.main', flexShrink: 0 }}><DeleteIcon sx={{ fontSize: '1rem' }} /></IconButton>
+                    <IconButton size="small" onClick={() => removeCred(i)} sx={{ color: 'error.main', flexShrink: 0 }}><DeleteIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} /></IconButton>
                   )}
                 </Box>
               ))}
@@ -369,7 +369,7 @@ export default function AppInstanceTab({ serverId, instances, ports, serverIps }
 
       {/* 主页面密码修改弹窗 */}
       <Dialog open={pwdChangeOpen} onClose={() => { setPwdChangeOpen(false); setPwdChangeTarget(null); }} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 600, fontSize: '0.95rem' }}>修改密码 - {pwdChangeTarget?.username || ''}</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 600, fontSize: 'calc(0.95rem * var(--dc-scale, 1))' }}>修改密码 - {pwdChangeTarget?.username || ''}</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mt: 1 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -389,7 +389,7 @@ export default function AppInstanceTab({ serverId, instances, ports, serverIps }
             </Box>
             <Box>
               <Button size="small" variant="outlined" onClick={() => setPwdChangeShowGen(!pwdChangeShowGen)}
-                sx={{ minWidth: 56, fontSize: '0.7rem' }}>生成密码</Button>
+                sx={{ minWidth: 56, fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}>生成密码</Button>
               {pwdChangeShowGen && (
                 <Box sx={{ mt: 1 }}>
                   <PasswordGenerator
@@ -412,9 +412,9 @@ export default function AppInstanceTab({ serverId, instances, ports, serverIps }
 
       {/* 凭据密码二次验证弹窗 */}
       <Dialog open={pwdVerifyOpen} onClose={() => { setPwdVerifyOpen(false); setPwdVerifyTarget(null); setPwdVerifyError(''); setPwdVerifyInput(''); }} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 600, fontSize: '0.95rem' }}>二次验证 - {pwdVerifyTarget?.action === 'copy' ? '复制凭据密码' : '查看凭据密码'}</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 600, fontSize: 'calc(0.95rem * var(--dc-scale, 1))' }}>二次验证 - {pwdVerifyTarget?.action === 'copy' ? '复制凭据密码' : '查看凭据密码'}</DialogTitle>
         <DialogContent>
-          {pwdVerifyError && <Box sx={{ mb: 1.5, p: 1, bgcolor: 'error.light', borderRadius: 1, color: 'error.contrastText', fontSize: '0.85rem' }}>{pwdVerifyError}</Box>}
+          {pwdVerifyError && <Box sx={{ mb: 1.5, p: 1, bgcolor: 'error.light', borderRadius: 1, color: 'error.contrastText', fontSize: 'calc(0.85rem * var(--dc-scale, 1))' }}>{pwdVerifyError}</Box>}
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
             请输入二次验证密码以查看凭据「{pwdVerifyTarget?.username || '-'}」的明文密码
           </Typography>

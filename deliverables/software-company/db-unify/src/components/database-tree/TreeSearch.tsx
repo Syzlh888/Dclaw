@@ -39,23 +39,23 @@ const TreeSearch: React.FC = () => {
   }, []);
 
   return (
-    <Box sx={{ p: 1, display: 'flex', gap: 0.5, alignItems: 'center', borderBottom: '1px solid', borderColor: 'divider' }}>
+    <Box sx={{ p: 0.5, display: 'flex', gap: 0.5, alignItems: 'center', borderBottom: '1px solid', borderColor: 'divider' }}>
       <TextField
         size="small"
         placeholder="搜索数据库..."
         value={value}
         onChange={handleChange}
-        sx={{ flex: 1, '& .MuiOutlinedInput-root': { fontSize: '0.7rem' } }}
+        sx={{ flex: 1, '& .MuiOutlinedInput-root': { fontSize: 'calc(0.68rem * var(--dc-scale, 1))' } }}
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
-              <SearchIcon sx={{ fontSize: '1.125rem', color: 'text.secondary' }} />
+              <SearchIcon sx={{ fontSize: 'calc(0.95rem * var(--dc-scale, 1))', color: 'text.secondary' }} />
             </InputAdornment>
           ),
           endAdornment: value ? (
             <InputAdornment position="end">
               <IconButton size="small" onClick={handleClear}>
-                <ClearIcon sx={{ fontSize: '1rem' }} />
+                <ClearIcon sx={{ fontSize: 'calc(0.9rem * var(--dc-scale, 1))' }} />
               </IconButton>
             </InputAdornment>
           ) : null,
@@ -65,8 +65,8 @@ const TreeSearch: React.FC = () => {
         size="small"
         onClick={() => setImportOpen(true)}
         variant="outlined"
-        startIcon={<UploadFileIcon sx={{ fontSize: '0.875rem' }} />}
-        sx={{ textTransform: 'none', fontSize: '0.7rem', py: 0.5, minHeight: 32, whiteSpace: 'nowrap', flexShrink: 0 }}
+        startIcon={<UploadFileIcon sx={{ fontSize: 'calc(0.85rem * var(--dc-scale, 1))' }} />}
+        sx={{ textTransform: 'none', fontSize: 'calc(0.68rem * var(--dc-scale, 1))', py: 0.25, minHeight: 26, whiteSpace: 'nowrap', flexShrink: 0 }}
         title="从 CSV/JSON 文件批量导入连接"
       >
         导入

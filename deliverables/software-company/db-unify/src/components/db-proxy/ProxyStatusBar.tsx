@@ -40,7 +40,7 @@ const ProxyStatusBar: React.FC = () => {
             bgcolor: running ? 'success.main' : 'error.main',
           }}
         />
-        <Typography sx={{ color: 'text.secondary', fontSize: '0.75rem' }}>
+        <Typography sx={{ color: 'text.secondary', fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>
           代理网关：{running ? '运行中' : '已停止'}
         </Typography>
       </Box>
@@ -49,14 +49,14 @@ const ProxyStatusBar: React.FC = () => {
         <Chip
           size="small"
           label={`PID ${processStatus.pid} · 监听 ${processStatus.listeningPorts?.length || 0} 端口 · 活跃 ${processStatus.activeCount ?? 0}/${processStatus.totalActive ?? 0}`}
-          sx={{ height: 20, fontSize: '0.65rem', bgcolor: 'action.disabledBackground', color: 'text.secondary' }}
+          sx={{ height: 20, fontSize: 'calc(0.65rem * var(--dc-scale, 1))', bgcolor: 'action.disabledBackground', color: 'text.secondary' }}
         />
       )}
 
       <Box sx={{ flex: 1 }} />
 
       {processError && (
-        <Typography sx={{ color: 'error.main', fontSize: '0.65rem' }}>{processError}</Typography>
+        <Typography sx={{ color: 'error.main', fontSize: 'calc(0.65rem * var(--dc-scale, 1))' }}>{processError}</Typography>
       )}
 
       <Tooltip title="启动代理网关进程">
@@ -64,10 +64,10 @@ const ProxyStatusBar: React.FC = () => {
           <Button
             size="small"
             variant="text"
-            startIcon={<PlayArrowIcon sx={{ fontSize: '0.875rem' }} />}
+            startIcon={<PlayArrowIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} />}
             onClick={startProcess}
             disabled={processLoading || !!running}
-            sx={{ color: running ? 'text.disabled' : 'success.main', textTransform: 'none', fontSize: '0.75rem' }}
+            sx={{ color: running ? 'text.disabled' : 'success.main', textTransform: 'none', fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}
           >
             启动
           </Button>
@@ -78,10 +78,10 @@ const ProxyStatusBar: React.FC = () => {
           <Button
             size="small"
             variant="text"
-            startIcon={<StopIcon sx={{ fontSize: '0.875rem' }} />}
+            startIcon={<StopIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} />}
             onClick={stopProcess}
             disabled={processLoading || !running}
-            sx={{ color: running ? 'error.main' : 'text.disabled', textTransform: 'none', fontSize: '0.75rem' }}
+            sx={{ color: running ? 'error.main' : 'text.disabled', textTransform: 'none', fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}
           >
             停止
           </Button>
@@ -92,10 +92,10 @@ const ProxyStatusBar: React.FC = () => {
           <Button
             size="small"
             variant="text"
-            startIcon={processLoading ? <CircularProgress size={12} /> : <RestartAltIcon sx={{ fontSize: '0.875rem' }} />}
+            startIcon={processLoading ? <CircularProgress size={12} /> : <RestartAltIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} />}
             onClick={restartProcess}
             disabled={processLoading}
-            sx={{ color: 'primary.main', textTransform: 'none', fontSize: '0.75rem' }}
+            sx={{ color: 'primary.main', textTransform: 'none', fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}
           >
             重启
           </Button>

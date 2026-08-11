@@ -68,8 +68,8 @@ const QueryChartPanel: React.FC<Props> = ({
           <ResponsiveContainer width="100%" height={350}>
             <BarChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey={chartXField} tick={{ fontSize: '0.625rem' }} />
-              <YAxis tick={{ fontSize: '0.625rem' }} />
+              <XAxis dataKey={chartXField} tick={{ fontSize: 'calc(0.625rem * var(--dc-scale, 1))' }} />
+              <YAxis tick={{ fontSize: 'calc(0.625rem * var(--dc-scale, 1))' }} />
               <Tooltip />
               <Legend />
               <Bar dataKey={chartYField} fill="#1976d2" />
@@ -81,8 +81,8 @@ const QueryChartPanel: React.FC<Props> = ({
           <ResponsiveContainer width="100%" height={350}>
             <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey={chartXField} tick={{ fontSize: '0.625rem' }} />
-              <YAxis tick={{ fontSize: '0.625rem' }} />
+              <XAxis dataKey={chartXField} tick={{ fontSize: 'calc(0.625rem * var(--dc-scale, 1))' }} />
+              <YAxis tick={{ fontSize: 'calc(0.625rem * var(--dc-scale, 1))' }} />
               <Tooltip />
               <Legend />
               <Line type="monotone" dataKey={chartYField} stroke="#1976d2" />
@@ -151,20 +151,20 @@ const QueryChartPanel: React.FC<Props> = ({
 
         <FormControl size="small" sx={{ minWidth: 120 }}>
           <InputLabel>图表类型</InputLabel>
-          <Select value={chartType} onChange={(e) => onChartTypeChange(e.target.value as any)} label="图表类型" sx={{ fontSize: '0.8rem' }}>
-            <MenuItem value="bar" sx={{ fontSize: '0.8rem' }}>柱状图</MenuItem>
-            <MenuItem value="pie" sx={{ fontSize: '0.8rem' }}>饼图</MenuItem>
-            <MenuItem value="line" sx={{ fontSize: '0.8rem' }}>折线图</MenuItem>
+          <Select value={chartType} onChange={(e) => onChartTypeChange(e.target.value as any)} label="图表类型" sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>
+            <MenuItem value="bar" sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>柱状图</MenuItem>
+            <MenuItem value="pie" sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>饼图</MenuItem>
+            <MenuItem value="line" sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>折线图</MenuItem>
           </Select>
         </FormControl>
 
         {(chartType === 'bar' || chartType === 'line' || chartType === 'pie') && (
           <FormControl size="small" sx={{ minWidth: 160 }}>
             <InputLabel>分类字段（X轴）</InputLabel>
-            <Select value={chartXField} onChange={(e) => onXFieldChange(e.target.value)} label="分类字段（X轴）" sx={{ fontSize: '0.8rem' }}>
-              <MenuItem value="" sx={{ fontSize: '0.8rem' }}>请选择</MenuItem>
+            <Select value={chartXField} onChange={(e) => onXFieldChange(e.target.value)} label="分类字段（X轴）" sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>
+              <MenuItem value="" sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>请选择</MenuItem>
               {allFields.map((f) => (
-                <MenuItem key={f.key} value={f.key} sx={{ fontSize: '0.8rem' }}>{f.label}</MenuItem>
+                <MenuItem key={f.key} value={f.key} sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>{f.label}</MenuItem>
               ))}
             </Select>
           </FormControl>
@@ -172,10 +172,10 @@ const QueryChartPanel: React.FC<Props> = ({
 
         <FormControl size="small" sx={{ minWidth: 160 }}>
           <InputLabel>数值字段（Y轴）</InputLabel>
-          <Select value={chartYField} onChange={(e) => onYFieldChange(e.target.value)} label="数值字段（Y轴）" sx={{ fontSize: '0.8rem' }}>
-            <MenuItem value="" sx={{ fontSize: '0.8rem' }}>请选择</MenuItem>
+          <Select value={chartYField} onChange={(e) => onYFieldChange(e.target.value)} label="数值字段（Y轴）" sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>
+            <MenuItem value="" sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>请选择</MenuItem>
             {allFields.filter((f) => f.type === 'number' || numericFields.includes(f.key)).map((f) => (
-              <MenuItem key={f.key} value={f.key} sx={{ fontSize: '0.8rem' }}>{f.label}</MenuItem>
+              <MenuItem key={f.key} value={f.key} sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>{f.label}</MenuItem>
             ))}
           </Select>
         </FormControl>

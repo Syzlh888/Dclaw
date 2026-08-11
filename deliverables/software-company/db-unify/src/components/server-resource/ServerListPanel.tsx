@@ -56,7 +56,7 @@ const AddChildDialog: React.FC<{
   useEffect(() => { if (open) { setName(initialName || ''); setShortName(initialShortName || ''); } }, [open, initialName, initialShortName]);
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
-      <DialogTitle sx={{ fontSize: '0.85rem', pb: 0.5 }}>{title}</DialogTitle>
+      <DialogTitle sx={{ fontSize: 'calc(0.85rem * var(--dc-scale, 1))', pb: 0.5 }}>{title}</DialogTitle>
       <DialogContent sx={{ pt: 1 }}>
         <TextField
           autoFocus
@@ -194,16 +194,16 @@ const ServerLeaf: React.FC<{
             : { '&:hover': { bgcolor: 'action.hover' } }),
         }}
       >
-        <StorageIcon sx={{ fontSize: '1rem', mr: 0.5, color: isHighlighted ? 'inherit' : 'text.secondary' }} />
+        <StorageIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))', mr: 0.5, color: isHighlighted ? 'inherit' : 'text.secondary' }} />
         <ListItemText
           disableTypography
           primary={
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, lineHeight: 1.2 }}>
-              <Typography variant="caption" sx={{ fontSize: '1.15rem', fontWeight: 500, lineHeight: 1.2 }}>
+              <Typography variant="caption" sx={{ fontSize: 'calc(1.15rem * var(--dc-scale, 1))', fontWeight: 500, lineHeight: 1.2 }}>
                 {server.name}
               </Typography>
               {ipText && (
-                <Typography variant="caption" color={isHighlighted ? 'inherit' : 'text.disabled'} sx={{ fontSize: '0.7rem', lineHeight: 1.2 }}>
+                <Typography variant="caption" color={isHighlighted ? 'inherit' : 'text.disabled'} sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))', lineHeight: 1.2 }}>
                   {ipText}
                 </Typography>
               )}
@@ -329,26 +329,26 @@ const AppNode: React.FC<{
       >
         {hasChildren ? (
           expanded
-            ? <ExpandMoreIcon sx={{ fontSize: '0.75rem', mr: 0.15 }} />
-            : <ChevronRightIcon sx={{ fontSize: '0.75rem', mr: 0.15 }} />
+            ? <ExpandMoreIcon sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', mr: 0.15 }} />
+            : <ChevronRightIcon sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', mr: 0.15 }} />
         ) : (
           <Box sx={{ width: 18, mr: 0.15 }} />
         )}
-        <AppsIcon sx={(theme) => ({ fontSize: '1.125rem', mr: 0.5, color: theme.palette.mode === 'light' ? '#0288d1' : '#4DB8E6' })} />
-        <Typography variant="caption" sx={{ fontSize: '0.75rem', fontWeight: 500, flex: 1 }}>
+        <AppsIcon sx={(theme) => ({ fontSize: 'calc(1.125rem * var(--dc-scale, 1))', mr: 0.5, color: theme.palette.mode === 'light' ? '#0288d1' : '#4DB8E6' })} />
+        <Typography variant="caption" sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', fontWeight: 500, flex: 1 }}>
           {app.name}
           {app.shortName ? (
-            <Typography component="span" variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
+            <Typography component="span" variant="caption" color="text.secondary" sx={{ fontSize: 'calc(0.65rem * var(--dc-scale, 1))' }}>
               {' '}({app.shortName})
             </Typography>
           ) : null}
         </Typography>
         {hasChildren && (
-          <Typography variant="caption" color="text.disabled" sx={{ fontSize: '0.6rem' }}>
+          <Typography variant="caption" color="text.disabled" sx={{ fontSize: 'calc(0.6rem * var(--dc-scale, 1))' }}>
             {filteredChildren.length}
           </Typography>
         )}
-        <IconButton size="small" onClick={(e) => { e.stopPropagation(); setAddMenuAnchor(e.currentTarget); }} sx={{ p: 0.25, '&:hover': { color: 'primary.main' } }}><AddIcon sx={{ fontSize: '0.875rem' }} /></IconButton>
+        <IconButton size="small" onClick={(e) => { e.stopPropagation(); setAddMenuAnchor(e.currentTarget); }} sx={{ p: 0.25, '&:hover': { color: 'primary.main' } }}><AddIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} /></IconButton>
         {/* 下拉菜单：新增同级应用 / 新增服务器 */}
         <Menu
           anchorEl={addMenuAnchor}
@@ -359,17 +359,17 @@ const AppNode: React.FC<{
           MenuListProps={{ dense: true, sx: { py: 0.25 } }}
           slotProps={{ paper: { sx: { minWidth: 140, borderRadius: 1 } } }}
         >
-          <MenuItem onClick={() => { setAddMenuAnchor(null); onAddSiblingApp(app.engineeringId); }} sx={{ minHeight: 26, py: 0.3, fontSize: '0.72rem' }}>
-            <ListItemIcon sx={{ minWidth: 24 }}><AddIcon sx={{ fontSize: '0.9375rem' }} /></ListItemIcon>
-            <ListItemText primaryTypographyProps={{ fontSize: '0.72rem' }}>新增同级应用</ListItemText>
+          <MenuItem onClick={() => { setAddMenuAnchor(null); onAddSiblingApp(app.engineeringId); }} sx={{ minHeight: 26, py: 0.3, fontSize: 'calc(0.72rem * var(--dc-scale, 1))' }}>
+            <ListItemIcon sx={{ minWidth: 24 }}><AddIcon sx={{ fontSize: 'calc(0.9375rem * var(--dc-scale, 1))' }} /></ListItemIcon>
+            <ListItemText primaryTypographyProps={{ fontSize: 'calc(0.72rem * var(--dc-scale, 1))' }}>新增同级应用</ListItemText>
           </MenuItem>
-          <MenuItem onClick={() => { setAddMenuAnchor(null); onAddServer(app.id); }} sx={{ minHeight: 26, py: 0.3, fontSize: '0.72rem' }}>
-            <ListItemIcon sx={{ minWidth: 24 }}><StorageIcon sx={{ fontSize: '0.9375rem' }} /></ListItemIcon>
-            <ListItemText primaryTypographyProps={{ fontSize: '0.72rem' }}>新增服务器</ListItemText>
+          <MenuItem onClick={() => { setAddMenuAnchor(null); onAddServer(app.id); }} sx={{ minHeight: 26, py: 0.3, fontSize: 'calc(0.72rem * var(--dc-scale, 1))' }}>
+            <ListItemIcon sx={{ minWidth: 24 }}><StorageIcon sx={{ fontSize: 'calc(0.9375rem * var(--dc-scale, 1))' }} /></ListItemIcon>
+            <ListItemText primaryTypographyProps={{ fontSize: 'calc(0.72rem * var(--dc-scale, 1))' }}>新增服务器</ListItemText>
           </MenuItem>
         </Menu>
-        <IconButton size="small" onClick={(e) => { e.stopPropagation(); onEditApplication(app); }} sx={{ p: 0.25, '&:hover': { color: 'warning.main' } }}><EditIcon sx={{ fontSize: '0.875rem' }} /></IconButton>
-        <IconButton size="small" onClick={(e) => { e.stopPropagation(); onDeleteApplication(app.id); }} sx={{ p: 0.25, '&:hover': { color: 'error.main' } }}><DeleteIcon sx={{ fontSize: '0.875rem' }} /></IconButton>
+        <IconButton size="small" onClick={(e) => { e.stopPropagation(); onEditApplication(app); }} sx={{ p: 0.25, '&:hover': { color: 'warning.main' } }}><EditIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} /></IconButton>
+        <IconButton size="small" onClick={(e) => { e.stopPropagation(); onDeleteApplication(app.id); }} sx={{ p: 0.25, '&:hover': { color: 'error.main' } }}><DeleteIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} /></IconButton>
       </ListItemButton>
       {hasChildren && (
         <Collapse in={expanded} timeout="auto" unmountOnExit>
@@ -460,26 +460,26 @@ const EngNode: React.FC<{
       >
         {hasChildren ? (
           expanded
-            ? <ExpandMoreIcon sx={{ fontSize: '0.75rem', mr: 0.15 }} />
-            : <ChevronRightIcon sx={{ fontSize: '0.75rem', mr: 0.15 }} />
+            ? <ExpandMoreIcon sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', mr: 0.15 }} />
+            : <ChevronRightIcon sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', mr: 0.15 }} />
         ) : (
           <Box sx={{ width: 18, mr: 0.15 }} />
         )}
-        <CategoryIcon sx={(theme) => ({ fontSize: '1.125rem', mr: 0.5, color: theme.palette.mode === 'light' ? '#2e7d32' : '#6BBF5A' })} />
-        <Typography variant="caption" sx={{ fontSize: '0.75rem', fontWeight: 500, flex: 1 }}>
+        <CategoryIcon sx={(theme) => ({ fontSize: 'calc(1.125rem * var(--dc-scale, 1))', mr: 0.5, color: theme.palette.mode === 'light' ? '#2e7d32' : '#6BBF5A' })} />
+        <Typography variant="caption" sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', fontWeight: 500, flex: 1 }}>
           {eng.name}
           {eng.shortName ? (
-            <Typography component="span" variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
+            <Typography component="span" variant="caption" color="text.secondary" sx={{ fontSize: 'calc(0.65rem * var(--dc-scale, 1))' }}>
               {' '}({eng.shortName})
             </Typography>
           ) : null}
         </Typography>
         {hasChildren && (
-          <Typography variant="caption" color="text.disabled" sx={{ fontSize: '0.6rem' }}>
+          <Typography variant="caption" color="text.disabled" sx={{ fontSize: 'calc(0.6rem * var(--dc-scale, 1))' }}>
             {filteredChildren.length}
           </Typography>
         )}
-        <IconButton size="small" onClick={(e) => { e.stopPropagation(); setAddMenuAnchor(e.currentTarget); }} sx={{ p: 0.25, '&:hover': { color: 'primary.main' } }}><AddIcon sx={{ fontSize: '0.875rem' }} /></IconButton>
+        <IconButton size="small" onClick={(e) => { e.stopPropagation(); setAddMenuAnchor(e.currentTarget); }} sx={{ p: 0.25, '&:hover': { color: 'primary.main' } }}><AddIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} /></IconButton>
         {/* 下拉菜单：新增应用 / 新增服务器 */}
         <Menu
           anchorEl={addMenuAnchor}
@@ -490,17 +490,17 @@ const EngNode: React.FC<{
           MenuListProps={{ dense: true, sx: { py: 0.25 } }}
           slotProps={{ paper: { sx: { minWidth: 140, borderRadius: 1 } } }}
         >
-          <MenuItem onClick={() => { setAddMenuAnchor(null); onAddApplication(eng.id); }} sx={{ minHeight: 26, py: 0.3, fontSize: '0.72rem' }}>
-            <ListItemIcon sx={{ minWidth: 24 }}><AddIcon sx={{ fontSize: '0.9375rem' }} /></ListItemIcon>
-            <ListItemText primaryTypographyProps={{ fontSize: '0.72rem' }}>新增应用</ListItemText>
+          <MenuItem onClick={() => { setAddMenuAnchor(null); onAddApplication(eng.id); }} sx={{ minHeight: 26, py: 0.3, fontSize: 'calc(0.72rem * var(--dc-scale, 1))' }}>
+            <ListItemIcon sx={{ minWidth: 24 }}><AddIcon sx={{ fontSize: 'calc(0.9375rem * var(--dc-scale, 1))' }} /></ListItemIcon>
+            <ListItemText primaryTypographyProps={{ fontSize: 'calc(0.72rem * var(--dc-scale, 1))' }}>新增应用</ListItemText>
           </MenuItem>
-          <MenuItem onClick={() => { setAddMenuAnchor(null); onAddServerDirect(eng.id); }} sx={{ minHeight: 26, py: 0.3, fontSize: '0.72rem' }}>
-            <ListItemIcon sx={{ minWidth: 24 }}><StorageIcon sx={{ fontSize: '0.9375rem' }} /></ListItemIcon>
-            <ListItemText primaryTypographyProps={{ fontSize: '0.72rem' }}>新增服务器</ListItemText>
+          <MenuItem onClick={() => { setAddMenuAnchor(null); onAddServerDirect(eng.id); }} sx={{ minHeight: 26, py: 0.3, fontSize: 'calc(0.72rem * var(--dc-scale, 1))' }}>
+            <ListItemIcon sx={{ minWidth: 24 }}><StorageIcon sx={{ fontSize: 'calc(0.9375rem * var(--dc-scale, 1))' }} /></ListItemIcon>
+            <ListItemText primaryTypographyProps={{ fontSize: 'calc(0.72rem * var(--dc-scale, 1))' }}>新增服务器</ListItemText>
           </MenuItem>
         </Menu>
-        <IconButton size="small" onClick={(e) => { e.stopPropagation(); onEditEngineering(eng); }} sx={{ p: 0.25, '&:hover': { color: 'warning.main' } }}><EditIcon sx={{ fontSize: '0.875rem' }} /></IconButton>
-        <IconButton size="small" onClick={(e) => { e.stopPropagation(); onDeleteEngineering(eng.id); }} sx={{ p: 0.25, '&:hover': { color: 'error.main' } }}><DeleteIcon sx={{ fontSize: '0.875rem' }} /></IconButton>
+        <IconButton size="small" onClick={(e) => { e.stopPropagation(); onEditEngineering(eng); }} sx={{ p: 0.25, '&:hover': { color: 'warning.main' } }}><EditIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} /></IconButton>
+        <IconButton size="small" onClick={(e) => { e.stopPropagation(); onDeleteEngineering(eng.id); }} sx={{ p: 0.25, '&:hover': { color: 'error.main' } }}><DeleteIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} /></IconButton>
       </ListItemButton>
       {hasChildren && (
         <Collapse in={expanded} timeout="auto" unmountOnExit>
@@ -586,26 +586,26 @@ const ProjectNode: React.FC<{
       >
         {hasChildren ? (
           expanded
-            ? <ExpandMoreIcon sx={{ fontSize: '0.75rem', mr: 0.15 }} />
-            : <ChevronRightIcon sx={{ fontSize: '0.75rem', mr: 0.15 }} />
+            ? <ExpandMoreIcon sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', mr: 0.15 }} />
+            : <ChevronRightIcon sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', mr: 0.15 }} />
         ) : (
           <Box sx={{ width: 18, mr: 0.15 }} />
         )}
-        <FolderIcon sx={(theme) => ({ fontSize: '1.125rem', mr: 0.5, color: theme.palette.mode === 'light' ? '#ed6c02' : '#DAAA4E' })} />
-        <Typography variant="caption" sx={{ fontSize: '0.75rem', fontWeight: 600, flex: 1 }}>
+        <FolderIcon sx={(theme) => ({ fontSize: 'calc(1.125rem * var(--dc-scale, 1))', mr: 0.5, color: theme.palette.mode === 'light' ? '#ed6c02' : '#DAAA4E' })} />
+        <Typography variant="caption" sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', fontWeight: 600, flex: 1 }}>
           {project.name}
           {project.shortName ? (
-            <Typography component="span" variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
+            <Typography component="span" variant="caption" color="text.secondary" sx={{ fontSize: 'calc(0.65rem * var(--dc-scale, 1))' }}>
               {' '}({project.shortName})
             </Typography>
           ) : null}
         </Typography>
         {hasChildren && (
-          <Typography variant="caption" color="text.disabled" sx={{ fontSize: '0.6rem' }}>
+          <Typography variant="caption" color="text.disabled" sx={{ fontSize: 'calc(0.6rem * var(--dc-scale, 1))' }}>
             {children.length}
           </Typography>
         )}
-        <IconButton size="small" onClick={(e) => { e.stopPropagation(); setAddMenuAnchor(e.currentTarget); }} sx={{ p: 0.25, '&:hover': { color: 'primary.main' } }}><AddIcon sx={{ fontSize: '0.875rem' }} /></IconButton>
+        <IconButton size="small" onClick={(e) => { e.stopPropagation(); setAddMenuAnchor(e.currentTarget); }} sx={{ p: 0.25, '&:hover': { color: 'primary.main' } }}><AddIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} /></IconButton>
         {/* 下拉菜单：新增工程 / 新增服务器 */}
         <Menu
           anchorEl={addMenuAnchor}
@@ -616,17 +616,17 @@ const ProjectNode: React.FC<{
           MenuListProps={{ dense: true, sx: { py: 0.25 } }}
           slotProps={{ paper: { sx: { minWidth: 140, borderRadius: 1 } } }}
         >
-          <MenuItem onClick={() => { setAddMenuAnchor(null); onAddEngineering(project.id); }} sx={{ minHeight: 26, py: 0.3, fontSize: '0.72rem' }}>
-            <ListItemIcon sx={{ minWidth: 24 }}><AddIcon sx={{ fontSize: '0.9375rem' }} /></ListItemIcon>
-            <ListItemText primaryTypographyProps={{ fontSize: '0.72rem' }}>新增工程</ListItemText>
+          <MenuItem onClick={() => { setAddMenuAnchor(null); onAddEngineering(project.id); }} sx={{ minHeight: 26, py: 0.3, fontSize: 'calc(0.72rem * var(--dc-scale, 1))' }}>
+            <ListItemIcon sx={{ minWidth: 24 }}><AddIcon sx={{ fontSize: 'calc(0.9375rem * var(--dc-scale, 1))' }} /></ListItemIcon>
+            <ListItemText primaryTypographyProps={{ fontSize: 'calc(0.72rem * var(--dc-scale, 1))' }}>新增工程</ListItemText>
           </MenuItem>
-          <MenuItem onClick={() => { setAddMenuAnchor(null); onAddServerDirect(project.id); }} sx={{ minHeight: 26, py: 0.3, fontSize: '0.72rem' }}>
-            <ListItemIcon sx={{ minWidth: 24 }}><StorageIcon sx={{ fontSize: '0.9375rem' }} /></ListItemIcon>
-            <ListItemText primaryTypographyProps={{ fontSize: '0.72rem' }}>新增服务器</ListItemText>
+          <MenuItem onClick={() => { setAddMenuAnchor(null); onAddServerDirect(project.id); }} sx={{ minHeight: 26, py: 0.3, fontSize: 'calc(0.72rem * var(--dc-scale, 1))' }}>
+            <ListItemIcon sx={{ minWidth: 24 }}><StorageIcon sx={{ fontSize: 'calc(0.9375rem * var(--dc-scale, 1))' }} /></ListItemIcon>
+            <ListItemText primaryTypographyProps={{ fontSize: 'calc(0.72rem * var(--dc-scale, 1))' }}>新增服务器</ListItemText>
           </MenuItem>
         </Menu>
-        <IconButton size="small" onClick={(e) => { e.stopPropagation(); onEditProject(project); }} sx={{ p: 0.25, '&:hover': { color: 'warning.main' } }}><EditIcon sx={{ fontSize: '0.875rem' }} /></IconButton>
-        <IconButton size="small" onClick={(e) => { e.stopPropagation(); onDeleteProject(project.id); }} sx={{ p: 0.25, '&:hover': { color: 'error.main' } }}><DeleteIcon sx={{ fontSize: '0.875rem' }} /></IconButton>
+        <IconButton size="small" onClick={(e) => { e.stopPropagation(); onEditProject(project); }} sx={{ p: 0.25, '&:hover': { color: 'warning.main' } }}><EditIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} /></IconButton>
+        <IconButton size="small" onClick={(e) => { e.stopPropagation(); onDeleteProject(project.id); }} sx={{ p: 0.25, '&:hover': { color: 'error.main' } }}><DeleteIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} /></IconButton>
       </ListItemButton>
       {hasChildren && (
         <Collapse in={expanded} timeout="auto" unmountOnExit>
@@ -1080,7 +1080,7 @@ const ServerListPanel: React.FC<Props> = ({ onAdd, onImport, onAddProject, width
           <Button
             variant="text"
             size="small"
-            startIcon={<AddIcon sx={{ fontSize: '0.875rem' }} />}
+            startIcon={<AddIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} />}
             onClick={() => {
               // 新增一级项目节点（不是新增服务器）
               setChildDialog({
@@ -1093,7 +1093,7 @@ const ServerListPanel: React.FC<Props> = ({ onAdd, onImport, onAddProject, width
               });
             }}
             sx={{
-              fontSize: '0.8rem',
+              fontSize: 'calc(0.8rem * var(--dc-scale, 1))',
               color: 'text.secondary',
               textTransform: 'none',
               width: '100%',

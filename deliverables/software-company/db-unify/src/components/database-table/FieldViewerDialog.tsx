@@ -238,23 +238,23 @@ const FieldViewerDialog: React.FC<FieldViewerDialogProps> = ({
         }}
       >
         <DialogTitle sx={{
-          color: 'text.primary', fontSize: '0.85rem', fontWeight: 600, pb: 1,
+          color: 'text.primary', fontSize: 'calc(0.85rem * var(--dc-scale, 1))', fontWeight: 600, pb: 1,
           display: 'flex', alignItems: 'center', gap: 1,
         }}>
-          <ListAltIcon sx={{ fontSize: '1.125rem' }} />
+          <ListAltIcon sx={{ fontSize: 'calc(1.125rem * var(--dc-scale, 1))' }} />
           字段管理 — {schemaName ? `${schemaName}.` : ''}{tableName}
         </DialogTitle>
         <DialogContent sx={{ pt: '8px !important' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-            <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, fontSize: '0.7rem' }}>
+            <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}>
               {rows.length} 个字段（点击单元格直接编辑）
             </Typography>
             <Button
               size="small"
               variant="outlined"
-              startIcon={<AddIcon sx={{ fontSize: '0.75rem' }} />}
+              startIcon={<AddIcon sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }} />}
               onClick={handleAddRow}
-              sx={{ fontSize: '0.62rem', py: 0, minHeight: 20, textTransform: 'none' }}
+              sx={{ fontSize: 'calc(0.62rem * var(--dc-scale, 1))', py: 0, minHeight: 20, textTransform: 'none' }}
             >
               添加字段
             </Button>
@@ -273,29 +273,29 @@ const FieldViewerDialog: React.FC<FieldViewerDialogProps> = ({
             <Table size="small" sx={{ minWidth: 900 }}>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ color: 'text.secondary', fontSize: '0.6rem', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5, width: 40 }}>#</TableCell>
-                  <TableCell sx={{ color: 'text.secondary', fontSize: '0.6rem', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5, width: 50 }}>状态</TableCell>
-                  <TableCell sx={{ color: 'text.secondary', fontSize: '0.6rem', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5 }}>列名</TableCell>
-                  <TableCell sx={{ color: 'text.secondary', fontSize: '0.6rem', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5, width: 120 }}>类型</TableCell>
-                  <TableCell sx={{ color: 'text.secondary', fontSize: '0.6rem', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5, width: 60 }}>长度</TableCell>
-                  <TableCell sx={{ color: 'text.secondary', fontSize: '0.6rem', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5, width: 50 }}>主键</TableCell>
-                  <TableCell sx={{ color: 'text.secondary', fontSize: '0.6rem', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5, width: 55 }}>可空</TableCell>
-                  <TableCell sx={{ color: 'text.secondary', fontSize: '0.6rem', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5, width: 100 }}>默认值</TableCell>
-                  <TableCell sx={{ color: 'text.secondary', fontSize: '0.6rem', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5 }}>注释</TableCell>
-                  <TableCell sx={{ color: 'text.secondary', fontSize: '0.6rem', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5, width: 50 }}>操作</TableCell>
+                  <TableCell sx={{ color: 'text.secondary', fontSize: 'calc(0.6rem * var(--dc-scale, 1))', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5, width: 40 }}>#</TableCell>
+                  <TableCell sx={{ color: 'text.secondary', fontSize: 'calc(0.6rem * var(--dc-scale, 1))', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5, width: 50 }}>状态</TableCell>
+                  <TableCell sx={{ color: 'text.secondary', fontSize: 'calc(0.6rem * var(--dc-scale, 1))', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5 }}>列名</TableCell>
+                  <TableCell sx={{ color: 'text.secondary', fontSize: 'calc(0.6rem * var(--dc-scale, 1))', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5, width: 120 }}>类型</TableCell>
+                  <TableCell sx={{ color: 'text.secondary', fontSize: 'calc(0.6rem * var(--dc-scale, 1))', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5, width: 60 }}>长度</TableCell>
+                  <TableCell sx={{ color: 'text.secondary', fontSize: 'calc(0.6rem * var(--dc-scale, 1))', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5, width: 50 }}>主键</TableCell>
+                  <TableCell sx={{ color: 'text.secondary', fontSize: 'calc(0.6rem * var(--dc-scale, 1))', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5, width: 55 }}>可空</TableCell>
+                  <TableCell sx={{ color: 'text.secondary', fontSize: 'calc(0.6rem * var(--dc-scale, 1))', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5, width: 100 }}>默认值</TableCell>
+                  <TableCell sx={{ color: 'text.secondary', fontSize: 'calc(0.6rem * var(--dc-scale, 1))', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5 }}>注释</TableCell>
+                  <TableCell sx={{ color: 'text.secondary', fontSize: 'calc(0.6rem * var(--dc-scale, 1))', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5, width: 50 }}>操作</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {rows.map((row, idx) => (
                   <TableRow key={row.id}>
-                    <TableCell sx={{ borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.25, px: 0.5, color: 'text.disabled', fontSize: '0.62rem' }}>
+                    <TableCell sx={{ borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.25, px: 0.5, color: 'text.disabled', fontSize: 'calc(0.62rem * var(--dc-scale, 1))' }}>
                       {idx + 1}
                     </TableCell>
                     <TableCell sx={{ borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.25, px: 0.5 }}>
                       <Typography
                         variant="caption"
                         sx={{
-                          fontSize: '0.5rem', fontWeight: 600,
+                          fontSize: 'calc(0.5rem * var(--dc-scale, 1))', fontWeight: 600,
                           color: isExistingRow(row) ? 'text.secondary' : '#22c55e',
                         }}
                       >
@@ -309,7 +309,7 @@ const FieldViewerDialog: React.FC<FieldViewerDialogProps> = ({
                         onChange={(e) => updateRow(row.id, { name: e.target.value })}
                         variant="standard"
                         sx={{
-                          '& .MuiInputBase-root': { fontSize: '0.68rem', color: 'text.primary' },
+                          '& .MuiInputBase-root': { fontSize: 'calc(0.68rem * var(--dc-scale, 1))', color: 'text.primary' },
                           '& .MuiInput-underline:before': { borderBottom: '1px solid', borderBottomColor: 'divider' },
                           '& .MuiInput-underline:hover:before': { borderBottom: '1px solid', borderBottomColor: 'action.focus' },
                           '& .MuiInput-underline:after': { borderBottom: '1px solid #0ea5e9' },
@@ -328,14 +328,14 @@ const FieldViewerDialog: React.FC<FieldViewerDialogProps> = ({
                             return '';
                           }}
                           sx={{
-                            fontSize: '0.68rem', color: 'text.primary',
+                            fontSize: 'calc(0.68rem * var(--dc-scale, 1))', color: 'text.primary',
                             '& .MuiOutlinedInput-notchedOutline': { border: '1px solid', borderColor: 'divider' },
                             '&:hover .MuiOutlinedInput-notchedOutline': { border: '1px solid', borderColor: 'action.focus' },
                             '&.Mui-focused .MuiOutlinedInput-notchedOutline': { border: '1px solid #0ea5e9' },
                           }}
                         >
                           {COMMON_TYPES.map(t => (
-                            <MenuItem key={t} value={t} sx={{ fontSize: '0.68rem' }}>{t}</MenuItem>
+                            <MenuItem key={t} value={t} sx={{ fontSize: 'calc(0.68rem * var(--dc-scale, 1))' }}>{t}</MenuItem>
                           ))}
                         </Select>
                       </FormControl>
@@ -349,7 +349,7 @@ const FieldViewerDialog: React.FC<FieldViewerDialogProps> = ({
                         type="number"
                         sx={{
                           width: 50,
-                          '& .MuiInputBase-root': { fontSize: '0.68rem', color: 'text.primary' },
+                          '& .MuiInputBase-root': { fontSize: 'calc(0.68rem * var(--dc-scale, 1))', color: 'text.primary' },
                           '& .MuiInput-underline:before': { borderBottom: '1px solid', borderBottomColor: 'divider' },
                           '& .MuiInput-underline:hover:before': { borderBottom: '1px solid', borderBottomColor: 'action.focus' },
                           '& .MuiInput-underline:after': { borderBottom: '1px solid #0ea5e9' },
@@ -365,7 +365,7 @@ const FieldViewerDialog: React.FC<FieldViewerDialogProps> = ({
                           color: 'action.disabled',
                           '&.Mui-checked': { color: '#f59e0b' },
                           padding: 0.25,
-                          '& .MuiSvgIcon-root': { fontSize: '0.875rem' },
+                          '& .MuiSvgIcon-root': { fontSize: 'calc(0.875rem * var(--dc-scale, 1))' },
                         }}
                       />
                     </TableCell>
@@ -378,7 +378,7 @@ const FieldViewerDialog: React.FC<FieldViewerDialogProps> = ({
                           color: 'action.disabled',
                           '&.Mui-checked': { color: '#0ea5e9' },
                           padding: 0.25,
-                          '& .MuiSvgIcon-root': { fontSize: '0.875rem' },
+                          '& .MuiSvgIcon-root': { fontSize: 'calc(0.875rem * var(--dc-scale, 1))' },
                         }}
                       />
                     </TableCell>
@@ -389,7 +389,7 @@ const FieldViewerDialog: React.FC<FieldViewerDialogProps> = ({
                         onChange={(e) => updateRow(row.id, { defaultValue: e.target.value })}
                         variant="standard"
                         sx={{
-                          '& .MuiInputBase-root': { fontSize: '0.68rem', color: 'text.secondary' },
+                          '& .MuiInputBase-root': { fontSize: 'calc(0.68rem * var(--dc-scale, 1))', color: 'text.secondary' },
                           '& .MuiInput-underline:before': { borderBottom: '1px solid', borderBottomColor: 'divider' },
                           '& .MuiInput-underline:hover:before': { borderBottom: '1px solid', borderBottomColor: 'action.focus' },
                           '& .MuiInput-underline:after': { borderBottom: '1px solid #0ea5e9' },
@@ -403,7 +403,7 @@ const FieldViewerDialog: React.FC<FieldViewerDialogProps> = ({
                         onChange={(e) => updateRow(row.id, { comment: e.target.value })}
                         variant="standard"
                         sx={{
-                          '& .MuiInputBase-root': { fontSize: '0.68rem', color: 'text.secondary' },
+                          '& .MuiInputBase-root': { fontSize: 'calc(0.68rem * var(--dc-scale, 1))', color: 'text.secondary' },
                           '& .MuiInput-underline:before': { borderBottom: '1px solid', borderBottomColor: 'divider' },
                           '& .MuiInput-underline:hover:before': { borderBottom: '1px solid', borderBottomColor: 'action.focus' },
                           '& .MuiInput-underline:after': { borderBottom: '1px solid #0ea5e9' },
@@ -417,7 +417,7 @@ const FieldViewerDialog: React.FC<FieldViewerDialogProps> = ({
                           onClick={() => handleDeleteRow(row.id)}
                           sx={{ p: 0.25 }}
                         >
-                          <DeleteIcon sx={{ fontSize: '0.8125rem', color: '#f87171' }} />
+                          <DeleteIcon sx={{ fontSize: 'calc(0.8125rem * var(--dc-scale, 1))', color: '#f87171' }} />
                         </IconButton>
                       </Tooltip>
                     </TableCell>
@@ -431,7 +431,7 @@ const FieldViewerDialog: React.FC<FieldViewerDialogProps> = ({
           <Button
             onClick={onClose}
             size="small"
-            sx={{ color: 'text.secondary', fontSize: '0.7rem', textTransform: 'none' }}
+            sx={{ color: 'text.secondary', fontSize: 'calc(0.7rem * var(--dc-scale, 1))', textTransform: 'none' }}
           >
             取消
           </Button>
@@ -441,7 +441,7 @@ const FieldViewerDialog: React.FC<FieldViewerDialogProps> = ({
             size="small"
             disabled={saving}
             sx={{
-              bgcolor: '#0ea5e9', color: '#fff', fontSize: '0.7rem',
+              bgcolor: '#0ea5e9', color: '#fff', fontSize: 'calc(0.7rem * var(--dc-scale, 1))',
               textTransform: 'none', '&:hover': { bgcolor: '#0284c7' },
             }}
           >
@@ -457,7 +457,7 @@ const FieldViewerDialog: React.FC<FieldViewerDialogProps> = ({
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         {snackbar ? (
-          <Alert severity={snackbar.severity} sx={{ width: '100%', fontSize: '0.75rem' }}>
+          <Alert severity={snackbar.severity} sx={{ width: '100%', fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>
             {snackbar.msg}
           </Alert>
         ) : undefined}

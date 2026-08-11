@@ -84,7 +84,7 @@ type PairRow = {
 const STEPS = ['配对源/目标表', '字段映射（可选）'] as const;
 
 const darkPaperSx = { bgcolor: '#3C3F41', color: 'text.secondary', border: '1px solid', borderColor: 'divider' };
-const fieldSx = { '& .MuiOutlinedInput-root': { color: 'text.primary', bgcolor: 'background.paper', fontSize: '0.8125rem' }, '& .MuiInputLabel-root': { color: 'text.secondary' } };
+const fieldSx = { '& .MuiOutlinedInput-root': { color: 'text.primary', bgcolor: 'background.paper', fontSize: 'calc(0.8125rem * var(--dc-scale, 1))' }, '& .MuiInputLabel-root': { color: 'text.secondary' } };
 
 export const MappingWizardDialog: React.FC<Props> = ({
   open,
@@ -356,9 +356,9 @@ export const MappingWizardDialog: React.FC<Props> = ({
     };
     return (
       <Box sx={{ mb: 1.5 }}>
-        <Typography sx={{ color: 'text.secondary', fontSize: '0.75rem', mb: 0.5 }}>{which === 'source' ? '源表（可多选）' : '目标表（可多选）'}</Typography>
+        <Typography sx={{ color: 'text.secondary', fontSize: 'calc(0.75rem * var(--dc-scale, 1))', mb: 0.5 }}>{which === 'source' ? '源表（可多选）' : '目标表（可多选）'}</Typography>
         {!connOk ? (
-          <Typography sx={{ color: 'text.disabled', fontSize: '0.75rem', py: 1 }}>请先选择连接和 Schema</Typography>
+          <Typography sx={{ color: 'text.disabled', fontSize: 'calc(0.75rem * var(--dc-scale, 1))', py: 1 }}>请先选择连接和 Schema</Typography>
         ) : (
           <>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
@@ -369,16 +369,16 @@ export const MappingWizardDialog: React.FC<Props> = ({
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 InputProps={{
-                  startAdornment: (<InputAdornment position="start"><SearchIcon sx={{ fontSize: '0.875rem', color: 'text.disabled' }} /></InputAdornment>),
+                  startAdornment: (<InputAdornment position="start"><SearchIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))', color: 'text.disabled' }} /></InputAdornment>),
                 }}
-                sx={{ '& .MuiOutlinedInput-root': { color: 'text.primary', bgcolor: 'background.paper', fontSize: '0.75rem' } }}
+                sx={{ '& .MuiOutlinedInput-root': { color: 'text.primary', bgcolor: 'background.paper', fontSize: 'calc(0.75rem * var(--dc-scale, 1))' } }}
               />
               <Button
                 size="small"
                 variant="text"
                 onClick={toggleAll}
                 disabled={filtered.length === 0}
-                sx={{ color: 'primary.main', textTransform: 'none', minWidth: 80, fontSize: '0.75rem', whiteSpace: 'nowrap' }}
+                sx={{ color: 'primary.main', textTransform: 'none', minWidth: 80, fontSize: 'calc(0.75rem * var(--dc-scale, 1))', whiteSpace: 'nowrap' }}
               >
                 {allSelected ? '取消全选' : '全选'}
               </Button>
@@ -387,7 +387,7 @@ export const MappingWizardDialog: React.FC<Props> = ({
               {loading ? (
                 <Box sx={{ p: 2, textAlign: 'center' }}><CircularProgress size={18} /></Box>
               ) : filtered.length === 0 ? (
-                <Typography sx={{ p: 1.5, color: 'text.disabled', fontSize: '0.75rem', textAlign: 'center' }}>未找到匹配表</Typography>
+                <Typography sx={{ p: 1.5, color: 'text.disabled', fontSize: 'calc(0.75rem * var(--dc-scale, 1))', textAlign: 'center' }}>未找到匹配表</Typography>
               ) : (
                 filtered.map((name) => {
                   const checked = value.includes(name);
@@ -403,13 +403,13 @@ export const MappingWizardDialog: React.FC<Props> = ({
                       }}
                     >
                       <Checkbox checked={checked} size="small" sx={{ p: 0, color: 'text.disabled', '&.Mui-checked': { color: 'primary.main' } }} />
-                      <Typography sx={{ color: 'text.primary', fontSize: '0.75rem' }}>{name}</Typography>
+                      <Typography sx={{ color: 'text.primary', fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>{name}</Typography>
                     </Box>
                   );
                 })
               )}
             </Box>
-            <Typography sx={{ color: 'text.disabled', fontSize: '0.6875rem', mt: 0.5 }}>已选 {value.length} / {allNames.length}</Typography>
+            <Typography sx={{ color: 'text.disabled', fontSize: 'calc(0.6875rem * var(--dc-scale, 1))', mt: 0.5 }}>已选 {value.length} / {allNames.length}</Typography>
           </>
         )}
       </Box>
@@ -530,14 +530,14 @@ export const MappingWizardDialog: React.FC<Props> = ({
       <Dialog open={open} onClose={submitting ? undefined : onClose} maxWidth={false} PaperProps={{ sx: { width: 'min(960px, 96vw)', height: 'min(720px, 92vh)', maxHeight: '92vh', m: 1, ...darkPaperSx } }}>
         <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 1, px: 2, borderBottom: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
           <AccountTreeIcon sx={{ color: 'primary.main' }} />
-          <Typography sx={{ color: 'text.primary', fontWeight: 600, fontSize: '0.9375rem' }}>新建表映射（向导）</Typography>
-          <Chip size="small" label={selectedTask ? `任务：${selectedTask.id.slice(0, 8)}` : '未选任务'} sx={{ ml: 1, bgcolor: 'action.disabledBackground', color: 'text.primary', height: 22, fontSize: '0.6875rem' }} />
+          <Typography sx={{ color: 'text.primary', fontWeight: 600, fontSize: 'calc(0.9375rem * var(--dc-scale, 1))' }}>新建表映射（向导）</Typography>
+          <Chip size="small" label={selectedTask ? `任务：${selectedTask.id.slice(0, 8)}` : '未选任务'} sx={{ ml: 1, bgcolor: 'action.disabledBackground', color: 'text.primary', height: 22, fontSize: 'calc(0.6875rem * var(--dc-scale, 1))' }} />
           <Box sx={{ flex: 1 }} />
           <IconButton size="small" onClick={onClose} disabled={submitting} sx={{ color: 'text.secondary' }}><CloseIcon fontSize="small" /></IconButton>
         </DialogTitle>
 
         <Box sx={{ px: 3, pt: 2, borderBottom: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
-          <Stepper activeStep={activeStep} alternativeLabel sx={{ '& .MuiStepLabel-label': { color: 'text.secondary', fontSize: '0.75rem' }, '& .MuiStepLabel-label.Mui-active': { color: 'primary.main' }, '& .MuiStepIcon-root': { color: 'text.disabled' }, '& .MuiStepIcon-root.Mui-active': { color: 'primary.main' }, '& .MuiStepIcon-root.Mui-completed': { color: 'success.main' } }}>
+          <Stepper activeStep={activeStep} alternativeLabel sx={{ '& .MuiStepLabel-label': { color: 'text.secondary', fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }, '& .MuiStepLabel-label.Mui-active': { color: 'primary.main' }, '& .MuiStepIcon-root': { color: 'text.disabled' }, '& .MuiStepIcon-root.Mui-active': { color: 'primary.main' }, '& .MuiStepIcon-root.Mui-completed': { color: 'success.main' } }}>
             {STEPS.map((label) => (<Step key={label}><StepLabel>{label}</StepLabel></Step>))}
           </Stepper>
         </Box>
@@ -558,12 +558,12 @@ export const MappingWizardDialog: React.FC<Props> = ({
               {sourceKind === 'sql' ? (
                 <Box>
                   <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 0.5 }}>输入自定义 SQL（SELECT 或 WITH 查询）：</Typography>
-                  <TextField multiline rows={6} fullWidth value={customSql} onChange={(e) => setCustomSql(e.target.value)} placeholder="SELECT * FROM public.users WHERE created_at > '2024-01-01'" sx={{ mb: 2, '& .MuiInputBase-root': { bgcolor: 'background.default', color: 'text.primary', fontFamily: 'monospace', fontSize: '0.8125rem' } }} />
+                  <TextField multiline rows={6} fullWidth value={customSql} onChange={(e) => setCustomSql(e.target.value)} placeholder="SELECT * FROM public.users WHERE created_at > '2024-01-01'" sx={{ mb: 2, '& .MuiInputBase-root': { bgcolor: 'background.default', color: 'text.primary', fontFamily: 'monospace', fontSize: 'calc(0.8125rem * var(--dc-scale, 1))' } }} />
                   {tableMultiSelect('target')}
                 </Box>
               ) : (
                 <Box>
-                  <Alert severity="info" sx={{ mb: 2, fontSize: '0.75rem' }} variant="outlined">
+                  <Alert severity="info" sx={{ mb: 2, fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }} variant="outlined">
                     多选源表和多选目标表。按同名自动配对（同名优先）；每行可手动调整。空源表 / 空目标表行将不会创建。
                   </Alert>
                   <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 2 }}>
@@ -573,18 +573,18 @@ export const MappingWizardDialog: React.FC<Props> = ({
                 </Box>
               )}
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                <Typography sx={{ color: 'text.primary', fontSize: '0.8125rem', fontWeight: 600 }}>配对列表</Typography>
-                <Chip size="small" label={`${pairs.length} 对`} sx={{ ml: 1, height: 20, bgcolor: 'action.disabledBackground', color: 'text.secondary', fontSize: '0.6875rem' }} />
+                <Typography sx={{ color: 'text.primary', fontSize: 'calc(0.8125rem * var(--dc-scale, 1))', fontWeight: 600 }}>配对列表</Typography>
+                <Chip size="small" label={`${pairs.length} 对`} sx={{ ml: 1, height: 20, bgcolor: 'action.disabledBackground', color: 'text.secondary', fontSize: 'calc(0.6875rem * var(--dc-scale, 1))' }} />
                 <Box sx={{ flex: 1 }} />
-                <Button size="small" startIcon={<AutoFixHighIcon sx={{ fontSize: '0.875rem' }} />} onClick={autoPair} sx={{ color: 'primary.main', textTransform: 'none' }}>重新自动配对</Button>
-                <Button size="small" startIcon={<AddIcon sx={{ fontSize: '0.875rem' }} />} onClick={addEmptyPair} sx={{ ml: 1, color: 'primary.main', textTransform: 'none' }}>新增一行</Button>
+                <Button size="small" startIcon={<AutoFixHighIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} />} onClick={autoPair} sx={{ color: 'primary.main', textTransform: 'none' }}>重新自动配对</Button>
+                <Button size="small" startIcon={<AddIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} />} onClick={addEmptyPair} sx={{ ml: 1, color: 'primary.main', textTransform: 'none' }}>新增一行</Button>
               </Box>
               <Paper sx={{ border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
-                <Box sx={{ display: 'grid', gridTemplateColumns: '40px 1fr 24px 1fr 90px 36px', px: 1.25, py: 0.75, bgcolor: 'background.paper', color: 'text.secondary', fontSize: '0.6875rem', borderBottom: '1px solid', borderColor: 'divider' }}>
+                <Box sx={{ display: 'grid', gridTemplateColumns: '40px 1fr 24px 1fr 90px 36px', px: 1.25, py: 0.75, bgcolor: 'background.paper', color: 'text.secondary', fontSize: 'calc(0.6875rem * var(--dc-scale, 1))', borderBottom: '1px solid', borderColor: 'divider' }}>
                   <span>#</span><span>源表</span><span /><span>目标表</span><span>字段</span><span />
                 </Box>
                 {pairs.length === 0 && (
-                  <Typography sx={{ p: 3, color: 'text.disabled', textAlign: 'center', fontSize: '0.75rem' }}>暂无配对，请在上方多选源表和目标表</Typography>
+                  <Typography sx={{ p: 3, color: 'text.disabled', textAlign: 'center', fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>暂无配对，请在上方多选源表和目标表</Typography>
                 )}
                 {pairs.map((p, idx) => {
                   const dupKey = `${p.source}::${p.target}`;
@@ -593,7 +593,7 @@ export const MappingWizardDialog: React.FC<Props> = ({
                   const targetsAvail = targetOptionsAvailable.length > 0 ? targetOptionsAvailable : (p.target ? [p.target] : []);
                   return (
                     <Box key={p.key} sx={{ display: 'grid', gridTemplateColumns: '40px 1fr 24px 1fr 90px 36px', gap: 1, alignItems: 'center', px: 1.25, py: 0.75, borderBottom: idx < pairs.length - 1 ? '1px solid' : 0, borderColor: 'divider', bgcolor: isDup ? 'rgba(239, 83, 80, 0.08)' : 'transparent' }}>
-                      <Typography sx={{ color: 'text.secondary', fontSize: '0.75rem' }}>{idx + 1}</Typography>
+                      <Typography sx={{ color: 'text.secondary', fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>{idx + 1}</Typography>
                       <Autocomplete
                         freeSolo
                         size="small"
@@ -601,11 +601,11 @@ export const MappingWizardDialog: React.FC<Props> = ({
                         value={p.source}
                         onChange={(_, val) => updatePair(idx, { source: val || '' })}
                         onInputChange={(_, val) => updatePair(idx, { source: val || '' })}
-                        renderInput={(params) => <TextField {...params} size="small" placeholder="源表" sx={{ '& .MuiOutlinedInput-root': { color: 'text.primary', bgcolor: 'background.paper', fontSize: '0.75rem' }, '& input': { padding: '5px 6px' } }} />}
-                        ListboxProps={{ sx: { fontSize: '0.75rem', '& li': { fontSize: '0.75rem' } } }}
+                        renderInput={(params) => <TextField {...params} size="small" placeholder="源表" sx={{ '& .MuiOutlinedInput-root': { color: 'text.primary', bgcolor: 'background.paper', fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }, '& input': { padding: '5px 6px' } }} />}
+                        ListboxProps={{ sx: { fontSize: 'calc(0.75rem * var(--dc-scale, 1))', '& li': { fontSize: 'calc(0.75rem * var(--dc-scale, 1))' } } }}
                         slotProps={{ paper: { sx: { bgcolor: 'background.paper', color: 'common.white' } } }}
                       />
-                      <ArrowForwardIcon sx={{ color: 'text.secondary', fontSize: '1rem' }} />
+                      <ArrowForwardIcon sx={{ color: 'text.secondary', fontSize: 'calc(1rem * var(--dc-scale, 1))' }} />
                       <Autocomplete
                         freeSolo
                         size="small"
@@ -613,18 +613,18 @@ export const MappingWizardDialog: React.FC<Props> = ({
                         value={p.target}
                         onChange={(_, val) => updatePair(idx, { target: val || '' })}
                         onInputChange={(_, val) => updatePair(idx, { target: val || '' })}
-                        renderInput={(params) => <TextField {...params} size="small" placeholder="目标表" sx={{ '& .MuiOutlinedInput-root': { color: 'text.primary', bgcolor: 'background.paper', fontSize: '0.75rem' }, '& input': { padding: '5px 6px' } }} />}
-                        ListboxProps={{ sx: { fontSize: '0.75rem', '& li': { fontSize: '0.75rem' } } }}
+                        renderInput={(params) => <TextField {...params} size="small" placeholder="目标表" sx={{ '& .MuiOutlinedInput-root': { color: 'text.primary', bgcolor: 'background.paper', fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }, '& input': { padding: '5px 6px' } }} />}
+                        ListboxProps={{ sx: { fontSize: 'calc(0.75rem * var(--dc-scale, 1))', '& li': { fontSize: 'calc(0.75rem * var(--dc-scale, 1))' } } }}
                         slotProps={{ paper: { sx: { bgcolor: 'background.paper', color: 'common.white' } } }}
                       />
                       <Tooltip title={p.columnMappings.length > 0 ? `已配 ${p.columnMappings.length} 个字段（点此编辑）` : '字段映射（可选）'}>
                         <span>
                           <Button
                             size="small"
-                            startIcon={<AccountTreeIcon sx={{ fontSize: '0.75rem' }} />}
+                            startIcon={<AccountTreeIcon sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }} />}
                             onClick={() => setEditingPairIndex(idx)}
                             disabled={!p.source || !p.target}
-                            sx={{ minWidth: 'auto', px: 0.75, fontSize: '0.625rem', color: p.columnMappings.length > 0 ? 'success.main' : 'primary.main', borderColor: p.columnMappings.length > 0 ? 'success.main' : 'primary.main' }}
+                            sx={{ minWidth: 'auto', px: 0.75, fontSize: 'calc(0.625rem * var(--dc-scale, 1))', color: p.columnMappings.length > 0 ? 'success.main' : 'primary.main', borderColor: p.columnMappings.length > 0 ? 'success.main' : 'primary.main' }}
                             variant="outlined"
                           >
                             {p.columnMappings.length > 0 ? `${p.columnMappings.length}` : '配置'}
@@ -633,7 +633,7 @@ export const MappingWizardDialog: React.FC<Props> = ({
                       </Tooltip>
                       <Tooltip title="删除该行">
                         <span>
-                          <IconButton size="small" onClick={() => removePair(idx)} sx={{ color: 'error.light' }}><DeleteOutlineIcon sx={{ fontSize: '1rem' }} /></IconButton>
+                          <IconButton size="small" onClick={() => removePair(idx)} sx={{ color: 'error.light' }}><DeleteOutlineIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} /></IconButton>
                         </span>
                       </Tooltip>
                     </Box>
@@ -641,41 +641,41 @@ export const MappingWizardDialog: React.FC<Props> = ({
                 })}
                 {pairs.length > 0 && (
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1.25, py: 1, bgcolor: 'background.paper' }}>
-                    <Typography sx={{ color: 'text.secondary', fontSize: '0.6875rem' }}>从已有表快速添加：</Typography>
+                    <Typography sx={{ color: 'text.secondary', fontSize: 'calc(0.6875rem * var(--dc-scale, 1))' }}>从已有表快速添加：</Typography>
                     {sourceTables.filter((t) => !pairs.some((p) => p.source === t.name)).slice(0, 6).map((t) => (
-                      <Chip key={`s-${t.name}`} label={t.name} size="small" onClick={() => addPairFromSource(t.name)} sx={{ bgcolor: 'background.paper', color: 'primary.light', border: '1px dashed', borderColor: 'primary.main', height: 22, fontSize: '0.6875rem', cursor: 'pointer' }} />
+                      <Chip key={`s-${t.name}`} label={t.name} size="small" onClick={() => addPairFromSource(t.name)} sx={{ bgcolor: 'background.paper', color: 'primary.light', border: '1px dashed', borderColor: 'primary.main', height: 22, fontSize: 'calc(0.6875rem * var(--dc-scale, 1))', cursor: 'pointer' }} />
                     ))}
                     {targetTables.filter((t) => !pairs.some((p) => p.target === t.name)).slice(0, 6).map((t) => (
-                      <Chip key={`t-${t.name}`} label={t.name} size="small" onClick={() => addPairFromTarget(t.name)} sx={{ bgcolor: 'background.paper', color: 'success.light', border: '1px dashed', borderColor: 'success.main', height: 22, fontSize: '0.6875rem', cursor: 'pointer' }} />
+                      <Chip key={`t-${t.name}`} label={t.name} size="small" onClick={() => addPairFromTarget(t.name)} sx={{ bgcolor: 'background.paper', color: 'success.light', border: '1px dashed', borderColor: 'success.main', height: 22, fontSize: 'calc(0.6875rem * var(--dc-scale, 1))', cursor: 'pointer' }} />
                     ))}
                   </Box>
                 )}
               </Paper>
               {pairs.some((p) => `${p.source}::${p.target}` && !!p.source && !!p.target && existingPairs.has(`${p.source}::${p.target}`)) && (
-                <Alert severity="warning" sx={{ mt: 1.5, fontSize: '0.75rem' }}>部分配对在当前任务下已存在，将被跳过。</Alert>
+                <Alert severity="warning" sx={{ mt: 1.5, fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>部分配对在当前任务下已存在，将被跳过。</Alert>
               )}
             </Box>
           )}
 
           {activeStep === 2 && (
             <Box>
-              <Alert severity="info" sx={{ mb: 2, fontSize: '0.75rem' }} variant="outlined">
+              <Alert severity="info" sx={{ mb: 2, fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }} variant="outlined">
                 字段映射为可选。如不同名/不同类型，可在每行点「配置」进入字段映射编辑器；不配置则按同名字段自动同步。
               </Alert>
               <Paper sx={{ border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
                 {pairs.map((p, idx) => (
                   <Box key={p.key} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 2, py: 1.25, borderBottom: idx < pairs.length - 1 ? '1px solid' : 0, borderColor: 'divider' }}>
-                    <Typography sx={{ color: 'text.secondary', fontSize: '0.75rem', width: 28 }}>{idx + 1}</Typography>
+                    <Typography sx={{ color: 'text.secondary', fontSize: 'calc(0.75rem * var(--dc-scale, 1))', width: 28 }}>{idx + 1}</Typography>
                     <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography sx={{ color: 'text.primary', fontSize: '0.8125rem' }}>{p.source} <ArrowForwardIcon sx={{ fontSize: '0.75rem', mx: 0.5, color: 'text.secondary' }} /> {p.target}</Typography>
-                      <Typography sx={{ color: 'text.secondary', fontSize: '0.6875rem' }}>{p.columnMappings.length > 0 ? `已配置 ${p.columnMappings.length} 个字段` : '未配置（按同名字段默认同步）'}</Typography>
+                      <Typography sx={{ color: 'text.primary', fontSize: 'calc(0.8125rem * var(--dc-scale, 1))' }}>{p.source} <ArrowForwardIcon sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', mx: 0.5, color: 'text.secondary' }} /> {p.target}</Typography>
+                      <Typography sx={{ color: 'text.secondary', fontSize: 'calc(0.6875rem * var(--dc-scale, 1))' }}>{p.columnMappings.length > 0 ? `已配置 ${p.columnMappings.length} 个字段` : '未配置（按同名字段默认同步）'}</Typography>
                     </Box>
-                    <Button size="small" startIcon={<AccountTreeIcon sx={{ fontSize: '0.875rem' }} />} onClick={() => setEditingPairIndex(idx)} sx={{ color: 'primary.main', borderColor: 'primary.main', textTransform: 'none', fontSize: '0.6875rem' }} variant="outlined">
+                    <Button size="small" startIcon={<AccountTreeIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} />} onClick={() => setEditingPairIndex(idx)} sx={{ color: 'primary.main', borderColor: 'primary.main', textTransform: 'none', fontSize: 'calc(0.6875rem * var(--dc-scale, 1))' }} variant="outlined">
                       {p.columnMappings.length > 0 ? '编辑字段' : '配置字段'}
                     </Button>
                   </Box>
                 ))}
-                {pairs.length === 0 && <Typography sx={{ p: 3, color: 'text.disabled', textAlign: 'center', fontSize: '0.75rem' }}>暂无配对</Typography>}
+                {pairs.length === 0 && <Typography sx={{ p: 3, color: 'text.disabled', textAlign: 'center', fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>暂无配对</Typography>}
               </Paper>
             </Box>
           )}
@@ -684,11 +684,11 @@ export const MappingWizardDialog: React.FC<Props> = ({
         <DialogActions sx={{ borderTop: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', px: 2, py: 1.25, justifyContent: 'space-between' }}>
           <Box>
             {activeStep > 0 && (
-              <Button onClick={handleBack} startIcon={<ArrowBackIcon sx={{ fontSize: '0.875rem' }} />} disabled={submitting} sx={{ color: 'text.secondary', textTransform: 'none' }}>上一步</Button>
+              <Button onClick={handleBack} startIcon={<ArrowBackIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} />} disabled={submitting} sx={{ color: 'text.secondary', textTransform: 'none' }}>上一步</Button>
             )}
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography sx={{ color: 'text.secondary', fontSize: '0.6875rem' }}>{activeStep === 1 ? `共 ${pairs.length} 对` : activeStep === 2 ? `${pairs.length} 个配对` : ''}</Typography>
+            <Typography sx={{ color: 'text.secondary', fontSize: 'calc(0.6875rem * var(--dc-scale, 1))' }}>{activeStep === 1 ? `共 ${pairs.length} 对` : activeStep === 2 ? `${pairs.length} 个配对` : ''}</Typography>
             <Button onClick={onClose} disabled={submitting} sx={{ color: 'text.secondary' }}>取消</Button>
             {activeStep < STEPS.length - 1 ? (
               <Button onClick={handleNext} variant="contained" disabled={!selectedTask || (activeStep === 0 && !step1Valid) || (activeStep === 1 && pairs.length === 0)} sx={{ textTransform: 'none' }}>下一步</Button>

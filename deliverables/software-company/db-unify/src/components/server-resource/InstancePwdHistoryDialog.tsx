@@ -105,7 +105,7 @@ const InstancePwdHistoryDialog: React.FC<Props> = ({ open, serverId, fieldName, 
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle sx={{ fontWeight: 600, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: 1 }}>
+      <DialogTitle sx={{ fontWeight: 600, fontSize: 'calc(1rem * var(--dc-scale, 1))', display: 'flex', alignItems: 'center', gap: 1 }}>
         <HistoryIcon fontSize="small" /> 密码历史 - {instanceName}
       </DialogTitle>
       <DialogContent>
@@ -141,9 +141,9 @@ const InstancePwdHistoryDialog: React.FC<Props> = ({ open, serverId, fieldName, 
               <Table size="small">
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: 600, fontSize: '0.8rem' }}>密码</TableCell>
-                    <TableCell sx={{ fontWeight: 600, fontSize: '0.8rem' }}>修改时间</TableCell>
-                    <TableCell sx={{ fontWeight: 600, fontSize: '0.8rem' }}>操作者</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>密码</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>修改时间</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>操作者</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -152,24 +152,24 @@ const InstancePwdHistoryDialog: React.FC<Props> = ({ open, serverId, fieldName, 
                     const hasPwd = !!h.password;
                     return (
                       <TableRow key={h.id}>
-                        <TableCell sx={{ fontSize: '0.8rem' }}>
+                        <TableCell sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>
                           {hasPwd ? (
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                               <TextField
                                 size="small"
                                 type={isRevealed ? 'text' : 'password'}
                                 value={h.password}
-                                InputProps={{ readOnly: true, sx: { fontSize: '0.8rem' } }}
+                                InputProps={{ readOnly: true, sx: { fontSize: 'calc(0.8rem * var(--dc-scale, 1))' } }}
                                 sx={{ width: 180 }}
                               />
                               <Tooltip title={isRevealed ? '隐藏' : '显示'}>
                                 <IconButton size="small" onClick={() => toggleReveal(h.id)}>
-                                  {isRevealed ? <VisibilityOffIcon sx={{ fontSize: '0.875rem' }} /> : <VisibilityIcon sx={{ fontSize: '0.875rem' }} />}
+                                  {isRevealed ? <VisibilityOffIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} /> : <VisibilityIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} />}
                                 </IconButton>
                               </Tooltip>
                               <Tooltip title="复制">
                                 <IconButton size="small" onClick={() => handleCopy(h.password)}>
-                                  <ContentCopyIcon sx={{ fontSize: '0.875rem' }} />
+                                  <ContentCopyIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} />
                                 </IconButton>
                               </Tooltip>
                             </Box>
@@ -179,10 +179,10 @@ const InstancePwdHistoryDialog: React.FC<Props> = ({ open, serverId, fieldName, 
                             </Typography>
                           )}
                         </TableCell>
-                        <TableCell sx={{ fontSize: '0.8rem' }}>
+                        <TableCell sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>
                           {new Date(h.changed_at).toLocaleString('zh-CN')}
                         </TableCell>
-                        <TableCell sx={{ fontSize: '0.8rem' }}>{h.changed_by || '-'}</TableCell>
+                        <TableCell sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>{h.changed_by || '-'}</TableCell>
                       </TableRow>
                     );
                   })}

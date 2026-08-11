@@ -26,14 +26,14 @@ const MENU_PROPS = {
       paddingBottom: '6px',
       paddingLeft: '0px',
       paddingRight: '0px',
-      fontSize: '0.5625rem',
+      fontSize: 'calc(0.5625rem * var(--dc-scale, 1))',
       lineHeight: '12px',
       color: '#000000DE',
       width: 138,
       height: 324,
     },
     '& .MuiMenuItem-root': {
-      fontSize: '0.625rem',
+      fontSize: 'calc(0.625rem * var(--dc-scale, 1))',
       lineHeight: '12px',
       color: '#000000DE',
       pt: '4px',
@@ -215,8 +215,8 @@ const SingleDbView: React.FC = () => {
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Selector */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.5, px: 1, flexWrap: 'wrap' }}>
-        <FormControl size="small" sx={{ minWidth: 140, maxWidth: 220, '& .MuiInputBase-root': { fontSize: '0.72rem', minHeight: 24 } }}>
-          <InputLabel sx={{ fontSize: '0.72rem' }}>选择数据库</InputLabel>
+        <FormControl size="small" sx={{ minWidth: 140, maxWidth: 220, '& .MuiInputBase-root': { fontSize: 'calc(0.72rem * var(--dc-scale, 1))', minHeight: 24 } }}>
+          <InputLabel sx={{ fontSize: 'calc(0.72rem * var(--dc-scale, 1))' }}>选择数据库</InputLabel>
           <Select
             value={selectedSource}
             label="选择数据库"
@@ -225,11 +225,11 @@ const SingleDbView: React.FC = () => {
               setSelectedSource(val);
               setSelectedDbId(val);
             }}
-            sx={{ fontSize: '0.72rem' }}
+            sx={{ fontSize: 'calc(0.72rem * var(--dc-scale, 1))' }}
             MenuProps={MENU_PROPS}
           >
             {allResults.map((r) => (
-              <MenuItem key={r.dbConnectionId} value={r.dbConnectionId} sx={{ fontSize: '0.72rem', py: 0.5 }}>
+              <MenuItem key={r.dbConnectionId} value={r.dbConnectionId} sx={{ fontSize: 'calc(0.72rem * var(--dc-scale, 1))', py: 0.5 }}>
                 {r.sourceLabel}
               </MenuItem>
             ))}
@@ -250,10 +250,10 @@ const SingleDbView: React.FC = () => {
                 const v = parseInt(e.target.value, 10);
                 if (!isNaN(v)) setPageSize(v);
               }}
-              inputProps={{ min: 10, max: 10000, step: 10, style: { fontSize: '0.72rem', width: 52, textAlign: 'center' } }}
+              inputProps={{ min: 10, max: 10000, step: 10, style: { fontSize: 'calc(0.72rem * var(--dc-scale, 1))', width: 52, textAlign: 'center' } }}
               sx={{
-                '& .MuiInputBase-root': { fontSize: '0.72rem', minHeight: 24, width: 80 },
-                '& .MuiInputLabel-root': { fontSize: '0.7rem' },
+                '& .MuiInputBase-root': { fontSize: 'calc(0.72rem * var(--dc-scale, 1))', minHeight: 24, width: 80 },
+                '& .MuiInputLabel-root': { fontSize: 'calc(0.7rem * var(--dc-scale, 1))' },
               }}
             />
             <Button
@@ -261,7 +261,7 @@ const SingleDbView: React.FC = () => {
               startIcon={<DownloadIcon />}
               onClick={handleExportClick}
               variant="outlined"
-              sx={{ textTransform: 'none', fontSize: '0.72rem', minWidth: 70 }}
+              sx={{ textTransform: 'none', fontSize: 'calc(0.72rem * var(--dc-scale, 1))', minWidth: 70 }}
             >
               导出
             </Button>
@@ -273,7 +273,7 @@ const SingleDbView: React.FC = () => {
                 paper: {
                   sx: {
                     minWidth: 120,
-                    '& .MuiMenuItem-root': { fontSize: '0.8rem', py: 0.5 },
+                    '& .MuiMenuItem-root': { fontSize: 'calc(0.8rem * var(--dc-scale, 1))', py: 0.5 },
                   },
                 },
               }}
@@ -303,7 +303,7 @@ const SingleDbView: React.FC = () => {
                 } as any);
               }}
               variant="outlined"
-              sx={{ textTransform: 'none', fontSize: '0.72rem', minWidth: 100 }}
+              sx={{ textTransform: 'none', fontSize: 'calc(0.72rem * var(--dc-scale, 1))', minWidth: 100 }}
             >
               导出向导
             </Button>

@@ -67,7 +67,7 @@ const ApplicationDictDialog: React.FC<Props> = ({ open, engineeringId, onClose }
   return (
     <>
       <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 600, fontSize: '1rem' }}>应用字典</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 600, fontSize: 'calc(1rem * var(--dc-scale, 1))' }}>应用字典</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', gap: 1, mb: 2, alignItems: 'center' }}>
             <TextField size="small" placeholder="应用名称" value={newName} onChange={e => setNewName(e.target.value)}
@@ -90,17 +90,17 @@ const ApplicationDictDialog: React.FC<Props> = ({ open, engineeringId, onClose }
                       <TextField size="small" value={editShortName} onChange={ev => setEditShortName(ev.target.value)}
                         onKeyDown={ev => { if (ev.key === 'Enter') handleSaveEdit(a.id); }}
                         sx={{ flex: 1 }} />
-                      <IconButton size="small" onClick={() => handleSaveEdit(a.id)}><CheckIcon sx={{ fontSize: '1rem' }} color="success" /></IconButton>
-                      <IconButton size="small" onClick={cancelEdit}><CloseIcon sx={{ fontSize: '1rem' }} /></IconButton>
+                      <IconButton size="small" onClick={() => handleSaveEdit(a.id)}><CheckIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} color="success" /></IconButton>
+                      <IconButton size="small" onClick={cancelEdit}><CloseIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} /></IconButton>
                     </Box>
                   ) : (
                     <>
                       <ListItemText
                         primary={a.shortName ? `${a.name}（${a.shortName}）` : a.name}
-                        primaryTypographyProps={{ fontSize: '0.85rem' }}
+                        primaryTypographyProps={{ fontSize: 'calc(0.85rem * var(--dc-scale, 1))' }}
                       />
-                      <IconButton size="small" onClick={() => startEdit(a)}><EditIcon sx={{ fontSize: '1rem' }} /></IconButton>
-                      <IconButton size="small" onClick={() => handleDeleteClick(a.id)}><DeleteIcon sx={{ fontSize: '1rem' }} /></IconButton>
+                      <IconButton size="small" onClick={() => startEdit(a)}><EditIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} /></IconButton>
+                      <IconButton size="small" onClick={() => handleDeleteClick(a.id)}><DeleteIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} /></IconButton>
                     </>
                   )}
                 </ListItem>

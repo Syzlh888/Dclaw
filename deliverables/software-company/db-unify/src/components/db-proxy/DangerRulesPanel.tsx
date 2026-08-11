@@ -36,30 +36,30 @@ const DangerRulesPanel: React.FC = () => {
   return (
     <Box sx={{ flex: 1, overflow: 'auto', bgcolor: 'background.default', p: 1.5 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-        <Typography sx={{ color: 'text.primary', fontWeight: 600, fontSize: '0.85rem' }}>
+        <Typography sx={{ color: 'text.primary', fontWeight: 600, fontSize: 'calc(0.85rem * var(--dc-scale, 1))' }}>
           危险SQL规则
         </Typography>
         <Chip
           size="small"
           label={`${rules.filter((r) => r.enabled).length} 启用 / 共 ${rules.length}`}
-          sx={{ ml: 1, height: 18, fontSize: '0.6rem', bgcolor: 'action.disabledBackground', color: 'text.secondary' }}
+          sx={{ ml: 1, height: 18, fontSize: 'calc(0.6rem * var(--dc-scale, 1))', bgcolor: 'action.disabledBackground', color: 'text.secondary' }}
         />
         <Box sx={{ flex: 1 }} />
         <Button
           size="small"
           variant="text"
-          startIcon={<AddIcon sx={{ fontSize: '0.875rem' }} />}
+          startIcon={<AddIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} />}
           onClick={() => setCreating(true)}
-          sx={{ color: 'primary.main', textTransform: 'none', fontSize: '0.7rem' }}
+          sx={{ color: 'primary.main', textTransform: 'none', fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}
         >
           新建规则
         </Button>
-        <Button size="small" variant="text" onClick={() => loadRules()} sx={{ color: 'primary.main', textTransform: 'none', fontSize: '0.7rem' }}>
+        <Button size="small" variant="text" onClick={() => loadRules()} sx={{ color: 'primary.main', textTransform: 'none', fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}>
           刷新
         </Button>
       </Box>
 
-      <Typography sx={{ color: 'text.disabled', fontSize: '0.65rem', mb: 1, lineHeight: 1.3 }}>
+      <Typography sx={{ color: 'text.disabled', fontSize: 'calc(0.65rem * var(--dc-scale, 1))', mb: 1, lineHeight: 1.3 }}>
         匹配 SQL 去除注释后的首词（按整词、不区分大小写）。命中后按 action 决定拦截或仅警告。
       </Typography>
 
@@ -82,9 +82,9 @@ const DangerRulesPanel: React.FC = () => {
       )}
 
       {rulesLoading ? (
-        <Typography sx={{ color: 'text.disabled', fontSize: '0.7rem', py: 2, textAlign: 'center' }}>加载中…</Typography>
+        <Typography sx={{ color: 'text.disabled', fontSize: 'calc(0.7rem * var(--dc-scale, 1))', py: 2, textAlign: 'center' }}>加载中…</Typography>
       ) : rules.length === 0 ? (
-        <Typography sx={{ color: 'text.disabled', fontSize: '0.7rem', py: 2, textAlign: 'center' }}>
+        <Typography sx={{ color: 'text.disabled', fontSize: 'calc(0.7rem * var(--dc-scale, 1))', py: 2, textAlign: 'center' }}>
           暂无规则（点击右上角"新建规则"添加）
         </Typography>
       ) : (
@@ -111,7 +111,7 @@ const DangerRulesPanel: React.FC = () => {
               sx={{
                 color: r.enabled ? 'text.primary' : 'text.disabled',
                 fontFamily: 'monospace',
-                fontSize: '0.75rem',
+                fontSize: 'calc(0.75rem * var(--dc-scale, 1))',
                 fontWeight: 600,
                 width: 120,
                 overflow: 'hidden',
@@ -126,7 +126,7 @@ const DangerRulesPanel: React.FC = () => {
               label={(RISK_OPTS.find((o) => o.value === r.risk_level) || RISK_OPTS[0]).label}
               sx={{
                 height: 16,
-                fontSize: '0.6rem',
+                fontSize: 'calc(0.6rem * var(--dc-scale, 1))',
                 color: (RISK_OPTS.find((o) => o.value === r.risk_level) || RISK_OPTS[0]).color,
                 bgcolor: 'action.disabledBackground',
               }}
@@ -136,7 +136,7 @@ const DangerRulesPanel: React.FC = () => {
               label={r.action === 'block' ? '拦截' : '警告'}
               sx={{
                 height: 16,
-                fontSize: '0.6rem',
+                fontSize: 'calc(0.6rem * var(--dc-scale, 1))',
                 color: r.action === 'block' ? 'error.main' : 'warning.main',
                 bgcolor: 'action.disabledBackground',
               }}
@@ -144,7 +144,7 @@ const DangerRulesPanel: React.FC = () => {
             <Typography
               sx={{
                 color: 'text.disabled',
-                fontSize: '0.65rem',
+                fontSize: 'calc(0.65rem * var(--dc-scale, 1))',
                 flex: 1,
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
@@ -153,10 +153,10 @@ const DangerRulesPanel: React.FC = () => {
             >
               {r.description || '—'}
             </Typography>
-            <Typography sx={{ color: 'text.disabled', fontSize: '0.6rem' }}>#{r.sort_order}</Typography>
+            <Typography sx={{ color: 'text.disabled', fontSize: 'calc(0.6rem * var(--dc-scale, 1))' }}>#{r.sort_order}</Typography>
             <Tooltip title="编辑">
               <IconButton size="small" onClick={() => setEditing(r)} sx={{ p: 0.3 }}>
-                <EditIcon sx={{ fontSize: '0.75rem' }} />
+                <EditIcon sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }} />
               </IconButton>
             </Tooltip>
             <Tooltip title="删除">
@@ -167,7 +167,7 @@ const DangerRulesPanel: React.FC = () => {
                 }}
                 sx={{ p: 0.3 }}
               >
-                <DeleteIcon sx={{ fontSize: '0.75rem', color: 'error.main' }} />
+                <DeleteIcon sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', color: 'error.main' }} />
               </IconButton>
             </Tooltip>
           </Box>
@@ -218,7 +218,7 @@ const RuleEditor: React.FC<EditorProps> = ({ rule, onClose, onSubmit }) => {
 
   return (
     <Box sx={{ bgcolor: 'action.hover', p: 1, borderRadius: 1, mb: 1 }}>
-      <Typography sx={{ color: 'text.primary', fontSize: '0.75rem', fontWeight: 600, mb: 0.75 }}>
+      <Typography sx={{ color: 'text.primary', fontSize: 'calc(0.75rem * var(--dc-scale, 1))', fontWeight: 600, mb: 0.75 }}>
         {rule ? '编辑规则' : '新建规则'}
       </Typography>
       <Box sx={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: 0.75, mb: 0.75 }}>
@@ -227,7 +227,7 @@ const RuleEditor: React.FC<EditorProps> = ({ rule, onClose, onSubmit }) => {
           label="关键字"
           value={keyword}
           onChange={(e) => setKeyword(e.target.value.toUpperCase())}
-          sx={{ '& .MuiInputBase-root': { fontSize: '0.7rem' }, '& .MuiInputLabel-root': { fontSize: '0.7rem' } }}
+          sx={{ '& .MuiInputBase-root': { fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }, '& .MuiInputLabel-root': { fontSize: 'calc(0.7rem * var(--dc-scale, 1))' } }}
         />
         <TextField
           select
@@ -235,7 +235,7 @@ const RuleEditor: React.FC<EditorProps> = ({ rule, onClose, onSubmit }) => {
           label="风险等级"
           value={riskLevel}
           onChange={(e) => setRiskLevel(e.target.value as DangerRiskLevel)}
-          sx={{ '& .MuiInputBase-root': { fontSize: '0.7rem' }, '& .MuiInputLabel-root': { fontSize: '0.7rem' } }}
+          sx={{ '& .MuiInputBase-root': { fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }, '& .MuiInputLabel-root': { fontSize: 'calc(0.7rem * var(--dc-scale, 1))' } }}
         >
           {RISK_OPTS.map((o) => <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>)}
         </TextField>
@@ -245,7 +245,7 @@ const RuleEditor: React.FC<EditorProps> = ({ rule, onClose, onSubmit }) => {
           label="动作"
           value={action}
           onChange={(e) => setAction(e.target.value as DangerAction)}
-          sx={{ '& .MuiInputBase-root': { fontSize: '0.7rem' }, '& .MuiInputLabel-root': { fontSize: '0.7rem' } }}
+          sx={{ '& .MuiInputBase-root': { fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }, '& .MuiInputLabel-root': { fontSize: 'calc(0.7rem * var(--dc-scale, 1))' } }}
         >
           {ACTION_OPTS.map((o) => <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>)}
         </TextField>
@@ -257,7 +257,7 @@ const RuleEditor: React.FC<EditorProps> = ({ rule, onClose, onSubmit }) => {
           label="排序"
           value={sortOrder}
           onChange={(e) => setSortOrder(parseInt(e.target.value, 10) || 0)}
-          sx={{ '& .MuiInputBase-root': { fontSize: '0.7rem' }, '& .MuiInputLabel-root': { fontSize: '0.7rem' } }}
+          sx={{ '& .MuiInputBase-root': { fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }, '& .MuiInputLabel-root': { fontSize: 'calc(0.7rem * var(--dc-scale, 1))' } }}
         />
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
           <Switch
@@ -266,7 +266,7 @@ const RuleEditor: React.FC<EditorProps> = ({ rule, onClose, onSubmit }) => {
             onChange={(e) => setEnabled(e.target.checked)}
             sx={{ '& .MuiSwitch-thumb': { width: 12, height: 12 } }}
           />
-          <Typography sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>{enabled ? '启用' : '停用'}</Typography>
+          <Typography sx={{ color: 'text.secondary', fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}>{enabled ? '启用' : '停用'}</Typography>
         </Box>
         <Box />
       </Box>
@@ -276,13 +276,13 @@ const RuleEditor: React.FC<EditorProps> = ({ rule, onClose, onSubmit }) => {
         label="描述（可选）"
         value={description}
         onChange={(e) => setDescription(e.target.value)}
-        sx={{ mb: 0.75, '& .MuiInputBase-root': { fontSize: '0.7rem' }, '& .MuiInputLabel-root': { fontSize: '0.7rem' } }}
+        sx={{ mb: 0.75, '& .MuiInputBase-root': { fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }, '& .MuiInputLabel-root': { fontSize: 'calc(0.7rem * var(--dc-scale, 1))' } }}
       />
       <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
-        <Button size="small" onClick={onClose} disabled={busy} sx={{ color: 'text.secondary', textTransform: 'none', fontSize: '0.7rem' }}>
+        <Button size="small" onClick={onClose} disabled={busy} sx={{ color: 'text.secondary', textTransform: 'none', fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}>
           取消
         </Button>
-        <Button size="small" variant="contained" onClick={submit} disabled={busy || !keyword.trim()} sx={{ textTransform: 'none', fontSize: '0.7rem' }}>
+        <Button size="small" variant="contained" onClick={submit} disabled={busy || !keyword.trim()} sx={{ textTransform: 'none', fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}>
           {rule ? '保存' : '创建'}
         </Button>
       </Box>

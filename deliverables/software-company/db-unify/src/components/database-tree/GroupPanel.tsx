@@ -75,7 +75,7 @@ const GroupPanel: React.FC = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          px: 1.5, py: 1,
+          px: 1, py: 0.75,
           borderBottom: '1px solid',
           borderColor: 'divider',
         }}
@@ -94,7 +94,7 @@ const GroupPanel: React.FC = () => {
                 setCreateDialogOpen(true);
               }}
               disabled={selectedDbIds.length === 0}
-              sx={{ textTransform: 'none', fontSize: '0.75rem' }}
+              sx={{ textTransform: 'none', fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}
             >
               新建分组
             </Button>
@@ -106,7 +106,7 @@ const GroupPanel: React.FC = () => {
       <Box sx={{ flex: 1, overflow: 'auto' }}>
         {groups.length === 0 ? (
           <Box sx={{ textAlign: 'center', py: 4, color: 'text.disabled', px: 2 }}>
-            <GroupWorkIcon sx={{ fontSize: '2.25rem', mb: 1, opacity: 0.3 }} />
+            <GroupWorkIcon sx={{ fontSize: 'calc(2.25rem * var(--dc-scale, 1))', mb: 1, opacity: 0.3 }} />
             <Typography variant="caption" display="block">
               暂无分组
             </Typography>
@@ -122,7 +122,7 @@ const GroupPanel: React.FC = () => {
                 setCreateDialogOpen(true);
               }}
               disabled={selectedDbIds.length === 0}
-              sx={{ textTransform: 'none', fontSize: '0.75rem' }}
+              sx={{ textTransform: 'none', fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}
             >
               {selectedDbIds.length === 0 ? '暂无勾选 (需先勾选数据库)' : '创建分组'}
             </Button>
@@ -136,14 +136,14 @@ const GroupPanel: React.FC = () => {
                   key={group.id}
                   disablePadding
                   secondaryAction={
-                    <Box sx={{ display: 'flex', gap: 0.25 }}>
+                    <Box sx={{ display: 'flex', gap: 0.2 }}>
                       <Tooltip title="重命名">
                         <IconButton
                           size="small"
                           onClick={(e) => { e.stopPropagation(); handleOpenRename(group.id, group.name); }}
-                          sx={{ p: 0.25 }}
+                          sx={{ p: 0.2 }}
                         >
-                          <EditIcon sx={{ fontSize: '0.8125rem' }} />
+                          <EditIcon sx={{ fontSize: 'calc(0.72rem * var(--dc-scale, 1))' }} />
                         </IconButton>
                       </Tooltip>
                       <Tooltip title="编辑实例">
@@ -155,18 +155,18 @@ const GroupPanel: React.FC = () => {
                             setSelectedInstances([...group.dbConnectionIds]);
                             setEditInstancesOpen(true);
                           }}
-                          sx={{ p: 0.25 }}
+                          sx={{ p: 0.2 }}
                         >
-                          <SettingsIcon sx={{ fontSize: '0.8125rem' }} />
+                          <SettingsIcon sx={{ fontSize: 'calc(0.72rem * var(--dc-scale, 1))' }} />
                         </IconButton>
                       </Tooltip>
                       <Tooltip title="删除">
                         <IconButton
                           size="small"
                           onClick={(e) => { e.stopPropagation(); deleteGroup(group.id); }}
-                          sx={{ p: 0.25 }}
+                          sx={{ p: 0.2 }}
                         >
-                          <DeleteIcon sx={{ fontSize: '0.8125rem' }} />
+                          <DeleteIcon sx={{ fontSize: 'calc(0.72rem * var(--dc-scale, 1))' }} />
                         </IconButton>
                       </Tooltip>
                     </Box>
@@ -177,20 +177,20 @@ const GroupPanel: React.FC = () => {
                     bgcolor: isActive ? 'primary.50' : 'transparent',
                   }}
                 >
-                  <ListItemButton onClick={() => handleToggleActive(group.id)} sx={{ py: 1, px: 1.5 }}>
+                  <ListItemButton onClick={() => handleToggleActive(group.id)} sx={{ py: 0.5, px: 1 }}>
                     {isActive ? (
-                      <RadioButtonCheckedIcon sx={{ fontSize: '1rem', color: 'primary.main', mr: 1 }} />
+                      <RadioButtonCheckedIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))', color: 'primary.main', mr: 1 }} />
                     ) : (
-                      <RadioButtonUncheckedIcon sx={{ fontSize: '1rem', color: 'text.disabled', mr: 1 }} />
+                      <RadioButtonUncheckedIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))', color: 'text.disabled', mr: 1 }} />
                     )}
                     <ListItemText
                       primary={
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Typography variant="body2" sx={{ fontSize: '0.85rem', fontWeight: isActive ? 600 : 400 }}>
+                          <Typography variant="body2" sx={{ fontSize: 'calc(0.78rem * var(--dc-scale, 1))', fontWeight: isActive ? 600 : 400 }}>
                             {group.name}
                           </Typography>
                           {isActive && (
-                            <Chip label="当前执行" size="small" color="primary" sx={{ fontSize: '0.65rem', height: 18 }} />
+                            <Chip label="当前执行" size="small" color="primary" sx={{ fontSize: 'calc(0.62rem * var(--dc-scale, 1))', height: 16 }} />
                           )}
                         </Box>
                       }
@@ -199,8 +199,8 @@ const GroupPanel: React.FC = () => {
                           {group.dbConnectionIds.length} 个数据库 · {new Date(group.createdAt).toLocaleDateString('zh-CN')}
                         </Typography>
                       }
-                      primaryTypographyProps={{ fontSize: '0.85rem' }}
-                      secondaryTypographyProps={{ fontSize: '0.7rem' }}
+                      primaryTypographyProps={{ fontSize: 'calc(0.78rem * var(--dc-scale, 1))' }}
+                      secondaryTypographyProps={{ fontSize: 'calc(0.66rem * var(--dc-scale, 1))' }}
                     />
                   </ListItemButton>
                 </ListItem>
@@ -214,7 +214,7 @@ const GroupPanel: React.FC = () => {
       {activeGroupId && (
         <Box
           sx={{
-            px: 1.5, py: 1,
+            px: 1, py: 0.75,
             borderTop: '1px solid',
             borderColor: 'divider',
             bgcolor: 'primary.50',
@@ -228,8 +228,8 @@ const GroupPanel: React.FC = () => {
 
       {/* 创建分组对话框 */}
       <Dialog open={createDialogOpen} onClose={() => setCreateDialogOpen(false)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontSize: '1rem', py: 1 }}>新建临时分组</DialogTitle>
-        <DialogContent dividers sx={{ py: 1.5 }}>
+        <DialogTitle sx={{ fontSize: 'calc(0.95rem * var(--dc-scale, 1))', py: 0.75 }}>新建临时分组</DialogTitle>
+        <DialogContent dividers sx={{ py: 1.25 }}>
           <TextField
             autoFocus
             label="分组名称"
@@ -238,7 +238,7 @@ const GroupPanel: React.FC = () => {
             size="small"
             fullWidth
             placeholder="例如：核心生产库"
-            sx={{ mb: 1.5 }}
+            sx={{ mb: 1.25 }}
             inputProps={{ style: { paddingTop: 6, paddingBottom: 6 } }}
           />
           <Typography variant="caption" color="text.secondary">
@@ -246,23 +246,23 @@ const GroupPanel: React.FC = () => {
           </Typography>
           <Box
             sx={{
-              mt: 1, maxHeight: 160, overflow: 'auto',
+              mt: 0.75, maxHeight: 160, overflow: 'auto',
               border: '1px solid', borderColor: 'divider', borderRadius: 1,
-              bgcolor: 'background.default', p: 1,
+              bgcolor: 'background.default', p: 0.75,
             }}
           >
             {selectedHospitals.length === 0 ? (
               <Typography variant="caption" color="text.disabled">暂未勾选任何数据库</Typography>
             ) : (
               selectedHospitals.map((h) => (
-                <Typography key={h.id} variant="caption" display="block" sx={{ fontSize: '0.7rem', lineHeight: 1.6 }}>
+                <Typography key={h.id} variant="caption" display="block" sx={{ fontSize: 'calc(0.66rem * var(--dc-scale, 1))', lineHeight: 1.6 }}>
                   {h.name}
                 </Typography>
               ))
             )}
           </Box>
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ px: 2, py: 1 }}>
           <Button onClick={() => setCreateDialogOpen(false)} size="small">取消</Button>
           <Button
             onClick={handleCreateGroup}
@@ -277,8 +277,8 @@ const GroupPanel: React.FC = () => {
 
       {/* 重命名对话框 */}
       <Dialog open={renameDialogOpen} onClose={() => setRenameDialogOpen(false)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontSize: '1rem', py: 1 }}>重命名分组</DialogTitle>
-        <DialogContent dividers sx={{ py: 1.5 }}>
+        <DialogTitle sx={{ fontSize: 'calc(0.95rem * var(--dc-scale, 1))', py: 0.75 }}>重命名分组</DialogTitle>
+        <DialogContent dividers sx={{ py: 1.25 }}>
           <TextField
             autoFocus
             label="分组名称"
@@ -289,7 +289,7 @@ const GroupPanel: React.FC = () => {
             inputProps={{ style: { paddingTop: 6, paddingBottom: 6 } }}
           />
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ px: 2, py: 1 }}>
           <Button onClick={() => setRenameDialogOpen(false)} size="small">取消</Button>
           <Button onClick={handleRenameConfirm} variant="contained" size="small" disabled={!renameValue.trim()}>
             确认
@@ -299,10 +299,10 @@ const GroupPanel: React.FC = () => {
 
       {/* 编辑实例对话框 */}
       <Dialog open={editInstancesOpen} onClose={() => setEditInstancesOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontSize: '1rem', py: 1 }}>
+        <DialogTitle sx={{ fontSize: 'calc(0.95rem * var(--dc-scale, 1))', py: 0.75 }}>
           编辑分组实例 — {editGroupTarget?.name}
         </DialogTitle>
-        <DialogContent dividers sx={{ py: 1.5, maxHeight: 400 }}>
+        <DialogContent dividers sx={{ py: 1.25, maxHeight: 400 }}>
           {(() => {
             // 递归渲染树节点
             const renderNode = (nodeId: string, depth: number = 0): React.ReactNode => {
@@ -338,7 +338,7 @@ const GroupPanel: React.FC = () => {
                       />
                       <ListItemText
                         primary={node.name}
-                        sx={{ '& .MuiListItemText-primary': { fontSize: '0.75rem' } }}
+                        sx={{ '& .MuiListItemText-primary': { fontSize: 'calc(0.75rem * var(--dc-scale, 1))' } }}
                       />
                     </ListItemButton>
                   </ListItem>
@@ -360,14 +360,14 @@ const GroupPanel: React.FC = () => {
                     >
                       {hasChildren ? (
                         node.expanded
-                          ? <ExpandMoreIcon sx={{ fontSize: '0.875rem', color: 'text.secondary', mr: 0.5 }} />
-                          : <ChevronRightIcon sx={{ fontSize: '0.875rem', color: 'text.secondary', mr: 0.5 }} />
+                          ? <ExpandMoreIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))', color: 'text.secondary', mr: 0.5 }} />
+                          : <ChevronRightIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))', color: 'text.secondary', mr: 0.5 }} />
                       ) : (
                         <Box sx={{ width: 18, mr: 0.5 }} />
                       )}
                       <ListItemText
                         primary={node.name}
-                        sx={{ '& .MuiListItemText-primary': { fontSize: '0.72rem', fontWeight: 600, color: 'text.secondary' } }}
+                        sx={{ '& .MuiListItemText-primary': { fontSize: 'calc(0.72rem * var(--dc-scale, 1))', fontWeight: 600, color: 'text.secondary' } }}
                       />
                     </ListItemButton>
                   </ListItem>
@@ -389,7 +389,7 @@ const GroupPanel: React.FC = () => {
             );
           })()}
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ px: 2, py: 1 }}>
           <Button onClick={() => setEditInstancesOpen(false)} size="small">取消</Button>
           <Button
             onClick={() => {

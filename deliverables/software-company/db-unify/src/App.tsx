@@ -20,6 +20,7 @@ import ProxyPage from './components/db-proxy/ProxyPage';
 import { useTreeStore } from './stores/treeStore';
 import { useConnectionStore } from './stores/connectionStore';
 import { useEditorStore } from './stores/editorStore';
+import { useThemeMode } from './contexts/ThemeModeContext';
 import { useExecutionStore } from './stores/executionStore';
 import { useResultStore } from './stores/resultStore';
 import { useAuthStore } from './stores/authStore';
@@ -47,10 +48,10 @@ class ErrorBoundary extends React.Component<
             alignItems: 'center', justifyContent: 'center',
           }}
         >
-          <Box sx={{ fontSize: '1.2rem', fontWeight: 600, mb: 1 }}>
+          <Box sx={{ fontSize: 'calc(1.2rem * var(--dc-scale, 1))', fontWeight: 600, mb: 1 }}>
             {this.props.name ? `${this.props.name} 出错` : '组件渲染出错'}
           </Box>
-          <Box sx={{ fontSize: '0.85rem', color: 'text.secondary', maxWidth: 600 }}>
+          <Box sx={{ fontSize: 'calc(0.85rem * var(--dc-scale, 1))', color: 'text.secondary', maxWidth: 600 }}>
             {this.state.error?.message}
           </Box>
         </Box>
@@ -74,6 +75,7 @@ const App: React.FC = () => {
   const stopHealthCheck = useConnectionStore((s) => s.stopHealthCheck);
   const tasks = useExecutionStore((s) => s.tasks);
   const isExecuting = useEditorStore((s) => s.isExecuting);
+  const { scale } = useThemeMode();
 
   const [bottomTab, setBottomTab] = useState(0);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
@@ -188,7 +190,7 @@ const App: React.FC = () => {
 
   return (
     <ErrorBoundary name="App">
-      <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <Box sx={{ '--dc-scale': scale, height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <ErrorBoundary key="hdr" name="Header">
           <AppHeader mainView={mainView} onNavigate={setMainView} />
         </ErrorBoundary>
@@ -232,7 +234,7 @@ const App: React.FC = () => {
                   <ErrorBoundary key="sqle" name="SQL编辑器">
                     <Box sx={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
                       <React.Suspense fallback={
-                        <Box sx={{ display:'flex',alignItems:'center',justifyContent:'center',height:'100%',color:'text.secondary',fontSize: '0.85rem' }}>
+                        <Box sx={{ display:'flex',alignItems:'center',justifyContent:'center',height:'100%',color:'text.secondary',fontSize: 'calc(0.85rem * var(--dc-scale, 1))' }}>
                           编辑器加载中...
                         </Box>
                       }>
@@ -247,11 +249,11 @@ const App: React.FC = () => {
 
                 <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', borderTop: '2px solid', borderColor: 'divider' }}>
                   <Box sx={{ display: 'flex', borderBottom: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
-                    <Tabs value={bottomTab} onChange={(_, v) => setBottomTab(v)} sx={{ minHeight: 32 }}>
-                      <Tab label={`执行状态${tasks.length > 0 ? ` (${tasks.length})` : ''}`} sx={{ minHeight: 32, textTransform: 'none', fontSize: '0.8rem' }} />
-                      <Tab label="查询结果" sx={{ minHeight: 32, textTransform: 'none', fontSize: '0.8rem' }} />
-                      <Tab label="SQL查看" sx={{ minHeight: 32, textTransform: 'none', fontSize: '0.8rem' }} />
-                      <Tab label="执行历史" sx={{ minHeight: 32, textTransform: 'none', fontSize: '0.8rem' }} />
+                    <Tabs value={bottomTab} onChange={(_, v) => setBottomTab(v)} sx={{ minHeight: 28 }}>
+                      <Tab label={`执行状态${tasks.length > 0 ? ` (${tasks.length})` : ''}`} sx={{ minHeight: 28, textTransform: 'none', fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }} />
+                      <Tab label="查询结果" sx={{ minHeight: 28, textTransform: 'none', fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }} />
+                      <Tab label="SQL查看" sx={{ minHeight: 28, textTransform: 'none', fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }} />
+                      <Tab label="执行历史" sx={{ minHeight: 28, textTransform: 'none', fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }} />
                     </Tabs>
                   </Box>
                   <Box sx={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', p: 1, minHeight: 0 }}>

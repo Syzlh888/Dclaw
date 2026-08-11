@@ -865,8 +865,8 @@ const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseInden
             disableTypography
             primary={
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, lineHeight: 1.2 }}>
-                <Typography variant="caption" sx={{ fontSize: '0.75rem', fontWeight: 500, lineHeight: 1.2 }}>{table.name}</Typography>
-                {table.rows > 0 && <Chip label={`${table.rows.toLocaleString()} 行`} size="small" sx={{ fontSize: '0.5rem', height: 13 }} />}
+                <Typography variant="caption" sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', fontWeight: 500, lineHeight: 1.2 }}>{table.name}</Typography>
+                {table.rows > 0 && <Chip label={`${table.rows.toLocaleString()} 行`} size="small" sx={{ fontSize: 'calc(0.5rem * var(--dc-scale, 1))', height: 13 }} />}
               </Box>
             }
           />
@@ -889,16 +889,16 @@ const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseInden
           sx={{ py: 0, minHeight: 14, pl: `${baseIndent}px`, '&:hover': { bgcolor: 'action.hover' } }}
         >
           {st.tablesOpen
-            ? <ExpandMoreIcon sx={{ fontSize: '0.75rem', color: 'text.secondary', mr: 0.15 }} />
-            : <ChevronRightIcon sx={{ fontSize: '0.75rem', color: 'text.secondary', mr: 0.15 }} />}
+            ? <ExpandMoreIcon sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', color: 'text.secondary', mr: 0.15 }} />
+            : <ChevronRightIcon sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', color: 'text.secondary', mr: 0.15 }} />}
           <TableIcon size={11} style={{ marginRight: 2 }} />
-          <Typography variant="caption" sx={{ fontSize: '0.75rem', fontWeight: 600, flex: 1 }}>
+          <Typography variant="caption" sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', fontWeight: 600, flex: 1 }}>
             表{st.data ? ` (${tables.length})` : ''}
           </Typography>
           {st.data && (
             <Tooltip title="刷新">
               <IconButton size="small" onClick={(e) => { e.stopPropagation(); refreshMeta(schemaKey, schemaName); }} sx={{ p: 0.25 }}>
-                <RefreshIcon sx={{ fontSize: '0.75rem' }} />
+                <RefreshIcon sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }} />
               </IconButton>
             </Tooltip>
           )}
@@ -907,17 +907,17 @@ const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseInden
           {st.loading && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.5, pl: `${baseIndent + 20}px` }}>
               <CircularProgress size={10} />
-              <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>加载中...</Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>加载中...</Typography>
             </Box>
           )}
           {st.error && (
             <Box sx={{ py: 0.5, pl: `${baseIndent + 20}px` }}>
-              <Typography variant="caption" color="error" sx={{ fontSize: '0.75rem' }}>{st.error}</Typography>
+              <Typography variant="caption" color="error" sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>{st.error}</Typography>
             </Box>
           )}
           {st.data && tables.length === 0 && (
             <Box sx={{ py: 0.5, pl: `${baseIndent + 20}px` }}>
-              <Typography variant="caption" color="text.disabled" sx={{ fontSize: '0.75rem' }}>无表</Typography>
+              <Typography variant="caption" color="text.disabled" sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>无表</Typography>
             </Box>
           )}
           {st.data && tables.map(t => renderTableItem(schemaKey, t, baseIndent + 20, schemaName))}
@@ -930,10 +930,10 @@ const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseInden
           sx={{ py: 0, minHeight: 14, pl: `${baseIndent}px`, '&:hover': { bgcolor: 'action.hover' } }}
         >
           {st.viewsOpen
-            ? <ExpandMoreIcon sx={{ fontSize: '0.75rem', color: 'text.secondary', mr: 0.15 }} />
-            : <ChevronRightIcon sx={{ fontSize: '0.75rem', color: 'text.secondary', mr: 0.15 }} />}
+            ? <ExpandMoreIcon sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', color: 'text.secondary', mr: 0.15 }} />
+            : <ChevronRightIcon sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', color: 'text.secondary', mr: 0.15 }} />}
           <ViewIcon size={11} style={{ marginRight: 2 }} />
-          <Typography variant="caption" sx={{ fontSize: '0.75rem', fontWeight: 600, flex: 1 }}>
+          <Typography variant="caption" sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', fontWeight: 600, flex: 1 }}>
             视图{st.data ? ` (${views.length})` : ''}
           </Typography>
         </ListItemButton>
@@ -941,17 +941,17 @@ const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseInden
           {st.loading && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.5, pl: `${baseIndent + 20}px` }}>
               <CircularProgress size={10} />
-              <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>加载中...</Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>加载中...</Typography>
             </Box>
           )}
           {st.error && (
             <Box sx={{ py: 0.5, pl: `${baseIndent + 20}px` }}>
-              <Typography variant="caption" color="error" sx={{ fontSize: '0.75rem' }}>{st.error}</Typography>
+              <Typography variant="caption" color="error" sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>{st.error}</Typography>
             </Box>
           )}
           {st.data && views.length === 0 && (
             <Box sx={{ py: 0.5, pl: `${baseIndent + 20}px` }}>
-              <Typography variant="caption" color="text.disabled" sx={{ fontSize: '0.75rem' }}>无视图</Typography>
+              <Typography variant="caption" color="text.disabled" sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>无视图</Typography>
             </Box>
           )}
           {st.data && views.map(t => renderTableItem(schemaKey, t, baseIndent + 20, schemaName))}
@@ -963,10 +963,10 @@ const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseInden
           sx={{ py: 0, minHeight: 14, pl: `${baseIndent}px`, '&:hover': { bgcolor: 'action.hover' } }}
         >
           {st.functionsOpen
-            ? <ExpandMoreIcon sx={{ fontSize: '0.75rem', color: 'text.secondary', mr: 0.15 }} />
-            : <ChevronRightIcon sx={{ fontSize: '0.75rem', color: 'text.secondary', mr: 0.15 }} />}
+            ? <ExpandMoreIcon sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', color: 'text.secondary', mr: 0.15 }} />
+            : <ChevronRightIcon sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', color: 'text.secondary', mr: 0.15 }} />}
           <FunctionIcon size={11} style={{ marginRight: 2 }} />
-          <Typography variant="caption" sx={{ fontSize: '0.75rem', fontWeight: 600, flex: 1 }}>
+          <Typography variant="caption" sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', fontWeight: 600, flex: 1 }}>
             函数{st.functions.length > 0 ? ` (${st.functions.length})` : ''}
           </Typography>
         </ListItemButton>
@@ -974,12 +974,12 @@ const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseInden
           {st.functionsLoading && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.5, pl: `${baseIndent + 20}px` }}>
               <CircularProgress size={10} />
-              <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>加载中...</Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>加载中...</Typography>
             </Box>
           )}
           {st.functions.length === 0 && !st.functionsLoading && (
             <Box sx={{ py: 0.5, pl: `${baseIndent + 20}px` }}>
-              <Typography variant="caption" color="text.disabled" sx={{ fontSize: '0.75rem' }}>无函数</Typography>
+              <Typography variant="caption" color="text.disabled" sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>无函数</Typography>
             </Box>
           )}
           {st.functions.map(fn => (
@@ -987,7 +987,7 @@ const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseInden
               key={fn.name}
               sx={{ py: 0, minHeight: 12, pl: `${baseIndent + 20}px` }}
             >
-              <Typography variant="caption" sx={{ fontSize: '0.75rem' }}>{fn.name}</Typography>
+              <Typography variant="caption" sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>{fn.name}</Typography>
             </ListItemButton>
           ))}
         </Collapse>
@@ -998,10 +998,10 @@ const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseInden
           sx={{ py: 0, minHeight: 14, pl: `${baseIndent}px`, '&:hover': { bgcolor: 'action.hover' } }}
         >
           {st.proceduresOpen
-            ? <ExpandMoreIcon sx={{ fontSize: '0.75rem', color: 'text.secondary', mr: 0.15 }} />
-            : <ChevronRightIcon sx={{ fontSize: '0.75rem', color: 'text.secondary', mr: 0.15 }} />}
+            ? <ExpandMoreIcon sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', color: 'text.secondary', mr: 0.15 }} />
+            : <ChevronRightIcon sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', color: 'text.secondary', mr: 0.15 }} />}
           <ProcedureIcon size={11} style={{ marginRight: 2 }} />
-          <Typography variant="caption" sx={{ fontSize: '0.75rem', fontWeight: 600, flex: 1 }}>
+          <Typography variant="caption" sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', fontWeight: 600, flex: 1 }}>
             存储过程{st.procedures.length > 0 ? ` (${st.procedures.length})` : ''}
           </Typography>
         </ListItemButton>
@@ -1009,12 +1009,12 @@ const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseInden
           {st.proceduresLoading && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.5, pl: `${baseIndent + 20}px` }}>
               <CircularProgress size={10} />
-              <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>加载中...</Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>加载中...</Typography>
             </Box>
           )}
           {st.procedures.length === 0 && !st.proceduresLoading && (
             <Box sx={{ py: 0.5, pl: `${baseIndent + 20}px` }}>
-              <Typography variant="caption" color="text.disabled" sx={{ fontSize: '0.75rem' }}>无存储过程</Typography>
+              <Typography variant="caption" color="text.disabled" sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>无存储过程</Typography>
             </Box>
           )}
           {st.procedures.map(pr => (
@@ -1022,7 +1022,7 @@ const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseInden
               key={pr.name}
               sx={{ py: 0, minHeight: 12, pl: `${baseIndent + 20}px` }}
             >
-              <Typography variant="caption" sx={{ fontSize: '0.75rem' }}>{pr.name}</Typography>
+              <Typography variant="caption" sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>{pr.name}</Typography>
             </ListItemButton>
           ))}
         </Collapse>
@@ -1049,32 +1049,32 @@ const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseInden
           {schemasLoading && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.5, pl: `${rootIndent}px` }}>
               <CircularProgress size={10} />
-              <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>加载 Schema...</Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>加载 Schema...</Typography>
             </Box>
           )}
           {schemasError && (
             <Box sx={{ py: 0.5, pl: `${rootIndent}px` }}>
-              <Typography variant="caption" color="error" sx={{ fontSize: '0.75rem' }}>{schemasError}</Typography>
+              <Typography variant="caption" color="error" sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>{schemasError}</Typography>
               <IconButton size="small" onClick={() => { setSchemas(null); loadSchemas(); }} sx={{ p: 0, ml: 0.5 }}>
-                <RefreshIcon sx={{ fontSize: '0.75rem' }} />
+                <RefreshIcon sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }} />
               </IconButton>
             </Box>
           )}
           {schemas && schemas.length === 0 && (
             <Box sx={{ py: 0.5, pl: `${rootIndent}px` }}>
-              <Typography variant="caption" color="text.disabled" sx={{ fontSize: '0.75rem' }}>无可用 Schema</Typography>
+              <Typography variant="caption" color="text.disabled" sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>无可用 Schema</Typography>
             </Box>
           )}
           {schemas && schemas.length > 0 && (
             <Box>
               {/* Schema 列表刷新按钮移到顶部 */}
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, pl: `${rootIndent}px`, py: 0.25 }}>
-                <Typography variant="caption" sx={{ fontSize: '0.75rem', fontWeight: 600, color: 'text.secondary', lineHeight: 1.5 }}>
+                <Typography variant="caption" sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', fontWeight: 600, color: 'text.secondary', lineHeight: 1.5 }}>
                   Schemas
                 </Typography>
                 <Tooltip title="刷新 Schema 列表">
                   <IconButton size="small" onClick={() => { setSchemas(null); setSchemaStates({}); loadSchemas(); }} sx={{ p: 0.25 }}>
-                    <RefreshIcon sx={{ fontSize: '0.75rem' }} />
+                    <RefreshIcon sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }} />
                   </IconButton>
                 </Tooltip>
               </Box>
@@ -1094,10 +1094,10 @@ const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseInden
                       }}
                     >
                       {st.expanded
-                          ? <ExpandMoreIcon sx={{ fontSize: '0.6875rem', color: 'text.secondary', mr: 0.35 }} />
-                          : <ChevronRightIcon sx={{ fontSize: '0.6875rem', color: 'text.secondary', mr: 0.35 }} />}
+                          ? <ExpandMoreIcon sx={{ fontSize: 'calc(0.6875rem * var(--dc-scale, 1))', color: 'text.secondary', mr: 0.35 }} />
+                          : <ChevronRightIcon sx={{ fontSize: 'calc(0.6875rem * var(--dc-scale, 1))', color: 'text.secondary', mr: 0.35 }} />}
                         <SchemaIcon size={11} style={{ marginRight: 4 }} />
-                        <Typography variant="caption" sx={{ fontSize: '0.75rem', fontWeight: 600, lineHeight: 1.5, m: 0 }}>
+                        <Typography variant="caption" sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', fontWeight: 600, lineHeight: 1.5, m: 0 }}>
                           {schemaName}
                         </Typography>
                     </Box>
@@ -1114,7 +1114,7 @@ const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseInden
 
       <Snackbar open={snackbar} autoHideDuration={2000} onClose={() => setSnackbar(false)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
-        <Alert severity="success" sx={{ width: '100%', fontSize: '0.8rem' }}>{snackbarMsg}</Alert>
+        <Alert severity="success" sx={{ width: '100%', fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>{snackbarMsg}</Alert>
       </Snackbar>
 
       {/* DDL 查看对话框 */}
@@ -1132,7 +1132,7 @@ const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseInden
           },
         }}
       >
-        <DialogTitle sx={{ color: 'text.primary', fontSize: '0.85rem', fontWeight: 600, pb: 1 }}>
+        <DialogTitle sx={{ color: 'text.primary', fontSize: 'calc(0.85rem * var(--dc-scale, 1))', fontWeight: 600, pb: 1 }}>
           {ddlDialog.tableName}
           {ddlDialog.ddlType !== 'create' && (
             <Box component="span" sx={{ color: '#0ea5e9', ml: 0.5 }}>
@@ -1153,7 +1153,7 @@ const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseInden
                   variant={ddlDialog.ddlType === type.key ? 'filled' : 'outlined'}
                   onClick={() => handleGenerateDdl(type.key)}
                   sx={{
-                    fontSize: '0.65rem',
+                    fontSize: 'calc(0.65rem * var(--dc-scale, 1))',
                     cursor: 'pointer',
                     height: 22,
                     '& .MuiChip-label': { px: 0.75 },
@@ -1171,7 +1171,7 @@ const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseInden
                 color={ddlShowComments ? 'primary' : 'default'}
                 variant={ddlShowComments ? 'filled' : 'outlined'}
                 onClick={() => { setDdlShowComments(!ddlShowComments); setDdlOptTrigger(t => t + 1); }}
-                sx={{ fontSize: '0.6rem', cursor: 'pointer', height: 20 }}
+                sx={{ fontSize: 'calc(0.6rem * var(--dc-scale, 1))', cursor: 'pointer', height: 20 }}
               />
               <Chip
                 label="限定名"
@@ -1179,7 +1179,7 @@ const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseInden
                 color={ddlShowFqn ? 'primary' : 'default'}
                 variant={ddlShowFqn ? 'filled' : 'outlined'}
                 onClick={() => { setDdlShowFqn(!ddlShowFqn); setDdlOptTrigger(t => t + 1); }}
-                sx={{ fontSize: '0.6rem', cursor: 'pointer', height: 20 }}
+                sx={{ fontSize: 'calc(0.6rem * var(--dc-scale, 1))', cursor: 'pointer', height: 20 }}
               />
               <Chip
                 label="权限"
@@ -1187,18 +1187,18 @@ const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseInden
                 color={ddlShowGrants ? 'primary' : 'default'}
                 variant={ddlShowGrants ? 'filled' : 'outlined'}
                 onClick={() => { setDdlShowGrants(!ddlShowGrants); setDdlOptTrigger(t => t + 1); }}
-                sx={{ fontSize: '0.6rem', cursor: 'pointer', height: 20 }}
+                sx={{ fontSize: 'calc(0.6rem * var(--dc-scale, 1))', cursor: 'pointer', height: 20 }}
               />
             </Box>
           )}
           {ddlDialog.loading && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 2 }}>
               <CircularProgress size={14} />
-              <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>生成中...</Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}>生成中...</Typography>
             </Box>
           )}
           {ddlDialog.error && (
-            <Typography variant="caption" color="error" sx={{ fontSize: '0.7rem' }}>{ddlDialog.error}</Typography>
+            <Typography variant="caption" color="error" sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}>{ddlDialog.error}</Typography>
           )}
           {ddlDialog.ddl && (
             <Box
@@ -1208,7 +1208,7 @@ const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseInden
                 color: 'text.primary',
                 p: 2,
                 borderRadius: 1,
-                fontSize: '0.72rem',
+                fontSize: 'calc(0.72rem * var(--dc-scale, 1))',
                 lineHeight: 1.5,
                 overflow: 'auto',
                 maxHeight: '60vh',
@@ -1230,7 +1230,7 @@ const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseInden
             size="small"
             sx={{
               color: 'text.secondary',
-              fontSize: '0.7rem',
+              fontSize: 'calc(0.7rem * var(--dc-scale, 1))',
               textTransform: 'none',
             }}
           >
@@ -1244,7 +1244,7 @@ const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseInden
               sx={{
                 bgcolor: '#0ea5e9',
                 color: '#fff',
-                fontSize: '0.7rem',
+                fontSize: 'calc(0.7rem * var(--dc-scale, 1))',
                 textTransform: 'none',
                 '&:hover': { bgcolor: '#0284c7' },
               }}

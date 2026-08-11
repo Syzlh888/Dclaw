@@ -51,7 +51,7 @@ const ConfirmDropDialog: React.FC<ConfirmDropDialogProps> = ({
       <DialogTitle
         sx={{
           color: danger ? '#f87171' : 'text.primary',
-          fontSize: '0.85rem',
+          fontSize: 'calc(0.85rem * var(--dc-scale, 1))',
           fontWeight: 600,
           pb: 1,
           display: 'flex',
@@ -59,11 +59,11 @@ const ConfirmDropDialog: React.FC<ConfirmDropDialogProps> = ({
           gap: 1,
         }}
       >
-        <WarningAmberIcon sx={{ fontSize: '1.125rem' }} />
+        <WarningAmberIcon sx={{ fontSize: 'calc(1.125rem * var(--dc-scale, 1))' }} />
         {title}
       </DialogTitle>
       <DialogContent sx={{ pt: '8px !important' }}>
-        <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.75rem', whiteSpace: 'pre-wrap' }}>
+        <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: 'calc(0.75rem * var(--dc-scale, 1))', whiteSpace: 'pre-wrap' }}>
           {message}
         </Typography>
       </DialogContent>
@@ -72,7 +72,7 @@ const ConfirmDropDialog: React.FC<ConfirmDropDialogProps> = ({
           onClick={onCancel}
           size="small"
           disabled={loading}
-          sx={{ color: 'text.secondary', fontSize: '0.7rem', textTransform: 'none' }}
+          sx={{ color: 'text.secondary', fontSize: 'calc(0.7rem * var(--dc-scale, 1))', textTransform: 'none' }}
         >
           取消
         </Button>
@@ -82,7 +82,7 @@ const ConfirmDropDialog: React.FC<ConfirmDropDialogProps> = ({
           size="small"
           color={danger ? 'error' : 'primary'}
           disabled={loading}
-          sx={{ fontSize: '0.7rem', textTransform: 'none' }}
+          sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))', textTransform: 'none' }}
         >
           {loading ? '处理中...' : confirmLabel}
         </Button>

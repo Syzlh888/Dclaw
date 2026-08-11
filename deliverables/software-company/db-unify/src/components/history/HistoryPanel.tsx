@@ -176,7 +176,7 @@ const HistoryPanel: React.FC = () => {
                 />
               }
               label={
-                <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.secondary' }}>
+                <Typography variant="caption" sx={{ fontSize: 'calc(0.65rem * var(--dc-scale, 1))', color: 'text.secondary' }}>
                   自动清理{RETENTION_DAYS}天前记录
                 </Typography>
               }
@@ -188,20 +188,20 @@ const HistoryPanel: React.FC = () => {
                 color="error"
                 variant="outlined"
                 onClick={handleDeleteSelected}
-                startIcon={<DeleteOutlineIcon sx={{ fontSize: '1rem' }} />}
-                sx={{ fontSize: '0.7rem', py: 0.25, px: 1, minWidth: 'auto' }}
+                startIcon={<DeleteOutlineIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} />}
+                sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))', py: 0.25, px: 1, minWidth: 'auto' }}
               >
                 删除({selectedIds.size})
               </Button>
             )}
             <Tooltip title="刷新">
               <IconButton size="small" onClick={loadHistory} disabled={loading}>
-                <RefreshIcon sx={{ fontSize: '1.125rem' }} />
+                <RefreshIcon sx={{ fontSize: 'calc(1.125rem * var(--dc-scale, 1))' }} />
               </IconButton>
             </Tooltip>
             <Tooltip title="清空全部历史">
               <IconButton size="small" onClick={handleClear} disabled={list.length === 0} color="error">
-                <DeleteSweepIcon sx={{ fontSize: '1.125rem' }} />
+                <DeleteSweepIcon sx={{ fontSize: 'calc(1.125rem * var(--dc-scale, 1))' }} />
               </IconButton>
             </Tooltip>
           </Box>
@@ -214,7 +214,7 @@ const HistoryPanel: React.FC = () => {
           <CircularProgress size={24} />
         </Box>
       ) : list.length === 0 ? (
-        <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'text.disabled', fontSize: '0.9rem' }}>
+        <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'text.disabled', fontSize: 'calc(0.9rem * var(--dc-scale, 1))' }}>
           暂无执行记录
         </Box>
       ) : (
@@ -250,12 +250,12 @@ const HistoryPanel: React.FC = () => {
                     </Box>
                     <ListItemText
                       primary={
-                        <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.78rem' }}>
+                        <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: 'calc(0.78rem * var(--dc-scale, 1))' }}>
                           {truncateSql(item.sql_text)}
                         </Typography>
                       }
                       secondary={
-                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.68rem' }}>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: 'calc(0.68rem * var(--dc-scale, 1))' }}>
                           {formatTime(item.executed_at)}
                         </Typography>
                       }
@@ -267,13 +267,13 @@ const HistoryPanel: React.FC = () => {
                         size="small"
                         color={item.failed_count === 0 ? 'success' : 'warning'}
                         variant="outlined"
-                        sx={{ fontSize: '0.65rem', height: 18, '& .MuiChip-label': { px: 0.75 } }}
+                        sx={{ fontSize: 'calc(0.65rem * var(--dc-scale, 1))', height: 18, '& .MuiChip-label': { px: 0.75 } }}
                       />
                       <Chip
                         label={formatDuration(item.duration_ms)}
                         size="small"
                         variant="outlined"
-                        sx={{ fontSize: '0.65rem', height: 18, '& .MuiChip-label': { px: 0.75 } }}
+                        sx={{ fontSize: 'calc(0.65rem * var(--dc-scale, 1))', height: 18, '& .MuiChip-label': { px: 0.75 } }}
                       />
                       <Tooltip title="删除此记录">
                         <IconButton
@@ -281,7 +281,7 @@ const HistoryPanel: React.FC = () => {
                           onClick={(e) => handleDeleteOne(item.id, e)}
                           sx={{ color: 'text.disabled', '&:hover': { color: 'error.main' }, p: 0.25 }}
                         >
-                          <DeleteOutlineIcon sx={{ fontSize: '1rem' }} />
+                          <DeleteOutlineIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} />
                         </IconButton>
                       </Tooltip>
                     </Box>

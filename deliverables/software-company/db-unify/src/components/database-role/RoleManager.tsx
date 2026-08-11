@@ -352,26 +352,26 @@ const RoleManager: React.FC<RoleManagerProps> = ({ open, connectionId, onClose, 
           },
         }}
       >
-        <DialogTitle sx={{ color: 'text.primary', fontSize: '0.85rem', fontWeight: 600, pb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <SecurityIcon sx={{ fontSize: '1.125rem' }} />
+        <DialogTitle sx={{ color: 'text.primary', fontSize: 'calc(0.85rem * var(--dc-scale, 1))', fontWeight: 600, pb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <SecurityIcon sx={{ fontSize: 'calc(1.125rem * var(--dc-scale, 1))' }} />
           角色管理
         </DialogTitle>
         <DialogContent sx={{ pt: '8px !important', display: 'flex', gap: 2, overflow: 'hidden' }}>
           {/* Left panel: role list */}
           <Box sx={{ width: 240, minWidth: 240, borderRight: '1px solid', borderRightColor: 'divider', pr: 1, display: 'flex', flexDirection: 'column' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-              <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, fontSize: '0.7rem' }}>
+              <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}>
                 角色列表
               </Typography>
               <Box>
                 <Tooltip title="刷新">
                   <IconButton size="small" onClick={loadRoles} sx={{ p: 0.25 }}>
-                    <RefreshIcon sx={{ fontSize: '0.875rem' }} />
+                    <RefreshIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} />
                   </IconButton>
                 </Tooltip>
                 <Tooltip title="新建角色">
                   <IconButton size="small" onClick={handleCreate} sx={{ p: 0.25 }}>
-                    <AddIcon sx={{ fontSize: '0.875rem' }} />
+                    <AddIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} />
                   </IconButton>
                 </Tooltip>
               </Box>
@@ -383,7 +383,7 @@ const RoleManager: React.FC<RoleManagerProps> = ({ open, connectionId, onClose, 
               </Box>
             )}
             {error && (
-              <Typography variant="caption" color="error" sx={{ fontSize: '0.65rem', px: 0.5 }}>{error}</Typography>
+              <Typography variant="caption" color="error" sx={{ fontSize: 'calc(0.65rem * var(--dc-scale, 1))', px: 0.5 }}>{error}</Typography>
             )}
 
             <List dense disablePadding sx={{ flex: 1, overflow: 'auto' }}>
@@ -401,10 +401,10 @@ const RoleManager: React.FC<RoleManagerProps> = ({ open, connectionId, onClose, 
                     '&:hover': { bgcolor: 'action.hover' },
                   }}
                 >
-                  <PersonIcon sx={{ fontSize: '0.8125rem', color: 'text.secondary', mr: 0.75 }} />
+                  <PersonIcon sx={{ fontSize: 'calc(0.8125rem * var(--dc-scale, 1))', color: 'text.secondary', mr: 0.75 }} />
                   <ListItemText
                     primary={
-                      <Typography variant="caption" sx={{ fontSize: '0.68rem', color: 'text.primary' }}>
+                      <Typography variant="caption" sx={{ fontSize: 'calc(0.68rem * var(--dc-scale, 1))', color: 'text.primary' }}>
                         {role.role_name}
                       </Typography>
                     }
@@ -412,7 +412,7 @@ const RoleManager: React.FC<RoleManagerProps> = ({ open, connectionId, onClose, 
                 </ListItemButton>
               ))}
               {!loading && roles.length === 0 && (
-                <Typography variant="caption" sx={{ color: '#64748b', fontSize: '0.65rem', px: 0.5, py: 1 }}>
+                <Typography variant="caption" sx={{ color: '#64748b', fontSize: 'calc(0.65rem * var(--dc-scale, 1))', px: 0.5, py: 1 }}>
                   暂无角色
                 </Typography>
               )}
@@ -423,7 +423,7 @@ const RoleManager: React.FC<RoleManagerProps> = ({ open, connectionId, onClose, 
           <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             {!selectedRole ? (
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
-                <Typography variant="caption" sx={{ color: '#64748b', fontSize: '0.7rem' }}>
+                <Typography variant="caption" sx={{ color: '#64748b', fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}>
                   请选择左侧角色查看详情
                 </Typography>
               </Box>
@@ -432,18 +432,18 @@ const RoleManager: React.FC<RoleManagerProps> = ({ open, connectionId, onClose, 
                 {/* Role info */}
                 <Box sx={{ mb: 1, p: 1, bgcolor: 'action.selected', borderRadius: 1, border: '1px solid', borderColor: 'divider' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
-                    <Typography variant="caption" sx={{ color: 'text.primary', fontWeight: 600, fontSize: '0.72rem' }}>
+                    <Typography variant="caption" sx={{ color: 'text.primary', fontWeight: 600, fontSize: 'calc(0.72rem * var(--dc-scale, 1))' }}>
                       {selectedRole.role_name}
                     </Typography>
                     <Box>
                       <Tooltip title="编辑角色">
                         <IconButton size="small" onClick={handleEdit} sx={{ p: 0.25, mr: 0.5 }}>
-                          <EditIcon sx={{ fontSize: '0.8125rem' }} />
+                          <EditIcon sx={{ fontSize: 'calc(0.8125rem * var(--dc-scale, 1))' }} />
                         </IconButton>
                       </Tooltip>
                       <Tooltip title="删除角色">
                         <IconButton size="small" onClick={() => { setDeleteTarget(selectedRole); setDeleteOpen(true); }} sx={{ p: 0.25 }}>
-                          <DeleteIcon sx={{ fontSize: '0.8125rem' }} />
+                          <DeleteIcon sx={{ fontSize: 'calc(0.8125rem * var(--dc-scale, 1))' }} />
                         </IconButton>
                       </Tooltip>
                     </Box>
@@ -455,7 +455,7 @@ const RoleManager: React.FC<RoleManagerProps> = ({ open, connectionId, onClose, 
                         size="small"
                         color={selectedRole.can_login === true || selectedRole.can_login === 'Y' ? 'success' : 'default'}
                         variant="outlined"
-                        sx={{ fontSize: '0.55rem', height: 16 }}
+                        sx={{ fontSize: 'calc(0.55rem * var(--dc-scale, 1))', height: 16 }}
                       />
                     )}
                     {selectedRole.super_user !== undefined && (
@@ -464,7 +464,7 @@ const RoleManager: React.FC<RoleManagerProps> = ({ open, connectionId, onClose, 
                         size="small"
                         color={selectedRole.super_user === true || selectedRole.super_user === 'Y' ? 'warning' : 'default'}
                         variant="outlined"
-                        sx={{ fontSize: '0.55rem', height: 16 }}
+                        sx={{ fontSize: 'calc(0.55rem * var(--dc-scale, 1))', height: 16 }}
                       />
                     )}
                     {selectedRole.can_create_db !== undefined && (
@@ -472,7 +472,7 @@ const RoleManager: React.FC<RoleManagerProps> = ({ open, connectionId, onClose, 
                         label={selectedRole.can_create_db === true || selectedRole.can_create_db === 'Y' ? '可建库' : '不可建库'}
                         size="small"
                         variant="outlined"
-                        sx={{ fontSize: '0.55rem', height: 16 }}
+                        sx={{ fontSize: 'calc(0.55rem * var(--dc-scale, 1))', height: 16 }}
                       />
                     )}
                   </Box>
@@ -481,13 +481,13 @@ const RoleManager: React.FC<RoleManagerProps> = ({ open, connectionId, onClose, 
                 {/* Grants table */}
                 <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
-                    <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, fontSize: '0.68rem' }}>
+                    <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, fontSize: 'calc(0.68rem * var(--dc-scale, 1))' }}>
                       权限列表
                     </Typography>
                     <Button
                       size="small"
                       variant="outlined"
-                      startIcon={<AddIcon sx={{ fontSize: '0.75rem' }} />}
+                      startIcon={<AddIcon sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }} />}
                       onClick={() => {
                         setSelectedPrivs(new Set(['SELECT']));
                         setSelectedTables(new Set());
@@ -495,7 +495,7 @@ const RoleManager: React.FC<RoleManagerProps> = ({ open, connectionId, onClose, 
                         loadSchemas();
                         setGrantOpen(true);
                       }}
-                      sx={{ fontSize: '0.62rem', py: 0, minHeight: 20, textTransform: 'none' }}
+                      sx={{ fontSize: 'calc(0.62rem * var(--dc-scale, 1))', py: 0, minHeight: 20, textTransform: 'none' }}
                     >
                       + 批量授权
                     </Button>
@@ -507,7 +507,7 @@ const RoleManager: React.FC<RoleManagerProps> = ({ open, connectionId, onClose, 
                     </Box>
                   )}
                   {grantsError && (
-                    <Typography variant="caption" color="error" sx={{ fontSize: '0.65rem' }}>{grantsError}</Typography>
+                    <Typography variant="caption" color="error" sx={{ fontSize: 'calc(0.65rem * var(--dc-scale, 1))' }}>{grantsError}</Typography>
                   )}
 
                   <TableContainer
@@ -523,10 +523,10 @@ const RoleManager: React.FC<RoleManagerProps> = ({ open, connectionId, onClose, 
                     <Table size="small" sx={{ minWidth: 400 }}>
                       <TableHead>
                         <TableRow>
-                          <TableCell sx={{ color: 'text.secondary', fontSize: '0.62rem', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5 }}>
+                          <TableCell sx={{ color: 'text.secondary', fontSize: 'calc(0.62rem * var(--dc-scale, 1))', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5 }}>
                             对象
                           </TableCell>
-                          <TableCell sx={{ color: 'text.secondary', fontSize: '0.62rem', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5 }}>
+                          <TableCell sx={{ color: 'text.secondary', fontSize: 'calc(0.62rem * var(--dc-scale, 1))', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5 }}>
                             权限（点击切换）
                           </TableCell>
                         </TableRow>
@@ -535,7 +535,7 @@ const RoleManager: React.FC<RoleManagerProps> = ({ open, connectionId, onClose, 
                         {aggregatedGrants.size === 0 && (
                           <TableRow>
                             <TableCell colSpan={2} sx={{ borderBottom: 'none', py: 2 }}>
-                              <Typography variant="caption" sx={{ color: '#64748b', fontSize: '0.65rem', display: 'block', textAlign: 'center' }}>
+                              <Typography variant="caption" sx={{ color: '#64748b', fontSize: 'calc(0.65rem * var(--dc-scale, 1))', display: 'block', textAlign: 'center' }}>
                                 暂无权限
                               </Typography>
                             </TableCell>
@@ -548,14 +548,14 @@ const RoleManager: React.FC<RoleManagerProps> = ({ open, connectionId, onClose, 
                               <TableCell colSpan={2} sx={{ borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5, bgcolor: 'action.hover' }}>
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                                   <SchemaIcon size={11} />
-                                  <Typography variant="caption" sx={{ fontWeight: 600, fontSize: '0.6rem', color: 'text.primary' }}>{schema}</Typography>
+                                  <Typography variant="caption" sx={{ fontWeight: 600, fontSize: 'calc(0.6rem * var(--dc-scale, 1))', color: 'text.primary' }}>{schema}</Typography>
                                 </Box>
                               </TableCell>
                             </TableRow>
                             {/* 该 Schema 下的表 */}
                             {Array.from(tables.entries()).map(([table, privs]) => (
                               <TableRow key={table}>
-                                <TableCell sx={{ pl: 4, color: 'text.primary', fontSize: '0.6rem', borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5 }}>
+                                <TableCell sx={{ pl: 4, color: 'text.primary', fontSize: 'calc(0.6rem * var(--dc-scale, 1))', borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5 }}>
                                   {table}
                                 </TableCell>
                                 <TableCell sx={{ borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5 }}>
@@ -571,7 +571,7 @@ const RoleManager: React.FC<RoleManagerProps> = ({ open, connectionId, onClose, 
                                           variant={hasPriv ? 'filled' : 'outlined'}
                                           onClick={() => handlePrivilegeToggle(schema, table, priv)}
                                           sx={{
-                                            fontSize: '0.55rem',
+                                            fontSize: 'calc(0.55rem * var(--dc-scale, 1))',
                                             height: 18,
                                             cursor: 'pointer',
                                             ...(hasPriv ? {} : { opacity: 0.35 }),
@@ -597,7 +597,7 @@ const RoleManager: React.FC<RoleManagerProps> = ({ open, connectionId, onClose, 
           <Button
             onClick={onClose}
             size="small"
-            sx={{ color: 'text.secondary', fontSize: '0.7rem', textTransform: 'none' }}
+            sx={{ color: 'text.secondary', fontSize: 'calc(0.7rem * var(--dc-scale, 1))', textTransform: 'none' }}
           >
             关闭
           </Button>
@@ -612,7 +612,7 @@ const RoleManager: React.FC<RoleManagerProps> = ({ open, connectionId, onClose, 
         fullWidth
         PaperProps={{ sx: { bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1 } }}
       >
-        <DialogTitle sx={{ color: 'text.primary', fontSize: '0.85rem', fontWeight: 600, pb: 1 }}>
+        <DialogTitle sx={{ color: 'text.primary', fontSize: 'calc(0.85rem * var(--dc-scale, 1))', fontWeight: 600, pb: 1 }}>
           {formMode === 'create' ? '新建角色' : '编辑角色'}
         </DialogTitle>
         <DialogContent sx={{ pt: '8px !important' }}>
@@ -625,7 +625,7 @@ const RoleManager: React.FC<RoleManagerProps> = ({ open, connectionId, onClose, 
             onChange={(e) => setFormRoleName(e.target.value)}
             fullWidth
             disabled={formMode === 'edit'}
-            sx={{ mb: 1.5, '& .MuiInputBase-root': { fontSize: '0.75rem' }, '& .MuiFormLabel-root': { fontSize: '0.7rem' } }}
+            sx={{ mb: 1.5, '& .MuiInputBase-root': { fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }, '& .MuiFormLabel-root': { fontSize: 'calc(0.7rem * var(--dc-scale, 1))' } }}
           />
           <TextField
             size="small"
@@ -635,21 +635,21 @@ const RoleManager: React.FC<RoleManagerProps> = ({ open, connectionId, onClose, 
             value={formPassword}
             onChange={(e) => setFormPassword(e.target.value)}
             fullWidth
-            sx={{ mb: 1.5, '& .MuiInputBase-root': { fontSize: '0.75rem' }, '& .MuiFormLabel-root': { fontSize: '0.7rem' } }}
+            sx={{ mb: 1.5, '& .MuiInputBase-root': { fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }, '& .MuiFormLabel-root': { fontSize: 'calc(0.7rem * var(--dc-scale, 1))' } }}
           />
           <FormControlLabel
             control={<Switch size="small" checked={formCanLogin} onChange={(e) => setFormCanLogin(e.target.checked)} />}
-            label={<Typography variant="caption" sx={{ fontSize: '0.68rem' }}>允许登录</Typography>}
+            label={<Typography variant="caption" sx={{ fontSize: 'calc(0.68rem * var(--dc-scale, 1))' }}>允许登录</Typography>}
             sx={{ mb: 0.5, display: 'flex' }}
           />
           <FormControlLabel
             control={<Switch size="small" checked={formSuperUser} onChange={(e) => setFormSuperUser(e.target.checked)} />}
-            label={<Typography variant="caption" sx={{ fontSize: '0.68rem' }}>超级用户</Typography>}
+            label={<Typography variant="caption" sx={{ fontSize: 'calc(0.68rem * var(--dc-scale, 1))' }}>超级用户</Typography>}
             sx={{ display: 'flex' }}
           />
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => setFormOpen(false)} size="small" sx={{ color: 'text.secondary', fontSize: '0.7rem', textTransform: 'none' }}>
+          <Button onClick={() => setFormOpen(false)} size="small" sx={{ color: 'text.secondary', fontSize: 'calc(0.7rem * var(--dc-scale, 1))', textTransform: 'none' }}>
             取消
           </Button>
           <Button
@@ -657,7 +657,7 @@ const RoleManager: React.FC<RoleManagerProps> = ({ open, connectionId, onClose, 
             variant="contained"
             size="small"
             disabled={!formRoleName.trim()}
-            sx={{ bgcolor: '#0ea5e9', color: '#fff', fontSize: '0.7rem', textTransform: 'none', '&:hover': { bgcolor: '#0284c7' } }}
+            sx={{ bgcolor: '#0ea5e9', color: '#fff', fontSize: 'calc(0.7rem * var(--dc-scale, 1))', textTransform: 'none', '&:hover': { bgcolor: '#0284c7' } }}
           >
             {formMode === 'create' ? '创建' : '保存'}
           </Button>
@@ -672,12 +672,12 @@ const RoleManager: React.FC<RoleManagerProps> = ({ open, connectionId, onClose, 
         fullWidth
         PaperProps={{ sx: { bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1 } }}
       >
-        <DialogTitle sx={{ color: 'text.primary', fontSize: '0.85rem', fontWeight: 600, pb: 1 }}>
+        <DialogTitle sx={{ color: 'text.primary', fontSize: 'calc(0.85rem * var(--dc-scale, 1))', fontWeight: 600, pb: 1 }}>
           批量授权
         </DialogTitle>
         <DialogContent sx={{ pt: '8px !important' }}>
           {/* Privilege multi-select chips */}
-          <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.65rem', mb: 0.5, display: 'block' }}>
+          <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: 'calc(0.65rem * var(--dc-scale, 1))', mb: 0.5, display: 'block' }}>
             权限类型（点击多选）
           </Typography>
           <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mb: 2 }}>
@@ -695,14 +695,14 @@ const RoleManager: React.FC<RoleManagerProps> = ({ open, connectionId, onClose, 
                     if (next.has(p)) next.delete(p); else next.add(p);
                     setSelectedPrivs(next);
                   }}
-                  sx={{ fontSize: '0.6rem', cursor: 'pointer', ...(selected ? {} : { opacity: 0.5 }) }}
+                  sx={{ fontSize: 'calc(0.6rem * var(--dc-scale, 1))', cursor: 'pointer', ...(selected ? {} : { opacity: 0.5 }) }}
                 />
               );
             })}
           </Box>
 
           {/* Grant scope - tree selection */}
-          <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.65rem', mb: 0.5, display: 'block' }}>
+          <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: 'calc(0.65rem * var(--dc-scale, 1))', mb: 0.5, display: 'block' }}>
             选择要授权的对象
           </Typography>
           <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 0.5, overflow: 'auto', maxHeight: 300 }}>
@@ -711,7 +711,7 @@ const RoleManager: React.FC<RoleManagerProps> = ({ open, connectionId, onClose, 
                 <CircularProgress size={14} />
               </Box>
             ) : schemas.length === 0 ? (
-              <Typography variant="caption" sx={{ color: '#64748b', fontSize: '0.65rem', p: 1, display: 'block', textAlign: 'center' }}>
+              <Typography variant="caption" sx={{ color: '#64748b', fontSize: 'calc(0.65rem * var(--dc-scale, 1))', p: 1, display: 'block', textAlign: 'center' }}>
                 无可用 Schema
               </Typography>
             ) : (
@@ -731,8 +731,8 @@ const RoleManager: React.FC<RoleManagerProps> = ({ open, connectionId, onClose, 
                       sx={{ py: 0.25, minHeight: 28, px: 1, '&:hover': { bgcolor: 'action.hover' } }}
                     >
                       {expandedSchemas.has(schema)
-                        ? <ExpandMoreIcon sx={{ fontSize: '0.875rem', color: 'text.secondary', mr: 0.5 }} />
-                        : <ChevronRightIcon sx={{ fontSize: '0.875rem', color: 'text.secondary', mr: 0.5 }} />}
+                        ? <ExpandMoreIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))', color: 'text.secondary', mr: 0.5 }} />
+                        : <ChevronRightIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))', color: 'text.secondary', mr: 0.5 }} />}
                       <Checkbox
                         size="small"
                         checked={allSelected}
@@ -750,7 +750,7 @@ const RoleManager: React.FC<RoleManagerProps> = ({ open, connectionId, onClose, 
                         sx={{ p: 0, mr: 0.5 }}
                       />
                       <SchemaIcon size={13} style={{ marginRight: 4 }} />
-                      <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.primary' }}>{schema}</Typography>
+                      <Typography variant="caption" sx={{ fontSize: 'calc(0.65rem * var(--dc-scale, 1))', color: 'text.primary' }}>{schema}</Typography>
                     </ListItemButton>
                     <Collapse in={expandedSchemas.has(schema)} timeout="auto">
                       {schemaTables.map(table => (
@@ -770,7 +770,7 @@ const RoleManager: React.FC<RoleManagerProps> = ({ open, connectionId, onClose, 
                             sx={{ p: 0, mr: 0.5 }}
                           />
                           <TableIcon size={11} style={{ marginRight: 4 }} />
-                          <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.secondary' }}>{table}</Typography>
+                          <Typography variant="caption" sx={{ fontSize: 'calc(0.65rem * var(--dc-scale, 1))', color: 'text.secondary' }}>{table}</Typography>
                         </ListItemButton>
                       ))}
                     </Collapse>
@@ -780,20 +780,20 @@ const RoleManager: React.FC<RoleManagerProps> = ({ open, connectionId, onClose, 
             )}
           </Box>
           {selectedTables.size > 0 && (
-            <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.65rem', mt: 1, display: 'block' }}>
+            <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: 'calc(0.65rem * var(--dc-scale, 1))', mt: 1, display: 'block' }}>
               已选择 {selectedTables.size} 个对象
             </Typography>
           )}
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => setGrantOpen(false)} size="small" sx={{ color: 'text.secondary', fontSize: '0.7rem', textTransform: 'none' }}>
+          <Button onClick={() => setGrantOpen(false)} size="small" sx={{ color: 'text.secondary', fontSize: 'calc(0.7rem * var(--dc-scale, 1))', textTransform: 'none' }}>
             取消
           </Button>
           <Button
             onClick={handleGrant}
             variant="contained"
             size="small"
-            sx={{ bgcolor: '#0ea5e9', color: '#fff', fontSize: '0.7rem', textTransform: 'none', '&:hover': { bgcolor: '#0284c7' } }}
+            sx={{ bgcolor: '#0ea5e9', color: '#fff', fontSize: 'calc(0.7rem * var(--dc-scale, 1))', textTransform: 'none', '&:hover': { bgcolor: '#0284c7' } }}
           >
             授予
           </Button>
@@ -808,16 +808,16 @@ const RoleManager: React.FC<RoleManagerProps> = ({ open, connectionId, onClose, 
         fullWidth
         PaperProps={{ sx: { bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1 } }}
       >
-        <DialogTitle sx={{ color: '#f87171', fontSize: '0.85rem', fontWeight: 600, pb: 1 }}>
+        <DialogTitle sx={{ color: '#f87171', fontSize: 'calc(0.85rem * var(--dc-scale, 1))', fontWeight: 600, pb: 1 }}>
           确认删除
         </DialogTitle>
         <DialogContent sx={{ pt: '8px !important' }}>
-          <Typography variant="body2" sx={{ color: '#cbd5e1', fontSize: '0.75rem' }}>
+          <Typography variant="body2" sx={{ color: '#cbd5e1', fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>
             确定要删除角色 <strong>{deleteTarget?.role_name}</strong> 吗？此操作不可撤销。
           </Typography>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => setDeleteOpen(false)} size="small" sx={{ color: 'text.secondary', fontSize: '0.7rem', textTransform: 'none' }}>
+          <Button onClick={() => setDeleteOpen(false)} size="small" sx={{ color: 'text.secondary', fontSize: 'calc(0.7rem * var(--dc-scale, 1))', textTransform: 'none' }}>
             取消
           </Button>
           <Button
@@ -825,7 +825,7 @@ const RoleManager: React.FC<RoleManagerProps> = ({ open, connectionId, onClose, 
             variant="contained"
             size="small"
             color="error"
-            sx={{ fontSize: '0.7rem', textTransform: 'none' }}
+            sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))', textTransform: 'none' }}
           >
             删除
           </Button>
@@ -839,7 +839,7 @@ const RoleManager: React.FC<RoleManagerProps> = ({ open, connectionId, onClose, 
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         {snackbar ? (
-          <Alert severity={snackbar.severity} sx={{ width: '100%', fontSize: '0.75rem' }}>
+          <Alert severity={snackbar.severity} sx={{ width: '100%', fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>
             {snackbar.msg}
           </Alert>
         ) : undefined}

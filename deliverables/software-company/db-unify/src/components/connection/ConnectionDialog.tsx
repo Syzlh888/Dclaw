@@ -599,7 +599,7 @@ const ConnectionDialog: React.FC<ConnectionDialogProps> = ({ open, onClose }) =>
           justifyContent: 'space-between',
           py: 1,
           px: 2,
-          fontSize: '0.95rem',
+          fontSize: 'calc(0.95rem * var(--dc-scale, 1))',
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -611,7 +611,7 @@ const ConnectionDialog: React.FC<ConnectionDialogProps> = ({ open, onClose }) =>
             label={`${rows.length} / ${Object.keys(connections).length}`}
             size="small"
             variant="outlined"
-            sx={{ fontSize: '0.7rem', height: 20 }}
+            sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))', height: 20 }}
           />
         </Box>
       </DialogTitle>
@@ -639,42 +639,42 @@ const ConnectionDialog: React.FC<ConnectionDialogProps> = ({ open, onClose }) =>
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <SearchIcon sx={{ fontSize: '1rem' }} />
+                  <SearchIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} />
                 </InputAdornment>
               ),
-              sx: { fontSize: '0.8rem', height: 30 },
+              sx: { fontSize: 'calc(0.8rem * var(--dc-scale, 1))', height: 30 },
             }}
             sx={{ width: 240 }}
           />
 
           {/* 状态筛选 */}
           <FormControl size="small" sx={{ minWidth: 100 }}>
-            <InputLabel sx={{ fontSize: '0.75rem' }}>状态</InputLabel>
+            <InputLabel sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>状态</InputLabel>
             <Select
               label="状态"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as any)}
-              sx={{ fontSize: '0.8rem', height: 30 }}
+              sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))', height: 30 }}
             >
-              <MenuItem value="all" sx={{ fontSize: '0.8rem' }}>全部</MenuItem>
-              <MenuItem value={ConnectionStatus.Online} sx={{ fontSize: '0.8rem' }}>在线</MenuItem>
-              <MenuItem value={ConnectionStatus.Offline} sx={{ fontSize: '0.8rem' }}>离线</MenuItem>
-              <MenuItem value={ConnectionStatus.Error} sx={{ fontSize: '0.8rem' }}>异常</MenuItem>
+              <MenuItem value="all" sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>全部</MenuItem>
+              <MenuItem value={ConnectionStatus.Online} sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>在线</MenuItem>
+              <MenuItem value={ConnectionStatus.Offline} sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>离线</MenuItem>
+              <MenuItem value={ConnectionStatus.Error} sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>异常</MenuItem>
             </Select>
           </FormControl>
 
           {/* 驱动筛选 */}
           <FormControl size="small" sx={{ minWidth: 120 }}>
-            <InputLabel sx={{ fontSize: '0.75rem' }}>驱动</InputLabel>
+            <InputLabel sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>驱动</InputLabel>
             <Select
               label="驱动"
               value={driverFilter}
               onChange={(e) => setDriverFilter(e.target.value)}
-              sx={{ fontSize: '0.8rem', height: 30 }}
+              sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))', height: 30 }}
             >
-              <MenuItem value="all" sx={{ fontSize: '0.8rem' }}>全部</MenuItem>
+              <MenuItem value="all" sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>全部</MenuItem>
               {driverOptions.map((d) => (
-                <MenuItem key={d} value={d} sx={{ fontSize: '0.8rem' }}>
+                <MenuItem key={d} value={d} sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>
                   {d.toUpperCase()}
                 </MenuItem>
               ))}
@@ -690,7 +690,7 @@ const ConnectionDialog: React.FC<ConnectionDialogProps> = ({ open, onClose }) =>
             onClick={() => setDriverDialogOpen(true)}
             variant="outlined"
             color="inherit"
-            sx={{ textTransform: 'none', fontSize: '0.75rem', height: 30 }}
+            sx={{ textTransform: 'none', fontSize: 'calc(0.75rem * var(--dc-scale, 1))', height: 30 }}
           >
             驱动管理
           </Button>
@@ -699,7 +699,7 @@ const ConnectionDialog: React.FC<ConnectionDialogProps> = ({ open, onClose }) =>
             startIcon={<UploadFileIcon />}
             onClick={() => setBulkImportOpen(true)}
             variant="outlined"
-            sx={{ textTransform: 'none', fontSize: '0.75rem', height: 30 }}
+            sx={{ textTransform: 'none', fontSize: 'calc(0.75rem * var(--dc-scale, 1))', height: 30 }}
           >
             批量导入
           </Button>
@@ -708,7 +708,7 @@ const ConnectionDialog: React.FC<ConnectionDialogProps> = ({ open, onClose }) =>
             startIcon={<AddIcon />}
             onClick={handleAdd}
             variant="contained"
-            sx={{ textTransform: 'none', fontSize: '0.75rem', height: 30 }}
+            sx={{ textTransform: 'none', fontSize: 'calc(0.75rem * var(--dc-scale, 1))', height: 30 }}
           >
             添加连接
           </Button>
@@ -739,7 +739,7 @@ const ConnectionDialog: React.FC<ConnectionDialogProps> = ({ open, onClose }) =>
                     '& .MuiTableCell-head': {
                       bgcolor: 'action.hover',
                       fontWeight: 600,
-                      fontSize: '0.75rem',
+                      fontSize: 'calc(0.75rem * var(--dc-scale, 1))',
                       py: 0.75,
                       lineHeight: 1.2,
                       whiteSpace: 'nowrap',
@@ -765,7 +765,7 @@ const ConnectionDialog: React.FC<ConnectionDialogProps> = ({ open, onClose }) =>
                         active={sortKey === col.key}
                         direction={sortKey === col.key ? sortOrder : 'asc'}
                         onClick={() => handleRequestSort(col.key)}
-                        sx={{ fontSize: '0.75rem' }}
+                        sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}
                       >
                         {col.label}
                       </TableSortLabel>
@@ -787,7 +787,7 @@ const ConnectionDialog: React.FC<ConnectionDialogProps> = ({ open, onClose }) =>
                       sx={{
                         cursor: 'pointer',
                         '& .MuiTableCell-body': {
-                          fontSize: '0.78rem',
+                          fontSize: 'calc(0.78rem * var(--dc-scale, 1))',
                           py: 0.5,
                           lineHeight: 1.3,
                           whiteSpace: 'nowrap',
@@ -809,7 +809,7 @@ const ConnectionDialog: React.FC<ConnectionDialogProps> = ({ open, onClose }) =>
                           label={conn.driver.toUpperCase()}
                           size="small"
                           variant="outlined"
-                          sx={{ fontSize: '0.68rem', height: 18 }}
+                          sx={{ fontSize: 'calc(0.68rem * var(--dc-scale, 1))', height: 18 }}
                         />
                       </TableCell>
                       <TableCell title={conn.host}>{conn.host}</TableCell>
@@ -821,7 +821,7 @@ const ConnectionDialog: React.FC<ConnectionDialogProps> = ({ open, onClose }) =>
                           label={getStatusLabel(conn.status)}
                           size="small"
                           color={getStatusColor(conn.status) as any}
-                          sx={{ fontSize: '0.68rem', height: 18 }}
+                          sx={{ fontSize: 'calc(0.68rem * var(--dc-scale, 1))', height: 18 }}
                         />
                       </TableCell>
                       <TableCell sx={{ color: 'text.secondary' }}>

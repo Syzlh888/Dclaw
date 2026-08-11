@@ -63,12 +63,12 @@ const IpWhitelistEditor: React.FC<Props> = ({ value, onChange, label, disabled }
 
   return (
     <Box>
-      <Typography sx={{ color: 'text.secondary', fontSize: '0.7rem', mb: 0.5 }}>
+      <Typography sx={{ color: 'text.secondary', fontSize: 'calc(0.7rem * var(--dc-scale, 1))', mb: 0.5 }}>
         {label || '来源 IP 白名单（支持多个 IP 或网段，回车/逗号添加，留空不限制）'}
       </Typography>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 0.5 }}>
         {value.length === 0 && (
-          <Typography sx={{ color: 'text.disabled', fontSize: '0.7rem' }}>不限制</Typography>
+          <Typography sx={{ color: 'text.disabled', fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}>不限制</Typography>
         )}
         {value.map((ip) => (
           <Chip
@@ -76,7 +76,7 @@ const IpWhitelistEditor: React.FC<Props> = ({ value, onChange, label, disabled }
             size="small"
             label={ip}
             onDelete={disabled ? undefined : () => removeIp(ip)}
-            sx={{ height: 20, fontSize: '0.65rem', bgcolor: 'action.hover', color: 'text.primary' }}
+            sx={{ height: 20, fontSize: 'calc(0.65rem * var(--dc-scale, 1))', bgcolor: 'action.hover', color: 'text.primary' }}
           />
         ))}
       </Box>
@@ -93,8 +93,8 @@ const IpWhitelistEditor: React.FC<Props> = ({ value, onChange, label, disabled }
           error={!!error}
           helperText={error}
           sx={{
-            '& .MuiInputBase-root': { fontSize: '0.7rem' },
-            '& .MuiFormHelperText-root': { fontSize: '0.6rem' },
+            '& .MuiInputBase-root': { fontSize: 'calc(0.7rem * var(--dc-scale, 1))' },
+            '& .MuiFormHelperText-root': { fontSize: 'calc(0.6rem * var(--dc-scale, 1))' },
           }}
         />
       )}

@@ -52,13 +52,13 @@ const ProxyPage: React.FC = () => {
       <Box sx={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
         <ProxyListPanel onCreate={() => setCreateOpen(true)} onEdit={(id) => { useProxyStore.getState().selectConnection(id); }} />
         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', minHeight: 30 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', minHeight: 26 }}>
             <Tabs
               value={activeTab}
               onChange={(_, v) => setActiveTab(v)}
               sx={{
-                minHeight: 30,
-                '& .MuiTab-root': { minHeight: 30, fontSize: '0.7rem', py: 0.15, px: 1.25, textTransform: 'none' },
+                minHeight: 26,
+                '& .MuiTab-root': { minHeight: 26, fontSize: 'calc(0.66rem * var(--dc-scale, 1))', py: 0.1, px: 1.25, textTransform: 'none' },
                 '& .MuiTabs-indicator': { height: 2 },
               }}
             >
@@ -71,9 +71,9 @@ const ProxyPage: React.FC = () => {
                 <Button
                   size="small"
                   variant="text"
-                  startIcon={<CleaningServicesIcon sx={{ fontSize: '0.8125rem' }} />}
+                  startIcon={<CleaningServicesIcon sx={{ fontSize: 'calc(0.78rem * var(--dc-scale, 1))' }} />}
                   onClick={handleCleanup}
-                  sx={{ color: 'text.secondary', textTransform: 'none', fontSize: '0.65rem', mr: 0.5 }}
+                  sx={{ color: 'text.secondary', textTransform: 'none', fontSize: 'calc(0.62rem * var(--dc-scale, 1))', mr: 0.5 }}
                 >
                   清理审计
                 </Button>
@@ -101,20 +101,20 @@ const ProxyPage: React.FC = () => {
       />
 
       <Dialog open={!!revokeTarget} onClose={() => setRevokeTarget(null)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ color: 'text.primary', fontSize: '0.95rem', pb: 1 }}>确认撤销</DialogTitle>
-        <DialogContent sx={{ pt: '12px !important' }}>
-          <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary' }}>
+        <DialogTitle sx={{ color: 'text.primary', fontSize: 'calc(0.92rem * var(--dc-scale, 1))', pb: 0.75 }}>确认撤销</DialogTitle>
+        <DialogContent sx={{ pt: '12px !important', py: 1.25 }}>
+          <Typography sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', color: 'text.secondary' }}>
             确定撤销该代理连接吗？撤销后外部用户将无法再连接，活动连接会被断开。
           </Typography>
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
+        <DialogActions sx={{ px: 2, py: 1 }}>
           <Button size="small" onClick={() => setRevokeTarget(null)} sx={{ color: 'text.secondary', textTransform: 'none' }}>取消</Button>
           <Button size="small" variant="contained" color="error" onClick={handleRevoke} sx={{ textTransform: 'none' }}>撤销</Button>
         </DialogActions>
       </Dialog>
 
       <Snackbar open={!!snackbar} autoHideDuration={2500} onClose={() => setSnackbar(null)} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
-        <Alert severity="success" variant="filled" sx={{ fontSize: '0.75rem' }}>{snackbar}</Alert>
+        <Alert severity="success" variant="filled" sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}>{snackbar}</Alert>
       </Snackbar>
     </Box>
   );

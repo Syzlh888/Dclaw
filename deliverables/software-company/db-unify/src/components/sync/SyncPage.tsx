@@ -136,7 +136,7 @@ const SyncContent: React.FC<{ open?: boolean; onClose?: () => void; standalone?:
       setForm(null);
     } catch (error) { useSyncStore.setState({ error: error instanceof Error ? error.message : '创建失败' }); }
   };
-  const field = (key: string, label: string, required = false) => <TextField fullWidth required={required} size="small" label={label} value={values[key] || ''} onChange={(e) => setValues((old) => ({ ...old, [key]: e.target.value }))} sx={{ mb: 1.5, '& .MuiInputBase-root': { color: 'text.primary' } }} />;
+  const field = (key: string, label: string, required = false) => <TextField fullWidth required={required} size="small" label={label} value={values[key] || ''} onChange={(e) => setValues((old) => ({ ...old, [key]: e.target.value }))} sx={{ mb: 1.25, '& .MuiInputBase-root': { color: 'text.primary' } }} />;
 
   // 当源/目标连接变更时，载入该连接可用的 schemas 列表
   // 若连接的 schema 字段已配置（非空），直接锁定显示；否则调后端 API 获取。
@@ -291,7 +291,7 @@ const SyncContent: React.FC<{ open?: boolean; onClose?: () => void; standalone?:
         onChange={(_, val) => setValues((old) => ({ ...old, [schemaKey]: val || '' }))}
         onInputChange={(_, val) => setValues((old) => ({ ...old, [schemaKey]: val || '' }))}
         ListboxProps={{
-          sx: { fontSize: '0.8125rem', padding: 0, '& li': { fontSize: '0.8125rem', padding: '4px 10px', minHeight: 24 } },
+          sx: { fontSize: 'calc(0.78rem * var(--dc-scale, 1))', padding: 0, '& li': { fontSize: 'calc(0.78rem * var(--dc-scale, 1))', padding: '4px 10px', minHeight: 22 } },
         }}
         slotProps={{ paper: { sx: { bgcolor: 'background.paper', color: 'common.white' } } }}
         renderInput={(params) => (
@@ -313,9 +313,9 @@ const SyncContent: React.FC<{ open?: boolean; onClose?: () => void; standalone?:
               ),
             }}
             sx={{
-              mb: 1.5,
+              mb: 1.25,
               bgcolor: locked ? 'background.paper' : 'background.paper',
-              '& .MuiInputBase-root': { color: 'text.primary', fontSize: '0.8125rem' },
+              '& .MuiInputBase-root': { color: 'text.primary', fontSize: 'calc(0.78rem * var(--dc-scale, 1))' },
               '& .MuiFormHelperText-root': { color: 'text.secondary', ml: 0, mt: 0.3 },
             }}
             InputLabelProps={{ sx: { color: 'text.secondary' } }}
@@ -346,7 +346,7 @@ const SyncContent: React.FC<{ open?: boolean; onClose?: () => void; standalone?:
         }}
         isOptionEqualToValue={(option, value) => option.name === value.name}
         noOptionsText={loading ? '加载中…' : !connId || !schema ? '请先选择连接和 Schema' : '未找到可用表'}
-        ListboxProps={{ sx: { fontSize: '0.8125rem', padding: 0, '& li': { fontSize: '0.8125rem', padding: '4px 10px', minHeight: 24 } } }}
+        ListboxProps={{ sx: { fontSize: 'calc(0.78rem * var(--dc-scale, 1))', padding: 0, '& li': { fontSize: 'calc(0.78rem * var(--dc-scale, 1))', padding: '4px 10px', minHeight: 22 } } }}
         slotProps={{ paper: { sx: { bgcolor: 'background.paper', color: 'common.white' } } }}
         renderInput={(params) => (
           <TextField
@@ -363,7 +363,7 @@ const SyncContent: React.FC<{ open?: boolean; onClose?: () => void; standalone?:
                 </>
               ),
             }}
-            sx={{ mb: 1.5, bgcolor: 'background.paper', '& .MuiInputBase-root': { color: 'text.primary', fontSize: '0.8125rem' } }}
+            sx={{ mb: 1.25, bgcolor: 'background.paper', '& .MuiInputBase-root': { color: 'text.primary', fontSize: 'calc(0.78rem * var(--dc-scale, 1))' } }}
             InputLabelProps={{ sx: { color: 'text.secondary' } }}
           />
         )}
@@ -427,7 +427,7 @@ const SyncContent: React.FC<{ open?: boolean; onClose?: () => void; standalone?:
           <TaskListPanel onCreateTask={() => openForm('task')} onToggleEnabled={handleToggleEnabled} />
         ) : (
           <Box sx={{ height: '100%', display: 'grid', placeItems: 'center' }}>
-            <Typography sx={{ color: 'text.disabled', fontSize: '0.8125rem' }}>从左侧选择同步项目开始</Typography>
+            <Typography sx={{ color: 'text.disabled', fontSize: 'calc(0.78rem * var(--dc-scale, 1))' }}>从左侧选择同步项目开始</Typography>
           </Box>
         )}
       </Box>
@@ -474,14 +474,14 @@ const SyncContent: React.FC<{ open?: boolean; onClose?: () => void; standalone?:
         onError={(msg) => useSyncStore.setState({ error: msg })}
       />
       <Dialog open={!!form} onClose={() => setForm(null)} PaperProps={{ sx: { width: 430, bgcolor: '#3C3F41', color: 'text.primary' } }}>
-        <DialogTitle>{form === 'project' ? '新建同步项目' : '新建同步任务'}</DialogTitle>
-        <DialogContent sx={{ pt: '12px !important' }}>
+        <DialogTitle sx={{ py: 1, fontSize: 'calc(0.95rem * var(--dc-scale, 1))' }}>{form === 'project' ? '新建同步项目' : '新建同步任务'}</DialogTitle>
+        <DialogContent sx={{ pt: '12px !important', py: 1.25 }}>
           {form === 'project' && <>{field('name', '项目名称', true)}{field('description', '描述')}</>}
           {form === 'task' && <>{field('name', '任务名称', true)}{<TreeConnectionSelect value={values.sourceConnectionId || ''} onChange={handleSourceConnChange} label="源连接" required />}{schemaSelect('sourceSchema', '源 Schema', values.sourceConnectionId, sourceSchemas, sourceSchemasLoading)}{<TreeConnectionSelect value={values.targetConnectionId || ''} onChange={handleTargetConnChange} label="目标连接" required />}{schemaSelect('targetSchema', '目标 Schema', values.targetConnectionId, targetSchemas, targetSchemasLoading)}{field('description', '描述')}</>}
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setForm(null)} sx={{ color: 'text.secondary' }}>取消</Button>
-          <Button onClick={submit} variant="contained">创建</Button>
+        <DialogActions sx={{ px: 2, py: 0.75 }}>
+          <Button onClick={() => setForm(null)} size="small" sx={{ color: 'text.secondary' }}>取消</Button>
+          <Button onClick={submit} variant="contained" size="small">创建</Button>
         </DialogActions>
       </Dialog>
       <Snackbar open={!!store.error} autoHideDuration={4000} onClose={store.clearError} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>

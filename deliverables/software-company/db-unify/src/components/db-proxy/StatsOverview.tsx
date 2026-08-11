@@ -70,21 +70,21 @@ const StatsOverview: React.FC<Props> = ({ connectionId }) => {
   return (
     <Box sx={{ mb: 1, p: 1, bgcolor: 'action.hover', borderRadius: 1 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.75 }}>
-        <Typography sx={{ color: 'text.primary', fontWeight: 600, fontSize: '0.8rem' }}>
+        <Typography sx={{ color: 'text.primary', fontWeight: 600, fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>
           {connectionId ? '本连接使用统计' : '全部代理使用统计'}
         </Typography>
         <Box sx={{ flex: 1 }} />
-        <Button size="small" variant="text" onClick={() => setDays(7)} sx={{ color: 'primary.main', textTransform: 'none', fontSize: '0.65rem', minWidth: 0, px: 0.5 }}>7天</Button>
-        <Button size="small" variant="text" onClick={() => setDays(30)} sx={{ color: 'primary.main', textTransform: 'none', fontSize: '0.65rem', minWidth: 0, px: 0.5 }}>30天</Button>
-        <Button size="small" variant="text" onClick={() => setDays(90)} sx={{ color: 'primary.main', textTransform: 'none', fontSize: '0.65rem', minWidth: 0, px: 0.5 }}>90天</Button>
+        <Button size="small" variant="text" onClick={() => setDays(7)} sx={{ color: 'primary.main', textTransform: 'none', fontSize: 'calc(0.65rem * var(--dc-scale, 1))', minWidth: 0, px: 0.5 }}>7天</Button>
+        <Button size="small" variant="text" onClick={() => setDays(30)} sx={{ color: 'primary.main', textTransform: 'none', fontSize: 'calc(0.65rem * var(--dc-scale, 1))', minWidth: 0, px: 0.5 }}>30天</Button>
+        <Button size="small" variant="text" onClick={() => setDays(90)} sx={{ color: 'primary.main', textTransform: 'none', fontSize: 'calc(0.65rem * var(--dc-scale, 1))', minWidth: 0, px: 0.5 }}>90天</Button>
         <Tooltip title="刷新">
           <span>
             <Button
               size="small"
               variant="text"
-              startIcon={statsLoading ? <CircularProgress size={10} /> : <RefreshIcon sx={{ fontSize: '0.75rem' }} />}
+              startIcon={statsLoading ? <CircularProgress size={10} /> : <RefreshIcon sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }} />}
               onClick={() => loadStats({ from: range.from, to: range.to, connection_id: connectionId })}
-              sx={{ color: 'primary.main', textTransform: 'none', fontSize: '0.65rem', minWidth: 0, px: 0.5 }}
+              sx={{ color: 'primary.main', textTransform: 'none', fontSize: 'calc(0.65rem * var(--dc-scale, 1))', minWidth: 0, px: 0.5 }}
             >
               刷新
             </Button>
@@ -107,7 +107,7 @@ const StatsOverview: React.FC<Props> = ({ connectionId }) => {
           value={toLocalInput(range.from)}
           onChange={(e) => setRange((r) => ({ ...r, from: new Date(e.target.value).toISOString() }))}
           InputLabelProps={{ shrink: true }}
-          sx={{ '& .MuiInputBase-root': { fontSize: '0.65rem' }, '& .MuiInputLabel-root': { fontSize: '0.65rem' } }}
+          sx={{ '& .MuiInputBase-root': { fontSize: 'calc(0.65rem * var(--dc-scale, 1))' }, '& .MuiInputLabel-root': { fontSize: 'calc(0.65rem * var(--dc-scale, 1))' } }}
         />
         <TextField
           size="small"
@@ -116,11 +116,11 @@ const StatsOverview: React.FC<Props> = ({ connectionId }) => {
           value={toLocalInput(range.to)}
           onChange={(e) => setRange((r) => ({ ...r, to: new Date(e.target.value).toISOString() }))}
           InputLabelProps={{ shrink: true }}
-          sx={{ '& .MuiInputBase-root': { fontSize: '0.65rem' }, '& .MuiInputLabel-root': { fontSize: '0.65rem' } }}
+          sx={{ '& .MuiInputBase-root': { fontSize: 'calc(0.65rem * var(--dc-scale, 1))' }, '& .MuiInputLabel-root': { fontSize: 'calc(0.65rem * var(--dc-scale, 1))' } }}
         />
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-          <Typography sx={{ color: 'text.secondary', fontSize: '0.65rem' }}>成功率</Typography>
-          <Typography sx={{ color: agg.rate !== null ? (agg.rate >= 0.95 ? 'success.main' : agg.rate >= 0.8 ? 'warning.main' : 'error.main') : 'text.disabled', fontSize: '0.85rem', fontWeight: 600 }}>
+          <Typography sx={{ color: 'text.secondary', fontSize: 'calc(0.65rem * var(--dc-scale, 1))' }}>成功率</Typography>
+          <Typography sx={{ color: agg.rate !== null ? (agg.rate >= 0.95 ? 'success.main' : agg.rate >= 0.8 ? 'warning.main' : 'error.main') : 'text.disabled', fontSize: 'calc(0.85rem * var(--dc-scale, 1))', fontWeight: 600 }}>
             {agg.rate !== null ? `${(agg.rate * 100).toFixed(1)}%` : '—'}
           </Typography>
         </Box>
@@ -133,10 +133,10 @@ const StatsOverview: React.FC<Props> = ({ connectionId }) => {
 
 const Kpi: React.FC<{ label: string; value: number; color: string }> = ({ label, value, color }) => (
   <Box sx={{ bgcolor: 'background.paper', borderRadius: 1, p: 0.75, textAlign: 'center' }}>
-    <Typography sx={{ color, fontSize: '1.05rem', fontWeight: 700, lineHeight: 1.1 }}>
+    <Typography sx={{ color, fontSize: 'calc(1.05rem * var(--dc-scale, 1))', fontWeight: 700, lineHeight: 1.1 }}>
       {value.toLocaleString()}
     </Typography>
-    <Typography sx={{ color: 'text.disabled', fontSize: '0.6rem', mt: 0.25 }}>
+    <Typography sx={{ color: 'text.disabled', fontSize: 'calc(0.6rem * var(--dc-scale, 1))', mt: 0.25 }}>
       {label}
     </Typography>
   </Box>

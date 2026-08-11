@@ -47,14 +47,14 @@ const PasswordGenerator: React.FC<Props> = ({ open, onApply, onClose }) => {
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
-      <DialogTitle sx={{ fontWeight: 600, fontSize: '1rem' }}>随机密码生成器</DialogTitle>
+      <DialogTitle sx={{ fontWeight: 600, fontSize: 'calc(1rem * var(--dc-scale, 1))' }}>随机密码生成器</DialogTitle>
       <DialogContent>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
           <TextField
             fullWidth size="small"
             type={showPwd ? 'text' : 'password'}
             value={password}
-            inputProps={{ readOnly: true, style: { fontFamily: 'monospace', fontSize: '0.85rem' } }}
+            inputProps={{ readOnly: true, style: { fontFamily: 'monospace', fontSize: 'calc(0.85rem * var(--dc-scale, 1))' } }}
           />
           <Tooltip title={showPwd ? '隐藏密码' : '显示密码'}>
             <IconButton size="small" onClick={() => setShowPwd(!showPwd)}>
@@ -75,7 +75,7 @@ const PasswordGenerator: React.FC<Props> = ({ open, onApply, onClose }) => {
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
           <Chip label={strength.label} size="small"
-            sx={{ bgcolor: strength.color, color: 'white', fontWeight: 600, fontSize: '0.7rem', height: 22 }} />
+            sx={{ bgcolor: strength.color, color: 'white', fontWeight: 600, fontSize: 'calc(0.7rem * var(--dc-scale, 1))', height: 22 }} />
           <Typography variant="caption" color="text.secondary">长度: {config.length}</Typography>
         </Box>
 

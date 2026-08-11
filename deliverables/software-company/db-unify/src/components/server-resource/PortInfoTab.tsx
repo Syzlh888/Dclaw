@@ -101,26 +101,26 @@ export default function PortInfoTab({ serverId, ports, serverIps, initialIp }: P
       ) : (
         <TableContainer><Table size="small">
           <TableHead><TableRow>
-            <TableCell sx={{ fontWeight: 600, fontSize: '0.65rem' }}>IP</TableCell>
-            <TableCell sx={{ fontWeight: 600, fontSize: '0.65rem' }}>端口</TableCell>
-            <TableCell sx={{ fontWeight: 600, fontSize: '0.65rem' }}>协议</TableCell>
-            <TableCell sx={{ fontWeight: 600, fontSize: '0.65rem' }}>类型</TableCell>
-            <TableCell sx={{ fontWeight: 600, fontSize: '0.65rem' }}>服务名称</TableCell>
-            <TableCell sx={{ fontWeight: 600, fontSize: '0.65rem' }}>备注</TableCell>
-            <TableCell sx={{ fontWeight: 600, fontSize: '0.65rem' }}>操作</TableCell>
+            <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.65rem * var(--dc-scale, 1))' }}>IP</TableCell>
+            <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.65rem * var(--dc-scale, 1))' }}>端口</TableCell>
+            <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.65rem * var(--dc-scale, 1))' }}>协议</TableCell>
+            <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.65rem * var(--dc-scale, 1))' }}>类型</TableCell>
+            <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.65rem * var(--dc-scale, 1))' }}>服务名称</TableCell>
+            <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.65rem * var(--dc-scale, 1))' }}>备注</TableCell>
+            <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.65rem * var(--dc-scale, 1))' }}>操作</TableCell>
           </TableRow></TableHead>
           <TableBody>
             {ports.map(p => (
               <TableRow key={p.id}>
-                <TableCell sx={{ fontSize: '0.7rem' }}>{p.ip || '-'}</TableCell>
-                <TableCell><Chip label={p.port} size="small" color="primary" variant="outlined" sx={{ fontSize: '0.65rem' }} /></TableCell>
-                <TableCell sx={{ fontSize: '0.7rem' }}>{p.protocol}</TableCell>
-                <TableCell sx={{ fontSize: '0.7rem' }}>{p.type || '-'}</TableCell>
-                <TableCell sx={{ fontSize: '0.7rem' }}>{p.serviceName}</TableCell>
-                <TableCell sx={{ fontSize: '0.7rem' }}>{p.notes || '-'}</TableCell>
+                <TableCell sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}>{p.ip || '-'}</TableCell>
+                <TableCell><Chip label={p.port} size="small" color="primary" variant="outlined" sx={{ fontSize: 'calc(0.65rem * var(--dc-scale, 1))' }} /></TableCell>
+                <TableCell sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}>{p.protocol}</TableCell>
+                <TableCell sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}>{p.type || '-'}</TableCell>
+                <TableCell sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}>{p.serviceName}</TableCell>
+                <TableCell sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}>{p.notes || '-'}</TableCell>
                 <TableCell>
-                  <IconButton size="small" onClick={() => openEdit(p)}><EditIcon sx={{ fontSize: '1rem' }} /></IconButton>
-                  <IconButton size="small" onClick={() => { if (confirm('确认删除？')) del(serverId, p.id); }}><DeleteIcon sx={{ fontSize: '1rem', color: 'error.main' }} /></IconButton>
+                  <IconButton size="small" onClick={() => openEdit(p)}><EditIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} /></IconButton>
+                  <IconButton size="small" onClick={() => { if (confirm('确认删除？')) del(serverId, p.id); }}><DeleteIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))', color: 'error.main' }} /></IconButton>
                 </TableCell>
               </TableRow>
             ))}
@@ -163,7 +163,7 @@ export default function PortInfoTab({ serverId, ports, serverIps, initialIp }: P
                 <TextField size="small" label="服务名称" value={entry.serviceName} onChange={e => updateEntry(i, 'serviceName', e.target.value)} sx={{ flex: 1.5, minWidth: 100 }} />
                 <TextField size="small" label="备注" value={entry.notes} onChange={e => updateEntry(i, 'notes', e.target.value)} sx={{ flex: 1 }} />
                 {!editItem && entries.length > 1 && (
-                  <IconButton size="small" onClick={() => removeEntry(i)} sx={{ color: 'error.main', flexShrink: 0 }}><DeleteIcon sx={{ fontSize: '1.125rem' }} /></IconButton>
+                  <IconButton size="small" onClick={() => removeEntry(i)} sx={{ color: 'error.main', flexShrink: 0 }}><DeleteIcon sx={{ fontSize: 'calc(1.125rem * var(--dc-scale, 1))' }} /></IconButton>
                 )}
               </Box>
             ))}

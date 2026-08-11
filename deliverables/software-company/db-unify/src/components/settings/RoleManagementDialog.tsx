@@ -213,9 +213,9 @@ export default function RoleManagementDialog({ open, onClose }: Props) {
               <TableBody>
                 {roles.map((r) => (
                   <TableRow key={r.id} hover>
-                    <TableCell sx={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>{r.code}</TableCell>
+                    <TableCell sx={{ fontFamily: 'monospace', fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>{r.code}</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>{r.name}</TableCell>
-                    <TableCell sx={{ color: 'text.secondary', fontSize: '0.8rem' }}>{r.description || '-'}</TableCell>
+                    <TableCell sx={{ color: 'text.secondary', fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>{r.description || '-'}</TableCell>
                     <TableCell align="center">
                       <Chip size="small" label={(r.permissions || []).length} />
                     </TableCell>
@@ -261,7 +261,7 @@ export default function RoleManagementDialog({ open, onClose }: Props) {
 
       {/* 编辑角色基本信息 */}
       <Dialog open={editOpen} onClose={() => setEditOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontSize: '1rem', fontWeight: 600 }}>
+        <DialogTitle sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))', fontWeight: 600 }}>
           {isCreate ? '新建角色' : `编辑角色: ${form.code}`}
         </DialogTitle>
         <DialogContent sx={{ pt: 2 }}>
@@ -292,7 +292,7 @@ export default function RoleManagementDialog({ open, onClose }: Props) {
       {/* 权限矩阵 */}
       <Dialog open={permOpen} onClose={() => setPermOpen(false)} maxWidth="md" fullWidth
         PaperProps={{ sx: { height: '85vh' } }}>
-        <DialogTitle sx={{ fontSize: '1rem', fontWeight: 600, borderBottom: '1px solid', borderColor: 'divider' }}>
+        <DialogTitle sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))', fontWeight: 600, borderBottom: '1px solid', borderColor: 'divider' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
             <Box sx={{ flex: 1, minWidth: 200 }}>
               编辑权限矩阵: {permRole?.name} ({permRole?.code})
@@ -351,7 +351,7 @@ export default function RoleManagementDialog({ open, onClose }: Props) {
                         label={
                           <Box>
                             <Typography variant="body2" component="span" sx={p.sensitive ? { color: 'error.main', fontWeight: 600 } : undefined}>{p.name}</Typography>
-                            {p.sensitive && <Chip label="敏感" size="small" color="error" sx={{ ml: 0.5, height: 16, fontSize: '0.65rem' }} />}
+                            {p.sensitive && <Chip label="敏感" size="small" color="error" sx={{ ml: 0.5, height: 16, fontSize: 'calc(0.65rem * var(--dc-scale, 1))' }} />}
                             <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontFamily: 'monospace' }}>{p.code}</Typography>
                           </Box>
                         }

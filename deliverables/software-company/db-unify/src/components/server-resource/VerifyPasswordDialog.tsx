@@ -106,7 +106,7 @@ const VerifyPasswordDialog: React.FC<Props> = ({ open, serverId, serverName, loa
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle sx={{ fontWeight: 600, fontSize: '1rem' }}>
+      <DialogTitle sx={{ fontWeight: 600, fontSize: 'calc(1rem * var(--dc-scale, 1))' }}>
         查看密码 - {serverName}
       </DialogTitle>
       <DialogContent>

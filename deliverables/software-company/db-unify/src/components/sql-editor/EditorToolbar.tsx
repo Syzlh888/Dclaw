@@ -293,8 +293,8 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ onExecute, onStop, isExec
             onClick={() => setActiveTab(tab.id)}
             onDoubleClick={() => handleTabDoubleClick(tab.id, tab.name)}
             sx={{
-              px: 1.5,
-              py: 0.5,
+              px: 1.25,
+              py: 0.25,
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
@@ -302,7 +302,7 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ onExecute, onStop, isExec
               borderBottom: tab.id === activeTabId ? '2px solid' : '2px solid transparent',
               borderColor: tab.id === activeTabId ? 'primary.main' : 'transparent',
               color: tab.id === activeTabId ? 'primary.main' : 'text.secondary',
-              fontSize: '0.8rem',
+              fontSize: 'calc(0.75rem * var(--dc-scale, 1))',
               maxWidth: 150,
               whiteSpace: 'nowrap',
               '&:hover': { bgcolor: 'action.hover' },
@@ -315,13 +315,13 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ onExecute, onStop, isExec
                 onClick={(e) => { e.stopPropagation(); removeTab(tab.id); }}
                 sx={{ p: 0 }}
               >
-                <CloseIcon sx={{ fontSize: '0.75rem' }} />
+                <CloseIcon sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }} />
               </IconButton>
             )}
           </Box>
         ))}
         <IconButton size="small" onClick={addTab} sx={{ borderRadius: 0 }}>
-          <AddIcon sx={{ fontSize: '1rem' }} />
+          <AddIcon sx={{ fontSize: 'calc(0.9rem * var(--dc-scale, 1))' }} />
         </IconButton>
       </Box>
 
@@ -330,8 +330,8 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ onExecute, onStop, isExec
         sx={{
           display: 'flex',
           alignItems: 'center',
-          gap: 1,
-          py: 0.75,
+          gap: 0.75,
+          py: 0.5,
           px: 1,
           borderBottom: '1px solid',
           borderColor: 'divider',
@@ -372,9 +372,9 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ onExecute, onStop, isExec
             updateConfig({ timeoutMs: sec * 1000 });
           }}
           disabled={isExecuting}
-          inputProps={{ min: 30, max: 600, step: 10, style: { width: 70, fontSize: '0.8rem' } }}
-          InputLabelProps={{ sx: { fontSize: '0.7rem' } }}
-          sx={{ '& .MuiOutlinedInput-root': { height: 32 } }}
+          inputProps={{ min: 30, max: 600, step: 10, style: { width: 70, fontSize: 'calc(0.72rem * var(--dc-scale, 1))' } }}
+          InputLabelProps={{ sx: { fontSize: 'calc(0.65rem * var(--dc-scale, 1))' } }}
+          sx={{ '& .MuiOutlinedInput-root': { height: 26 } }}
         />
 
         {/* SQL 脚本操作 */}
@@ -433,7 +433,7 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ onExecute, onStop, isExec
         value={editorTheme}
         onChange={(e) => setEditorTheme(e.target.value as EditorTheme)}
         size="small"
-        sx={{ minWidth: 80, '& .MuiSelect-select': { display: 'flex', alignItems: 'center', gap: 1, py: 0.5 } }}
+        sx={{ minWidth: 80, '& .MuiSelect-select': { display: 'flex', alignItems: 'center', gap: 1, py: 0.25 } }}
         renderValue={(value) => (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Box sx={{ width: 14, height: 14, borderRadius: 0.5, bgcolor: themeColors[value].color, border: value === 'hc-light' ? '1px solid #ccc' : 'none', flexShrink: 0 }} />
@@ -458,12 +458,12 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ onExecute, onStop, isExec
             disabled={fontSize <= 10}
             sx={{ borderRadius: 0 }}
           >
-            <RemoveIcon fontSize="small" />
+            <RemoveIcon sx={{ fontSize: 'calc(0.85rem * var(--dc-scale, 1))' }} />
           </IconButton>
         </Tooltip>
         <Typography
           variant="caption"
-          sx={{ minWidth: 28, textAlign: 'center', userSelect: 'none', color: 'text.secondary' }}
+          sx={{ minWidth: 26, textAlign: 'center', userSelect: 'none', color: 'text.secondary', fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}
         >
           {fontSize}
         </Typography>
@@ -474,7 +474,7 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ onExecute, onStop, isExec
             disabled={fontSize >= 30}
             sx={{ borderRadius: 0 }}
           >
-            <AddIcon fontSize="small" />
+            <AddIcon sx={{ fontSize: 'calc(0.85rem * var(--dc-scale, 1))' }} />
           </IconButton>
         </Tooltip>
       </Box>
@@ -487,14 +487,14 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ onExecute, onStop, isExec
           variant="filled"
         />
       ) : (
-        <Chip
-          label={`已选: ${effectiveDbIds.length}库`}
-          size="small"
-          color={effectiveDbIds.length > 0 ? 'primary' : 'default'}
-          variant={effectiveDbIds.length > 0 ? 'filled' : 'outlined'}
-          onClick={(e) => effectiveDbIds.length > 0 && setSelPopoverAnchor(e.currentTarget)}
-          sx={{ cursor: effectiveDbIds.length > 0 ? 'pointer' : 'default' }}
-        />
+<Chip
+              label={`已选: ${effectiveDbIds.length}库`}
+              size="small"
+              color={effectiveDbIds.length > 0 ? 'primary' : 'default'}
+              variant={effectiveDbIds.length > 0 ? 'filled' : 'outlined'}
+              onClick={(e) => effectiveDbIds.length > 0 && setSelPopoverAnchor(e.currentTarget)}
+              sx={{ cursor: effectiveDbIds.length > 0 ? 'pointer' : 'default', fontSize: 'calc(0.7rem * var(--dc-scale, 1))', height: 22 }}
+            />
       )}
 
       {/* 已选库查看弹窗 */}
@@ -506,18 +506,18 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ onExecute, onStop, isExec
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
         slotProps={{ paper: { sx: { bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, minWidth: 220, maxHeight: 300 } } }}
       >
-        <Box sx={{ p: 1 }}>
-          <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.65rem', fontWeight: 600, mb: 0.5, display: 'block' }}>
+        <Box sx={{ p: 0.75 }}>
+          <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: 'calc(0.62rem * var(--dc-scale, 1))', fontWeight: 600, mb: 0.5, display: 'block' }}>
             已选数据库 ({effectiveDbIds.length})
           </Typography>
           {selectedDbInfo.map((info, idx) => (
-            <Box key={idx} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 0.25, px: 0.5, borderRadius: 0.5, '&:hover': { bgcolor: 'action.hover' } }}>
+            <Box key={idx} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 0.2, px: 0.5, borderRadius: 0.5, '&:hover': { bgcolor: 'action.hover' } }}>
               <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography variant="caption" sx={{ fontSize: '0.68rem', color: 'text.primary', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <Typography variant="caption" sx={{ fontSize: 'calc(0.65rem * var(--dc-scale, 1))', color: 'text.primary', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {info.hospitalName}
                 </Typography>
                 {info.predbName && (
-                  <Typography variant="caption" sx={{ fontSize: '0.55rem', color: 'text.secondary' }}>
+                  <Typography variant="caption" sx={{ fontSize: 'calc(0.52rem * var(--dc-scale, 1))', color: 'text.secondary' }}>
                     {info.predbName}
                   </Typography>
                 )}
@@ -537,9 +537,9 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ onExecute, onStop, isExec
                       useTreeStore.getState().setSelectedDbIds(updated);
                     }
                   }}
-                  sx={{ p: 0.25, ml: 0.5 }}
+                  sx={{ p: 0.2, ml: 0.5 }}
                 >
-                  <CloseIcon sx={{ fontSize: '0.75rem', color: '#f87171' }} />
+                  <CloseIcon sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))', color: '#f87171' }} />
                 </IconButton>
               </Tooltip>
             </Box>
@@ -549,17 +549,17 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ onExecute, onStop, isExec
 
       {/* 脚本列表对话框 */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>打开脚本</DialogTitle>
-        <DialogContent dividers sx={{ minHeight: 300 }}>
+        <DialogTitle sx={{ py: 1, fontSize: 'calc(0.95rem * var(--dc-scale, 1))' }}>打开脚本</DialogTitle>
+        <DialogContent dividers sx={{ minHeight: 280, py: 1.25 }}>
           {/* 分类筛选 */}
-          <Box sx={{ display: 'flex', gap: 0.5, mb: 1, flexWrap: 'wrap', alignItems: 'center' }}>
+          <Box sx={{ display: 'flex', gap: 0.5, mb: 0.75, flexWrap: 'wrap', alignItems: 'center' }}>
             <Chip
               label="全部"
               size="small"
               color={!scriptFilterCat && !scriptFilterProject ? 'primary' : 'default'}
               onClick={() => { setScriptFilterCat(''); setScriptFilterProject(''); }}
               variant={!scriptFilterCat && !scriptFilterProject ? 'filled' : 'outlined'}
-              sx={{ fontSize: '0.7rem' }}
+              sx={{ fontSize: 'calc(0.66rem * var(--dc-scale, 1))', height: 22 }}
             />
             {SCRIPT_CATEGORIES.filter(Boolean).map(cat => (
               <Chip
@@ -569,10 +569,10 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ onExecute, onStop, isExec
                 color={scriptFilterCat === cat ? 'primary' : 'default'}
                 onClick={() => setScriptFilterCat(scriptFilterCat === cat ? '' : cat)}
                 variant={scriptFilterCat === cat ? 'filled' : 'outlined'}
-                sx={{ fontSize: '0.7rem' }}
+                sx={{ fontSize: 'calc(0.66rem * var(--dc-scale, 1))', height: 22 }}
               />
             ))}
-            <Box sx={{ width: 1, height: 20, borderLeft: '1px solid', borderColor: 'divider', mx: 0.5 }} />
+            <Box sx={{ width: 1, height: 16, borderLeft: '1px solid', borderColor: 'divider', mx: 0.5 }} />
             {platforms.map(p => (
               <Chip
                 key={p.id}
@@ -581,7 +581,7 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ onExecute, onStop, isExec
                 color={scriptFilterProject === p.id ? 'primary' : 'default'}
                 onClick={() => setScriptFilterProject(scriptFilterProject === p.id ? '' : p.id)}
                 variant={scriptFilterProject === p.id ? 'filled' : 'outlined'}
-                sx={{ fontSize: '0.7rem' }}
+                sx={{ fontSize: 'calc(0.66rem * var(--dc-scale, 1))', height: 22 }}
               />
             ))}
           </Box>
@@ -610,14 +610,14 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ onExecute, onStop, isExec
                   <ListItemText
                     primary={
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Typography sx={{ fontSize: '0.9rem' }}>{s.name}</Typography>
+                        <Typography sx={{ fontSize: 'calc(0.82rem * var(--dc-scale, 1))' }}>{s.name}</Typography>
                         {s.category && (
                           <Chip
                             label={s.category}
                             size="small"
                             variant="outlined"
                             color="primary"
-                            sx={{ fontSize: '0.6rem', height: 18 }}
+                            sx={{ fontSize: 'calc(0.58rem * var(--dc-scale, 1))', height: 16 }}
                           />
                         )}
                         {s.projectId && platforms.find(p => p.id === s.projectId) && (
@@ -626,29 +626,29 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ onExecute, onStop, isExec
                             size="small"
                             variant="outlined"
                             color="success"
-                            sx={{ fontSize: '0.6rem', height: 18 }}
+                            sx={{ fontSize: 'calc(0.58rem * var(--dc-scale, 1))', height: 16 }}
                           />
                         )}
                       </Box>
                     }
                     secondary={s.description || s.sql_preview || '无描述'}
-                    primaryTypographyProps={{ fontSize: '0.9rem' }}
-                    secondaryTypographyProps={{ fontSize: '0.75rem', sx: { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }}
+                    primaryTypographyProps={{ fontSize: 'calc(0.82rem * var(--dc-scale, 1))' }}
+                    secondaryTypographyProps={{ fontSize: 'calc(0.68rem * var(--dc-scale, 1))', sx: { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }}
                   />
                 </ListItem>
               ))}
             </List>
           )}
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenDialog(false)}>关闭</Button>
+        <DialogActions sx={{ px: 2, py: 0.75 }}>
+          <Button onClick={() => setOpenDialog(false)} size="small">关闭</Button>
         </DialogActions>
       </Dialog>
 
       {/* 保存脚本对话框 */}
       <Dialog open={saveDialogOpen} onClose={() => setSaveDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>保存脚本</DialogTitle>
-        <DialogContent dividers sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
+        <DialogTitle sx={{ py: 1, fontSize: 'calc(0.95rem * var(--dc-scale, 1))' }}>保存脚本</DialogTitle>
+        <DialogContent dividers sx={{ display: 'flex', flexDirection: 'column', gap: 1.25, pt: 1.5 }}>
           <TextField
             key={`name-${saveDialogOpen}`}
             label="脚本名称"
@@ -695,23 +695,23 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ onExecute, onStop, isExec
             rows={2}
           />
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setSaveDialogOpen(false)}>取消</Button>
-          <Button onClick={handleSaveConfirm} variant="contained" disabled={!saveName.trim()}>保存</Button>
+        <DialogActions sx={{ px: 2, py: 0.75 }}>
+          <Button onClick={() => setSaveDialogOpen(false)} size="small">取消</Button>
+          <Button onClick={handleSaveConfirm} variant="contained" size="small" disabled={!saveName.trim()}>保存</Button>
         </DialogActions>
       </Dialog>
 
       {/* 执行确认对话框 */}
       <Dialog open={confirmDialogOpen} onClose={() => setConfirmDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <WarningAmberIcon color="warning" />
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 1, fontSize: 'calc(0.95rem * var(--dc-scale, 1))' }}>
+          <WarningAmberIcon color="warning" sx={{ fontSize: 'calc(1.05rem * var(--dc-scale, 1))' }} />
           确认执行 SQL
         </DialogTitle>
-        <DialogContent dividers>
-          <Typography variant="body2" sx={{ mb: 1.5 }}>
+        <DialogContent dividers sx={{ py: 1.25 }}>
+          <Typography variant="body2" sx={{ mb: 1.25, fontSize: 'calc(0.78rem * var(--dc-scale, 1))' }}>
             当前为非只读模式，将直接对数据库执行 <Box component="span" sx={{ fontWeight: 600, color: 'error.main' }}>写入操作</Box>，请在执行前仔细确认 SQL 语句。
           </Typography>
-          <Typography variant="body2" sx={{ mb: 1, fontWeight: 600 }}>
+          <Typography variant="body2" sx={{ mb: 0.75, fontWeight: 600, fontSize: 'calc(0.78rem * var(--dc-scale, 1))' }}>
             将影响以下 {selectedDbInfo.length} 个数据库：
           </Typography>
           <Box
@@ -726,21 +726,21 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ onExecute, onStop, isExec
           >
             <List dense disablePadding>
               {selectedDbInfo.map((db, i) => (
-                <ListItem key={i} sx={{ borderBottom: i < selectedDbInfo.length - 1 ? '1px solid' : 'none', borderColor: 'divider' }}>
+                <ListItem key={i} sx={{ borderBottom: i < selectedDbInfo.length - 1 ? '1px solid' : 'none', borderColor: 'divider', py: 0.4 }}>
                   <ListItemText
                     primary={db.hospitalName}
                     secondary={db.predbName || '—'}
-                    primaryTypographyProps={{ fontSize: '0.85rem' }}
-                    secondaryTypographyProps={{ fontSize: '0.75rem' }}
+                    primaryTypographyProps={{ fontSize: 'calc(0.78rem * var(--dc-scale, 1))' }}
+                    secondaryTypographyProps={{ fontSize: 'calc(0.68rem * var(--dc-scale, 1))' }}
                   />
                 </ListItem>
               ))}
             </List>
           </Box>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setConfirmDialogOpen(false)}>取消</Button>
-          <Button onClick={handleExecuteConfirm} variant="contained" color="warning" autoFocus>
+        <DialogActions sx={{ px: 2, py: 0.75 }}>
+          <Button onClick={() => setConfirmDialogOpen(false)} size="small">取消</Button>
+          <Button onClick={handleExecuteConfirm} variant="contained" color="warning" size="small" autoFocus>
             确认执行
           </Button>
         </DialogActions>

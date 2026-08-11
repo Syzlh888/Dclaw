@@ -46,7 +46,7 @@ const ImportDialogShell: React.FC<ImportDialogShellProps> = ({
       <DialogTitle
         sx={{
           display: 'flex', alignItems: 'center', gap: 1,
-          fontSize: '0.95rem', fontWeight: 600, py: 1.25,
+          fontSize: 'calc(0.92rem * var(--dc-scale, 1))', fontWeight: 600, py: 1,
         }}
       >
         {icon && (
@@ -57,14 +57,14 @@ const ImportDialogShell: React.FC<ImportDialogShellProps> = ({
         {title}
       </DialogTitle>
 
-      <DialogContent dividers sx={{ px: 2.5, py: 2 }}>
+      <DialogContent dividers sx={{ px: 2, py: 1.5 }}>
         {/* 步骤指示 */}
         {steps && steps.length > 0 && (
           <Stepper
             activeStep={activeStep}
             sx={{
-              mb: 2.5,
-              '& .MuiStepLabel-label': { fontSize: '0.8rem' },
+              mb: 2,
+              '& .MuiStepLabel-label': { fontSize: 'calc(0.75rem * var(--dc-scale, 1))' },
             }}
           >
             {steps.map((label) => (
@@ -79,7 +79,7 @@ const ImportDialogShell: React.FC<ImportDialogShellProps> = ({
         {error && (
           <Alert
             severity="error"
-            sx={{ mb: 2, fontSize: '0.8rem' }}
+            sx={{ mb: 1.5, fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}
             onClose={onErrorClose}
           >
             {error}
@@ -89,10 +89,10 @@ const ImportDialogShell: React.FC<ImportDialogShellProps> = ({
         {children}
 
         {/* 底部进度条 */}
-        {loading && <LinearProgress sx={{ mt: 2 }} />}
+        {loading && <LinearProgress sx={{ mt: 1.5 }} />}
       </DialogContent>
 
-      <DialogActions sx={{ px: 2.5, py: 1.25, gap: 0.75 }}>
+      <DialogActions sx={{ px: 2, py: 1, gap: 0.5 }}>
         {actions}
       </DialogActions>
     </Dialog>

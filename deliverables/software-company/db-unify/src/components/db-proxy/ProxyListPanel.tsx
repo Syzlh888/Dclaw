@@ -53,7 +53,7 @@ const ProxyListPanel: React.FC<Props> = ({ onCreate, onEdit }) => {
 
   return (
     <Box sx={{ width: 260, display: 'flex', flexDirection: 'column', borderRight: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
-      <Box sx={{ px: 1, pt: 1, pb: 0.5 }}>
+      <Box sx={{ px: 0.75, pt: 0.5, pb: 0.25 }}>
         <TextField
           fullWidth
           size="small"
@@ -62,29 +62,29 @@ const ProxyListPanel: React.FC<Props> = ({ onCreate, onEdit }) => {
           onChange={(e) => setSearchText(e.target.value)}
           InputProps={{
             startAdornment: (
-              <InputAdornment position="start"><SearchIcon sx={{ fontSize: '0.875rem', color: 'text.disabled' }} /></InputAdornment>
+              <InputAdornment position="start"><SearchIcon sx={{ fontSize: 'calc(0.82rem * var(--dc-scale, 1))', color: 'text.disabled' }} /></InputAdornment>
             ),
             endAdornment: searchText ? (
               <IconButton size="small" onClick={() => setSearchText('')} sx={{ p: 0.2 }}>
-                <CloseIcon sx={{ fontSize: '0.75rem' }} />
+                <CloseIcon sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }} />
               </IconButton>
             ) : null,
           }}
           sx={{
-            '& .MuiInputBase-root': { fontSize: '0.7rem', bgcolor: 'action.hover', borderRadius: 1 },
+            '& .MuiInputBase-root': { fontSize: 'calc(0.66rem * var(--dc-scale, 1))', bgcolor: 'action.hover', borderRadius: 1 },
             '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
           }}
         />
       </Box>
 
-      <Box sx={{ px: 1, pb: 0.5 }}>
+      <Box sx={{ px: 0.75, pb: 0.25 }}>
         <Button
           fullWidth
           variant="text"
           size="small"
-          startIcon={<AddIcon sx={{ fontSize: '0.875rem' }} />}
+          startIcon={<AddIcon sx={{ fontSize: 'calc(0.82rem * var(--dc-scale, 1))' }} />}
           onClick={onCreate}
-          sx={{ fontSize: '0.75rem', color: 'text.secondary', textTransform: 'none', justifyContent: 'flex-start', '&:hover': { bgcolor: 'action.hover', color: 'primary.main' } }}
+          sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))', color: 'text.secondary', textTransform: 'none', justifyContent: 'flex-start', '&:hover': { bgcolor: 'action.hover', color: 'primary.main' } }}
         >
           新建代理连接
         </Button>
@@ -92,7 +92,7 @@ const ProxyListPanel: React.FC<Props> = ({ onCreate, onEdit }) => {
 
       <Box sx={{ flex: 1, overflow: 'auto' }}>
         {filtered.length === 0 && (
-          <Typography sx={{ p: 2, color: 'text.disabled', fontSize: '0.7rem', textAlign: 'center' }}>
+          <Typography sx={{ p: 1.5, color: 'text.disabled', fontSize: 'calc(0.66rem * var(--dc-scale, 1))', textAlign: 'center' }}>
             暂无代理连接
           </Typography>
         )}
@@ -112,21 +112,21 @@ const ProxyListPanel: React.FC<Props> = ({ onCreate, onEdit }) => {
               >
                 <ListItemButton
                   onClick={() => selectConnection(c.id)}
-                  sx={{ py: 0.15, px: 1, minHeight: 22, lineHeight: 1.2 }}
+                  sx={{ py: 0.1, px: 0.75, minHeight: 20, lineHeight: 1.2 }}
                 >
-                  <DnsIcon sx={{ fontSize: '0.8125rem', color: 'primary.main', mr: 0.75 }} />
+                  <DnsIcon sx={{ fontSize: 'calc(0.78rem * var(--dc-scale, 1))', color: 'primary.main', mr: 0.5 }} />
                   <ListItemText
                     disableTypography
                     primary={
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, lineHeight: 1.2 }}>
-                        <Typography sx={{ fontSize: '0.75rem', color: 'text.primary', lineHeight: 1.2 }}>{c.name}</Typography>
-                        <Chip size="small" label={c.proxy_port} sx={{ height: 15, fontSize: '0.6rem', bgcolor: 'action.disabledBackground', color: 'text.secondary' }} />
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.4, ml: 'auto' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.4, lineHeight: 1.2 }}>
+                        <Typography sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))', color: 'text.primary', lineHeight: 1.2 }}>{c.name}</Typography>
+                        <Chip size="small" label={c.proxy_port} sx={{ height: 14, fontSize: 'calc(0.55rem * var(--dc-scale, 1))', bgcolor: 'action.disabledBackground', color: 'text.secondary' }} />
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3, ml: 'auto' }}>
                           <Tooltip title={`健康：${healthTitle}`}>
                             <Box
                               sx={{
-                                width: 6,
-                                height: 6,
+                                width: 5,
+                                height: 5,
                                 borderRadius: '50%',
                                 bgcolor: HEALTH_COLOR[hs],
                                 outline: hs === 'fail' ? '1px solid' : 'none',
@@ -134,7 +134,7 @@ const ProxyListPanel: React.FC<Props> = ({ onCreate, onEdit }) => {
                               }}
                             />
                           </Tooltip>
-                          <Typography sx={{ fontSize: '0.6rem', color: STATUS_COLOR[c.status], lineHeight: 1.2 }}>
+                          <Typography sx={{ fontSize: 'calc(0.55rem * var(--dc-scale, 1))', color: STATUS_COLOR[c.status], lineHeight: 1.2 }}>
                             {STATUS_TEXT[c.status]}
                           </Typography>
                         </Box>
@@ -148,8 +148,8 @@ const ProxyListPanel: React.FC<Props> = ({ onCreate, onEdit }) => {
         </List>
       </Box>
 
-      <Box sx={{ px: 1, py: 0.5, borderTop: '1px solid', borderColor: 'divider' }}>
-        <Typography sx={{ color: 'text.disabled', fontSize: '0.65rem' }}>共 {connections.length} 条代理连接</Typography>
+      <Box sx={{ px: 0.75, py: 0.4, borderTop: '1px solid', borderColor: 'divider' }}>
+        <Typography sx={{ color: 'text.disabled', fontSize: 'calc(0.6rem * var(--dc-scale, 1))' }}>共 {connections.length} 条代理连接</Typography>
       </Box>
     </Box>
   );

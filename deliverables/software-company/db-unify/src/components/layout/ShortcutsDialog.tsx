@@ -34,7 +34,7 @@ const ShortcutsDialog: React.FC<ShortcutsDialogProps> = ({ open, onClose }) => {
                       display: 'inline-block',
                       px: 1,
                       py: 0.25,
-                      fontSize: '0.75rem',
+                      fontSize: 'calc(0.75rem * var(--dc-scale, 1))',
                       fontWeight: 600,
                       color: 'text.primary',
                       bgcolor: 'action.hover',

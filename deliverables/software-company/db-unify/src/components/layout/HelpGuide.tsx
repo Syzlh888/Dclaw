@@ -224,8 +224,8 @@ const HelpGuide: React.FC<HelpGuideProps> = ({ open, onClose }) => {
                   },
                 }}
               >
-                <Box sx={{ fontSize: '1.125rem', display: 'flex' }}>{s.icon}</Box>
-                <Typography variant="body2" sx={{ fontWeight: isActive ? 600 : 400, fontSize: '0.8rem' }}>
+                <Box sx={{ fontSize: 'calc(1.125rem * var(--dc-scale, 1))', display: 'flex' }}>{s.icon}</Box>
+                <Typography variant="body2" sx={{ fontWeight: isActive ? 600 : 400, fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>
                   {s.title}
                 </Typography>
               </Box>
@@ -237,7 +237,7 @@ const HelpGuide: React.FC<HelpGuideProps> = ({ open, onClose }) => {
         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 2.5, overflow: 'auto' }}>
           {/* 章节导航 */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2.5 }}>
-            <Box sx={{ fontSize: '1.375rem', display: 'flex', color: 'primary.main' }}>
+            <Box sx={{ fontSize: 'calc(1.375rem * var(--dc-scale, 1))', display: 'flex', color: 'primary.main' }}>
               {current.icon}
             </Box>
             <Typography variant="subtitle1" fontWeight={700}>
@@ -266,7 +266,7 @@ const HelpGuide: React.FC<HelpGuideProps> = ({ open, onClose }) => {
                     sx={{
                       fontWeight: 600,
                       color: 'text.primary',
-                      fontSize: '1rem',
+                      fontSize: 'calc(1rem * var(--dc-scale, 1))',
                       mb: 0.5,
                       mt: i > 0 && trimmed.length > 0 ? 0.5 : 0,
                     }}
@@ -283,7 +283,7 @@ const HelpGuide: React.FC<HelpGuideProps> = ({ open, onClose }) => {
                   variant="body2"
                   sx={{
                     color: 'text.secondary',
-                    fontSize: '0.95rem',
+                    fontSize: 'calc(0.95rem * var(--dc-scale, 1))',
                     pl: 2,
                     mb: 0.25,
                     lineHeight: 1.6,

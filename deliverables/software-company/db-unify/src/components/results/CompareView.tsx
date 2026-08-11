@@ -91,7 +91,7 @@ const CompareView: React.FC = () => {
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Source selector */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 1, px: 1, flexWrap: 'wrap' }}>
-        <Typography variant="body2" sx={{ fontWeight: 600, mr: 0.5, fontSize: '0.8rem' }}>
+        <Typography variant="body2" sx={{ fontWeight: 600, mr: 0.5, fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>
           对比库:
         </Typography>
         <Autocomplete
@@ -133,20 +133,20 @@ const CompareView: React.FC = () => {
             },
           }}
           renderInput={(params) => (
-            <TextField {...params} placeholder="选择 2-5 个库进行对比" sx={{ '& .MuiInputBase-root': { fontSize: '0.72rem', minHeight: 24 } }} />
+            <TextField {...params} placeholder="选择 2-5 个库进行对比" sx={{ '& .MuiInputBase-root': { fontSize: 'calc(0.72rem * var(--dc-scale, 1))', minHeight: 24 } }} />
           )}
           renderTags={(value, getTagProps) =>
             value.map((option, idx) => {
               const tagProps = getTagProps({ index: idx });
-              return <Chip label={option.label} size="small" sx={{ fontSize: '0.68rem' }} {...tagProps} />;
+              return <Chip label={option.label} size="small" sx={{ fontSize: 'calc(0.68rem * var(--dc-scale, 1))' }} {...tagProps} />;
             })
           }
           renderOption={(props, option, { selected }) => {
             const { key, ...otherProps } = props as React.HTMLAttributes<HTMLLIElement> & { key: string };
             return (
-              <li key={key} {...otherProps} style={{ fontSize: '0.5625rem', lineHeight: '14px', color: '#000000DE', padding: '4px 8px', minHeight: 28, height: 28, width: 160, maxWidth: 160, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <li key={key} {...otherProps} style={{ fontSize: 'calc(0.5625rem * var(--dc-scale, 1))', lineHeight: '14px', color: '#000000DE', padding: '4px 8px', minHeight: 28, height: 28, width: 160, maxWidth: 160, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 <Checkbox checked={selected} size="small" sx={{ p: '2px' }} />
-                <ListItemText primary={option.label} primaryTypographyProps={{ fontSize: '0.5625rem', lineHeight: '14px' }} />
+                <ListItemText primary={option.label} primaryTypographyProps={{ fontSize: 'calc(0.5625rem * var(--dc-scale, 1))', lineHeight: '14px' }} />
               </li>
             );
           }}

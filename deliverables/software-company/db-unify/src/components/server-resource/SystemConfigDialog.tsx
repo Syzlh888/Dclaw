@@ -33,9 +33,9 @@ const SystemConfigDialog: React.FC<Props> = ({ open, onClose }) => {
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle sx={{ fontWeight: 600, fontSize: '1rem' }}>系统设置</DialogTitle>
+      <DialogTitle sx={{ fontWeight: 600, fontSize: 'calc(1rem * var(--dc-scale, 1))' }}>系统设置</DialogTitle>
       <DialogContent>
-        <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1.5, fontSize: '0.85rem' }}>
+        <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1.5, fontSize: 'calc(0.85rem * var(--dc-scale, 1))' }}>
           二次验证密码配置
         </Typography>
         <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: 'block' }}>

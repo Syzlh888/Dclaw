@@ -200,7 +200,7 @@ const BackupDialog: React.FC<BackupDialogProps> = ({ open, onClose }) => {
                           onClick={() => openFolderPicker('manual')}
                           edge="end"
                         >
-                          <FolderOpenIcon sx={{ fontSize: '1.25rem' }} />
+                          <FolderOpenIcon sx={{ fontSize: 'calc(1.25rem * var(--dc-scale, 1))' }} />
                         </IconButton>
                       </Tooltip>
                     </InputAdornment>
@@ -276,7 +276,7 @@ const BackupDialog: React.FC<BackupDialogProps> = ({ open, onClose }) => {
                             onClick={() => openFolderPicker('auto')}
                             edge="end"
                           >
-                            <FolderOpenIcon sx={{ fontSize: '1.25rem' }} />
+                            <FolderOpenIcon sx={{ fontSize: 'calc(1.25rem * var(--dc-scale, 1))' }} />
                           </IconButton>
                         </Tooltip>
                       </InputAdornment>
@@ -327,20 +327,20 @@ const BackupDialog: React.FC<BackupDialogProps> = ({ open, onClose }) => {
                     <ListItemText
                       primary={
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Typography variant="body2" sx={{ fontSize: '0.8rem', fontWeight: 500 }}>
+                          <Typography variant="body2" sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))', fontWeight: 500 }}>
                             {f.fileName.replace(/^dclaw-(auto-)?/, '').replace('.dclaw', '')}
                           </Typography>
                           {f.fileName.includes('auto-') && (
-                            <Chip label="自动" size="small" variant="outlined" sx={{ fontSize: '0.6rem', height: 18 }} />
+                            <Chip label="自动" size="small" variant="outlined" sx={{ fontSize: 'calc(0.6rem * var(--dc-scale, 1))', height: 18 }} />
                           )}
                           {f.fileName.includes('rollback-') && (
-                            <Chip label="回滚" size="small" color="warning" variant="outlined" sx={{ fontSize: '0.6rem', height: 18 }} />
+                            <Chip label="回滚" size="small" color="warning" variant="outlined" sx={{ fontSize: 'calc(0.6rem * var(--dc-scale, 1))', height: 18 }} />
                           )}
                         </Box>
                       }
                       secondary={`${formatSize(f.size)} · ${formatTime(f.createdAt)}`}
-                      primaryTypographyProps={{ fontSize: '0.8rem' }}
-                      secondaryTypographyProps={{ fontSize: '0.7rem' }}
+                      primaryTypographyProps={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}
+                      secondaryTypographyProps={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}
                     />
                     <ListItemSecondaryAction>
                       <Tooltip title="下载备份">
@@ -355,7 +355,7 @@ const BackupDialog: React.FC<BackupDialogProps> = ({ open, onClose }) => {
                             }
                           }}
                         >
-                          <DownloadIcon sx={{ fontSize: '1.125rem' }} />
+                          <DownloadIcon sx={{ fontSize: 'calc(1.125rem * var(--dc-scale, 1))' }} />
                         </IconButton>
                       </Tooltip>
                       <Tooltip title="还原">
@@ -368,7 +368,7 @@ const BackupDialog: React.FC<BackupDialogProps> = ({ open, onClose }) => {
                           {restoring === f.fileName ? (
                             <CircularProgress size={18} />
                           ) : (
-                            <RestoreIcon sx={{ fontSize: '1.125rem' }} />
+                            <RestoreIcon sx={{ fontSize: 'calc(1.125rem * var(--dc-scale, 1))' }} />
                           )}
                         </IconButton>
                       </Tooltip>
@@ -378,7 +378,7 @@ const BackupDialog: React.FC<BackupDialogProps> = ({ open, onClose }) => {
                           color="error"
                           onClick={() => handleDelete(f)}
                         >
-                          <DeleteIcon sx={{ fontSize: '1.125rem' }} />
+                          <DeleteIcon sx={{ fontSize: 'calc(1.125rem * var(--dc-scale, 1))' }} />
                         </IconButton>
                       </Tooltip>
                     </ListItemSecondaryAction>

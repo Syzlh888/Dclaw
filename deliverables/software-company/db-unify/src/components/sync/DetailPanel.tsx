@@ -21,7 +21,7 @@ interface Props {
   onRunTask?: (taskId: string) => void;
 }
 
-const Row = ({ label, value }: { label: string; value: React.ReactNode }) => <Box sx={{ mb: 1.25 }}><Typography sx={{ color: 'text.disabled', fontSize: '0.6562rem', mb: 0.25 }}>{label}</Typography><Typography component="div" sx={{ color: 'text.secondary', fontSize: '0.75rem', wordBreak: 'break-word' }}>{value || '-'}</Typography></Box>;
+const Row = ({ label, value }: { label: string; value: React.ReactNode }) => <Box sx={{ mb: 1.25 }}><Typography sx={{ color: 'text.disabled', fontSize: 'calc(0.6562rem * var(--dc-scale, 1))', mb: 0.25 }}>{label}</Typography><Typography component="div" sx={{ color: 'text.secondary', fontSize: 'calc(0.75rem * var(--dc-scale, 1))', wordBreak: 'break-word' }}>{value || '-'}</Typography></Box>;
 const fmt = (value?: string | null) => value ? new Date(value).toLocaleString('zh-CN') : '-';
 const fmtTime = (value?: string | null) => {
   if (!value) return '-';
@@ -76,12 +76,12 @@ const HistoryList: React.FC<{ taskId: string }> = ({ taskId }) => {
 
   return <Box sx={{ mt: 1 }}>
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.75 }}>
-      <HistoryIcon sx={{ fontSize: '0.8125rem', color: 'primary.main' }} />
-      <Typography sx={{ color: 'primary.main', fontSize: '0.6875rem', letterSpacing: 0.5, fontWeight: 600 }}>同步历史</Typography>
+      <HistoryIcon sx={{ fontSize: 'calc(0.8125rem * var(--dc-scale, 1))', color: 'primary.main' }} />
+      <Typography sx={{ color: 'primary.main', fontSize: 'calc(0.6875rem * var(--dc-scale, 1))', letterSpacing: 0.5, fontWeight: 600 }}>同步历史</Typography>
       <Box sx={{ flex: 1 }} />
       <Tooltip title="刷新历史">
         <IconButton size="small" onClick={handleRefresh} sx={{ p: 0.25, color: 'text.secondary' }} disabled={loading}>
-          <RefreshIcon sx={{ fontSize: '0.8125rem' }} />
+          <RefreshIcon sx={{ fontSize: 'calc(0.8125rem * var(--dc-scale, 1))' }} />
         </IconButton>
       </Tooltip>
     </Box>
@@ -93,41 +93,41 @@ const HistoryList: React.FC<{ taskId: string }> = ({ taskId }) => {
         const status = last ? historyStatusMark(last.status) : historyStatusMark(null);
         const StatusIcon = status.Icon;
         return <Box key={m.id} sx={{ display: 'flex', alignItems: 'center', gap: 0.5, py: 0.15, color: 'text.secondary' }}>
-          <StatusIcon sx={{ fontSize: '0.75rem', color: status.color }} />
-          <Typography sx={{ fontSize: '0.6562rem', color: status.color, minWidth: 26 }}>{status.label}</Typography>
-          <Typography sx={{ fontSize: '0.6562rem', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={mappingNameById.get(m.id) || m.id}>
+          <StatusIcon sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', color: status.color }} />
+          <Typography sx={{ fontSize: 'calc(0.6562rem * var(--dc-scale, 1))', color: status.color, minWidth: 26 }}>{status.label}</Typography>
+          <Typography sx={{ fontSize: 'calc(0.6562rem * var(--dc-scale, 1))', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={mappingNameById.get(m.id) || m.id}>
             {mappingNameById.get(m.id) || m.id}
           </Typography>
-          <Typography sx={{ fontSize: '0.625rem', color: 'text.disabled', whiteSpace: 'nowrap' }}>
+          <Typography sx={{ fontSize: 'calc(0.625rem * var(--dc-scale, 1))', color: 'text.disabled', whiteSpace: 'nowrap' }}>
             {last ? fmtTime(last.startedAt) : '尚未执行'}
           </Typography>
         </Box>;
       })}
     </Box>}
 
-    {loading && <Typography sx={{ color: 'text.disabled', fontSize: '0.6562rem', py: 0.5 }}>加载中…</Typography>}
-    {!loading && runHistory.length === 0 && <Typography sx={{ color: 'text.disabled', fontSize: '0.6562rem', py: 0.5 }}>暂无历史记录</Typography>}
+    {loading && <Typography sx={{ color: 'text.disabled', fontSize: 'calc(0.6562rem * var(--dc-scale, 1))', py: 0.5 }}>加载中…</Typography>}
+    {!loading && runHistory.length === 0 && <Typography sx={{ color: 'text.disabled', fontSize: 'calc(0.6562rem * var(--dc-scale, 1))', py: 0.5 }}>暂无历史记录</Typography>}
     {!loading && runHistory.slice(0, 30).map((h) => {
       const status = historyStatusMark(h.status);
       const StatusIcon = status.Icon;
       const tableLabel = h.mappingId ? (mappingNameById.get(h.mappingId) || h.mappingId) : '(任务级)';
       return <Tooltip key={h.id} title={h.errorMessage || ''} placement="left" disableHoverListener={!h.errorMessage}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, py: 0.15, borderTop: '1px solid', borderColor: 'divider', color: 'text.secondary' }}>
-          <StatusIcon sx={{ fontSize: '0.6875rem', color: status.color }} />
-          <Typography sx={{ fontSize: '0.625rem', color: status.color, minWidth: 26 }}>{status.label}</Typography>
-          <Typography sx={{ fontSize: '0.625rem', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={tableLabel}>
+          <StatusIcon sx={{ fontSize: 'calc(0.6875rem * var(--dc-scale, 1))', color: status.color }} />
+          <Typography sx={{ fontSize: 'calc(0.625rem * var(--dc-scale, 1))', color: status.color, minWidth: 26 }}>{status.label}</Typography>
+          <Typography sx={{ fontSize: 'calc(0.625rem * var(--dc-scale, 1))', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={tableLabel}>
             {tableLabel}
           </Typography>
-          <Typography sx={{ fontSize: '0.5938rem', color: 'text.disabled', whiteSpace: 'nowrap' }}>
+          <Typography sx={{ fontSize: 'calc(0.5938rem * var(--dc-scale, 1))', color: 'text.disabled', whiteSpace: 'nowrap' }}>
             {h.rowsSynced} 行 · {h.durationMs}ms
           </Typography>
-          <Typography sx={{ fontSize: '0.5938rem', color: 'text.disabled', whiteSpace: 'nowrap', minWidth: 70, textAlign: 'right' }}>
+          <Typography sx={{ fontSize: 'calc(0.5938rem * var(--dc-scale, 1))', color: 'text.disabled', whiteSpace: 'nowrap', minWidth: 70, textAlign: 'right' }}>
             {fmtTime(h.startedAt)}
           </Typography>
         </Box>
       </Tooltip>;
     })}
-    {!loading && runHistory.length > 30 && <Typography sx={{ color: 'text.disabled', fontSize: '0.625rem', py: 0.5, textAlign: 'center' }}>仅显示最近 30 条，共 {runHistory.length} 条</Typography>}
+    {!loading && runHistory.length > 30 && <Typography sx={{ color: 'text.disabled', fontSize: 'calc(0.625rem * var(--dc-scale, 1))', py: 0.5, textAlign: 'center' }}>仅显示最近 30 条，共 {runHistory.length} 条</Typography>}
   </Box>;
 };
 
@@ -178,18 +178,18 @@ const DetailPanel: React.FC<Props> = ({ onEditColumns, onRunTask }) => {
       }));
     }
   };
-  const actionSx = { minWidth: 78, flexShrink: 0, borderColor: 'divider', color: 'text.secondary', fontSize: '0.6875rem', '&:hover': { borderColor: 'primary.main', color: 'primary.main' } };
+  const actionSx = { minWidth: 78, flexShrink: 0, borderColor: 'divider', color: 'text.secondary', fontSize: 'calc(0.6875rem * var(--dc-scale, 1))', '&:hover': { borderColor: 'primary.main', color: 'primary.main' } };
 
   const taskMark = task ? statusMark(task.last_run_status) : null;
 
   return <Box sx={{ width: 300, minWidth: 300, bgcolor: 'background.paper', borderLeft: '1px solid', borderColor: 'divider', display: 'flex', flexDirection: 'column' }}>
-    <Typography sx={{ p: 1.5, color: 'text.primary', fontWeight: 600, fontSize: '0.8125rem', borderBottom: '1px solid', borderColor: 'divider' }}>详情</Typography>
+    <Typography sx={{ p: 1.5, color: 'text.primary', fontWeight: 600, fontSize: 'calc(0.8125rem * var(--dc-scale, 1))', borderBottom: '1px solid', borderColor: 'divider' }}>详情</Typography>
     <Box sx={{ p: 1.5, flex: 1, overflow: 'auto' }}>
-      {!selection && <Typography sx={{ mt: 6, textAlign: 'center', color: 'text.disabled', fontSize: '0.75rem' }}>选择项目、任务或映射查看详情</Typography>}
-      {project && <><Typography sx={{ color: 'text.primary', fontSize: '1rem', fontWeight: 600, mb: 2 }}>{project.name}</Typography><Row label="类型" value={<Chip size="small" label="同步项目" sx={{ height: 20, color: 'primary.main' }} />} /><Row label="描述" value={project.description || project.extra?.description} /><Row label="任务数" value={`${stats[project.id]?.taskCount ?? tasks.filter((x) => x.project_id === project.id).length}`} /><Row label="表映射数" value={`${stats[project.id]?.mappingCount ?? '-'}`} /><Row label="最后运行" value={fmt(stats[project.id]?.lastRunAt)} /><Row label="创建时间" value={fmt(project.created_at)} /></>}
+      {!selection && <Typography sx={{ mt: 6, textAlign: 'center', color: 'text.disabled', fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>选择项目、任务或映射查看详情</Typography>}
+      {project && <><Typography sx={{ color: 'text.primary', fontSize: 'calc(1rem * var(--dc-scale, 1))', fontWeight: 600, mb: 2 }}>{project.name}</Typography><Row label="类型" value={<Chip size="small" label="同步项目" sx={{ height: 20, color: 'primary.main' }} />} /><Row label="描述" value={project.description || project.extra?.description} /><Row label="任务数" value={`${stats[project.id]?.taskCount ?? tasks.filter((x) => x.project_id === project.id).length}`} /><Row label="表映射数" value={`${stats[project.id]?.mappingCount ?? '-'}`} /><Row label="最后运行" value={fmt(stats[project.id]?.lastRunAt)} /><Row label="创建时间" value={fmt(project.created_at)} /></>}
       {task && taskMark && (
         <>
-          <Typography sx={{ color: 'text.primary', fontSize: '1rem', fontWeight: 600, mb: 2 }}>{task.name}</Typography>
+          <Typography sx={{ color: 'text.primary', fontSize: 'calc(1rem * var(--dc-scale, 1))', fontWeight: 600, mb: 2 }}>{task.name}</Typography>
           <Row label="状态" value={<span style={{ color: taskMark.color }}>{taskMark.text} {taskMark.label}</span>} />
           <Row label="描述" value={task.description || task.extra?.description} />
           <Divider sx={{ borderColor: 'divider', my: 1.5 }} />
@@ -199,9 +199,9 @@ const DetailPanel: React.FC<Props> = ({ onEditColumns, onRunTask }) => {
           <Row label="并发度" value={`${task.max_concurrent ?? 3} 路`} />
           <Row label="失败重试" value={`${task.retry_count ?? 2} 次（指数退避）`} />
           <Divider sx={{ borderColor: 'divider', my: 1.5 }} />
-          <Typography sx={{ color: 'primary.main', fontSize: '0.6875rem', mb: 1, letterSpacing: 0.5, fontWeight: 600 }}>调度</Typography>
+          <Typography sx={{ color: 'primary.main', fontSize: 'calc(0.6875rem * var(--dc-scale, 1))', mb: 1, letterSpacing: 0.5, fontWeight: 600 }}>调度</Typography>
           <Row label="自动调度" value={
-            <Chip size="small" label={task.enabled === false ? '已停用' : '已启用'} sx={{ height: 20, bgcolor: task.enabled === false ? 'action.disabledBackground' : 'success.dark', color: 'common.white', fontSize: '0.625rem' }} />
+            <Chip size="small" label={task.enabled === false ? '已停用' : '已启用'} sx={{ height: 20, bgcolor: task.enabled === false ? 'action.disabledBackground' : 'success.dark', color: 'common.white', fontSize: 'calc(0.625rem * var(--dc-scale, 1))' }} />
           } />
           <Row label="轮询间隔" value={`${task.poll_interval_seconds || 60} 秒`} />
           <Row label="上次运行" value={fmt(task.last_run_at)} />
@@ -211,11 +211,11 @@ const DetailPanel: React.FC<Props> = ({ onEditColumns, onRunTask }) => {
           <HistoryList taskId={task.id} />
         </>
       )}
-      {mapping && <><Typography sx={{ color: 'text.primary', fontSize: '0.9375rem', fontWeight: 600, mb: 2 }}>{mapping.source_table} → {mapping.target_table}</Typography><Row label="状态" value={mapping.enabled === false ? '已停用' : '已启用'} /><Row label="最近同步" value={
+      {mapping && <><Typography sx={{ color: 'text.primary', fontSize: 'calc(0.9375rem * var(--dc-scale, 1))', fontWeight: 600, mb: 2 }}>{mapping.source_table} → {mapping.target_table}</Typography><Row label="状态" value={mapping.enabled === false ? '已停用' : '已启用'} /><Row label="最近同步" value={
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-          {mapping.last_run_status === 'success' && <CheckCircleOutlineIcon sx={{ fontSize: '0.8125rem', color: 'success.main' }} />}
-          {mapping.last_run_status === 'failed' && <ErrorOutlineIcon sx={{ fontSize: '0.8125rem', color: 'error.main' }} />}
-          <Typography sx={{ fontSize: '0.7188rem', color: mapping.last_run_status === 'success' ? 'success.main' : mapping.last_run_status === 'failed' ? 'error.main' : 'text.secondary' }}>
+          {mapping.last_run_status === 'success' && <CheckCircleOutlineIcon sx={{ fontSize: 'calc(0.8125rem * var(--dc-scale, 1))', color: 'success.main' }} />}
+          {mapping.last_run_status === 'failed' && <ErrorOutlineIcon sx={{ fontSize: 'calc(0.8125rem * var(--dc-scale, 1))', color: 'error.main' }} />}
+          <Typography sx={{ fontSize: 'calc(0.7188rem * var(--dc-scale, 1))', color: mapping.last_run_status === 'success' ? 'success.main' : mapping.last_run_status === 'failed' ? 'error.main' : 'text.secondary' }}>
             {mapping.last_run_status === 'success' ? '成功' : mapping.last_run_status === 'failed' ? '失败' : mapping.last_run_status ? mapping.last_run_status : '尚未同步'}
           </Typography>
         </Box>
@@ -223,8 +223,8 @@ const DetailPanel: React.FC<Props> = ({ onEditColumns, onRunTask }) => {
     </Box>
     {selection && <Box sx={{ p: 1.25, borderTop: '1px solid', borderColor: 'divider', display: 'flex', gap: 0.75, flexWrap: 'wrap' }}>
       {task && (
-        <Button size="small" variant="outlined" startIcon={<ScheduleIcon sx={{ fontSize: '0.875rem' }} />} onClick={handleOpenSchedule}
-          sx={{ minWidth: 78, flexShrink: 0, borderColor: 'primary.main', color: 'primary.main', fontSize: '0.6875rem', '&:hover': { borderColor: 'primary.light', bgcolor: 'rgba(66,165,245,0.08)' } }}>
+        <Button size="small" variant="outlined" startIcon={<ScheduleIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} />} onClick={handleOpenSchedule}
+          sx={{ minWidth: 78, flexShrink: 0, borderColor: 'primary.main', color: 'primary.main', fontSize: 'calc(0.6875rem * var(--dc-scale, 1))', '&:hover': { borderColor: 'primary.light', bgcolor: 'rgba(66,165,245,0.08)' } }}>
           调度
         </Button>
       )}
@@ -233,9 +233,9 @@ const DetailPanel: React.FC<Props> = ({ onEditColumns, onRunTask }) => {
         <Button
           size="small"
           variant="outlined"
-          startIcon={<AccountTreeIcon sx={{ fontSize: '0.875rem' }} />}
+          startIcon={<AccountTreeIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} />}
           onClick={() => onEditColumns(mapping.id)}
-          sx={{ minWidth: 88, flexShrink: 0, borderColor: 'primary.main', color: 'primary.main', fontSize: '0.6875rem', '&:hover': { borderColor: 'primary.light', bgcolor: 'rgba(66,165,245,0.08)' } }}
+          sx={{ minWidth: 88, flexShrink: 0, borderColor: 'primary.main', color: 'primary.main', fontSize: 'calc(0.6875rem * var(--dc-scale, 1))', '&:hover': { borderColor: 'primary.light', bgcolor: 'rgba(66,165,245,0.08)' } }}
         >
           字段映射
         </Button>
@@ -255,12 +255,12 @@ const DetailPanel: React.FC<Props> = ({ onEditColumns, onRunTask }) => {
 
     {/* 调度编辑 Dialog */}
     <Dialog open={scheduleOpen} onClose={() => setScheduleOpen(false)} maxWidth="xs" fullWidth PaperProps={{ sx: { bgcolor: '#3C3F41', color: 'text.primary' } }}>
-      <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '1rem' }}>
-        <ScheduleIcon sx={{ fontSize: '1.125rem', color: 'primary.main' }} />
+      <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 'calc(1rem * var(--dc-scale, 1))' }}>
+        <ScheduleIcon sx={{ fontSize: 'calc(1.125rem * var(--dc-scale, 1))', color: 'primary.main' }} />
         调度配置
       </DialogTitle>
       <DialogContent sx={{ pt: '12px !important' }}>
-        <Typography sx={{ color: 'text.secondary', fontSize: '0.6875rem', mb: 2 }}>任务: {task?.name}</Typography>
+        <Typography sx={{ color: 'text.secondary', fontSize: 'calc(0.6875rem * var(--dc-scale, 1))', mb: 2 }}>任务: {task?.name}</Typography>
         <FormControlLabel
           control={<Switch checked={editEnabled} onChange={(e) => setEditEnabled(e.target.checked)} sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: 'primary.main' }, '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { bgcolor: 'primary.main' } }} />}
           label="启用自动调度"

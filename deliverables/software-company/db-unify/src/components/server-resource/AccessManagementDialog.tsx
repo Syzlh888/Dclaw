@@ -357,13 +357,13 @@ export default function AccessManagementDialog({ open, onClose }: Props) {
               <Table size="small">
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', width: '8%' }}>类型</TableCell>
-                    <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', width: '14%' }}>地址</TableCell>
-                    <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', width: '14%' }}>提供方</TableCell>
-                    <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', width: '24%' }}>用户</TableCell>
-                    <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', width: '26%' }}>密码</TableCell>
-                    <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', width: '8%' }}>备注</TableCell>
-                    <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', width: '6%' }}>操作</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.75rem * var(--dc-scale, 1))', width: '8%' }}>类型</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.75rem * var(--dc-scale, 1))', width: '14%' }}>地址</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.75rem * var(--dc-scale, 1))', width: '14%' }}>提供方</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.75rem * var(--dc-scale, 1))', width: '24%' }}>用户</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.75rem * var(--dc-scale, 1))', width: '26%' }}>密码</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.75rem * var(--dc-scale, 1))', width: '8%' }}>备注</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.75rem * var(--dc-scale, 1))', width: '6%' }}>操作</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -376,26 +376,26 @@ export default function AccessManagementDialog({ open, onClose }: Props) {
                       return (
                         <TableRow key={pwdKey}>
                           {ci === 0 && (
-                            <TableCell rowSpan={credCount} sx={{ fontSize: '0.8rem', width: '8%' }}>
+                            <TableCell rowSpan={credCount} sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))', width: '8%' }}>
                               <Chip
-                                icon={e.type === 'VPN' ? <VpnKeyIcon sx={{ fontSize: '0.875rem' }} /> : <SecurityIcon sx={{ fontSize: '0.875rem' }} />}
+                                icon={e.type === 'VPN' ? <VpnKeyIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} /> : <SecurityIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} />}
                                 label={e.type}
                                 size="small"
                                 color={e.type === 'VPN' ? 'primary' : 'warning'}
                                 variant="outlined"
-                                sx={{ fontSize: '0.7rem', height: 22 }}
+                                sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))', height: 22 }}
                               />
                             </TableCell>
                           )}
-                          {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: '0.8rem', color: 'primary.dark', width: '14%', wordBreak: 'break-all' }}>{e.address}</TableCell>}
-                          {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: '0.8rem', width: '14%' }}>{e.provider || '-'}</TableCell>}
-                          <TableCell sx={{ fontSize: '0.8rem', width: '24%', whiteSpace: 'normal', wordBreak: 'break-word' }}>
+                          {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))', color: 'primary.dark', width: '14%', wordBreak: 'break-all' }}>{e.address}</TableCell>}
+                          {ci === 0 && <TableCell rowSpan={credCount} sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))', width: '14%' }}>{e.provider || '-'}</TableCell>}
+                          <TableCell sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))', width: '24%', whiteSpace: 'normal', wordBreak: 'break-word' }}>
                             {cred.username || '-'}
                           </TableCell>
-                          <TableCell sx={{ fontSize: '0.85rem', width: '26%' }}>
+                          <TableCell sx={{ fontSize: 'calc(0.85rem * var(--dc-scale, 1))', width: '26%' }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.3, flexWrap: 'nowrap' }}>
                               <Typography sx={{
-                                fontFamily: 'monospace', fontSize: '0.85rem', minWidth: 90,
+                                fontFamily: 'monospace', fontSize: 'calc(0.85rem * var(--dc-scale, 1))', minWidth: 90,
                                 userSelect: isRevealed ? 'text' : 'none',
                                 letterSpacing: isRevealed ? '0' : '2px',
                               }}>
@@ -403,43 +403,43 @@ export default function AccessManagementDialog({ open, onClose }: Props) {
                               </Typography>
                               <Tooltip title="复制密码">
                                 <IconButton size="small" onClick={() => handleCopyPassword(e.id, pwdKey, cred._index, cred.username || '')}>
-                                  <ContentCopyIcon sx={{ fontSize: '0.9375rem', color: 'primary.main' }} />
+                                  <ContentCopyIcon sx={{ fontSize: 'calc(0.9375rem * var(--dc-scale, 1))', color: 'primary.main' }} />
                                 </IconButton>
                               </Tooltip>
                               <Tooltip title="修改密码">
                                 <IconButton size="small" onClick={() => openPwdChange(e, ci, cred.username || '')}>
-                                  <LockResetIcon sx={{ fontSize: '0.9375rem', color: 'warning.main' }} />
+                                  <LockResetIcon sx={{ fontSize: 'calc(0.9375rem * var(--dc-scale, 1))', color: 'warning.main' }} />
                                 </IconButton>
                               </Tooltip>
                               <Tooltip title={isRevealed ? '隐藏密码' : '查看密码（需二次验证）'}>
                                 <IconButton size="small" onClick={() => requestViewPassword(e.id, pwdKey, cred._index, cred.username || '')}>
-                                  {isRevealed ? <VisibilityOffIcon sx={{ fontSize: '0.9375rem' }} /> : <VisibilityIcon sx={{ fontSize: '0.9375rem' }} />}
+                                  {isRevealed ? <VisibilityOffIcon sx={{ fontSize: 'calc(0.9375rem * var(--dc-scale, 1))' }} /> : <VisibilityIcon sx={{ fontSize: 'calc(0.9375rem * var(--dc-scale, 1))' }} />}
                                 </IconButton>
                               </Tooltip>
                               <Tooltip title="密码历史">
                                 <IconButton size="small" onClick={() => cred.username ? openHistory(e, ci, cred.username) : null}>
-                                  <HistoryIcon sx={{ fontSize: '0.9375rem' }} />
+                                  <HistoryIcon sx={{ fontSize: 'calc(0.9375rem * var(--dc-scale, 1))' }} />
                                 </IconButton>
                               </Tooltip>
                               {credCount > 1 && (
                                 <Tooltip title="删除此凭据">
                                   <IconButton size="small" onClick={() => handleDeleteCredential(e, ci)} sx={{ color: 'error.main' }}>
-                                    <DeleteIcon sx={{ fontSize: '0.9375rem' }} />
+                                    <DeleteIcon sx={{ fontSize: 'calc(0.9375rem * var(--dc-scale, 1))' }} />
                                   </IconButton>
                                 </Tooltip>
                               )}
                             </Box>
                           </TableCell>
                           {ci === 0 && (
-                            <TableCell rowSpan={credCount} sx={{ fontSize: '0.8rem', width: '8%', maxWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            <TableCell rowSpan={credCount} sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))', width: '8%', maxWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                               {e.notes || '-'}
                             </TableCell>
                           )}
                           {ci === 0 && (
                             <TableCell rowSpan={credCount} sx={{ verticalAlign: 'middle', textAlign: 'center', width: '6%' }}>
                               <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
-                                <Tooltip title="编辑"><IconButton size="small" onClick={() => openEdit(e)}><EditIcon sx={{ fontSize: '1rem' }} /></IconButton></Tooltip>
-                                <Tooltip title="删除"><IconButton size="small" onClick={() => handleDelete(e.id)} sx={{ color: 'error.main' }}><DeleteIcon sx={{ fontSize: '1rem' }} /></IconButton></Tooltip>
+                                <Tooltip title="编辑"><IconButton size="small" onClick={() => openEdit(e)}><EditIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} /></IconButton></Tooltip>
+                                <Tooltip title="删除"><IconButton size="small" onClick={() => handleDelete(e.id)} sx={{ color: 'error.main' }}><DeleteIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} /></IconButton></Tooltip>
                               </Box>
                             </TableCell>
                           )}
@@ -494,7 +494,7 @@ export default function AccessManagementDialog({ open, onClose }: Props) {
             <Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                 <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>用户凭据</Typography>
-                <Button size="small" variant="outlined" sx={{ minWidth: 32, p: '2px 6px', fontSize: '0.7rem' }} onClick={addCred}>+ 添加</Button>
+                <Button size="small" variant="outlined" sx={{ minWidth: 32, p: '2px 6px', fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }} onClick={addCred}>+ 添加</Button>
               </Box>
               {credentials.map((cred, i) => (
                 <Box key={i} sx={{ display: 'flex', gap: 1, mb: 1, alignItems: 'flex-start', p: 1.5, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
@@ -506,21 +506,21 @@ export default function AccessManagementDialog({ open, onClose }: Props) {
                   <TextField size="small" label="备注" value={cred.notes || ''} onChange={e => updateCred(i, 'notes', e.target.value)} sx={{ flex: 2 }} />
                   <Box sx={{ display: 'flex', flexShrink: 0, gap: 0.5, alignItems: 'center', height: 40 }}>
                     <Button size="small" variant="outlined" onClick={() => setShowPwdGen(showPwdGen === i ? null : i)}
-                      sx={{ minWidth: 56, fontSize: '0.7rem', height: 36 }}>生成</Button>
+                      sx={{ minWidth: 56, fontSize: 'calc(0.7rem * var(--dc-scale, 1))', height: 36 }}>生成</Button>
                     {editItem && (
                       <Tooltip title="历史密码查看">
                         <IconButton size="small" onClick={() => {
                           const creds = getEntryCreds(editItem);
                           if (creds[i]?.username) openHistory(editItem, i, creds[i].username);
                         }}>
-                          <HistoryIcon sx={{ fontSize: '1rem' }} />
+                          <HistoryIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} />
                         </IconButton>
                       </Tooltip>
                     )}
                   </Box>
                   {credentials.length > 1 && (
                     <IconButton size="small" onClick={() => removeCred(i)} sx={{ color: 'error.main', flexShrink: 0, alignSelf: 'center' }}>
-                      <DeleteIcon sx={{ fontSize: '1rem' }} />
+                      <DeleteIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} />
                     </IconButton>
                   )}
                 </Box>
@@ -546,11 +546,11 @@ export default function AccessManagementDialog({ open, onClose }: Props) {
 
       {/* 二次验证弹窗 */}
       <Dialog open={pwdVerifyOpen} onClose={() => { setPwdVerifyOpen(false); setPwdVerifyTarget(null); setPwdVerifyError(''); setPwdVerifyInput(''); }} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 600, fontSize: '0.95rem' }}>
+        <DialogTitle sx={{ fontWeight: 600, fontSize: 'calc(0.95rem * var(--dc-scale, 1))' }}>
           二次验证 - {pwdVerifyTarget?.action === 'copy' ? '复制凭据密码' : '查看凭据密码'}
         </DialogTitle>
         <DialogContent>
-          {pwdVerifyError && <Box sx={{ mb: 1.5, p: 1, bgcolor: 'error.light', borderRadius: 1, color: 'error.contrastText', fontSize: '0.85rem' }}>{pwdVerifyError}</Box>}
+          {pwdVerifyError && <Box sx={{ mb: 1.5, p: 1, bgcolor: 'error.light', borderRadius: 1, color: 'error.contrastText', fontSize: 'calc(0.85rem * var(--dc-scale, 1))' }}>{pwdVerifyError}</Box>}
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
             请输入二次验证密码以查看凭据「{pwdVerifyTarget?.username || '-'}」的明文密码
           </Typography>
@@ -569,7 +569,7 @@ export default function AccessManagementDialog({ open, onClose }: Props) {
 
       {/* 密码修改弹窗 */}
       <Dialog open={pwdChangeOpen} onClose={() => { setPwdChangeOpen(false); setPwdChangeTarget(null); }} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 600, fontSize: '0.95rem' }}>修改密码 - {pwdChangeTarget?.username || ''}</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 600, fontSize: 'calc(0.95rem * var(--dc-scale, 1))' }}>修改密码 - {pwdChangeTarget?.username || ''}</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mt: 1 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -589,7 +589,7 @@ export default function AccessManagementDialog({ open, onClose }: Props) {
             </Box>
             <Box>
               <Button size="small" variant="outlined" onClick={() => setPwdChangeShowGen(!pwdChangeShowGen)}
-                sx={{ minWidth: 56, fontSize: '0.7rem' }}>生成密码</Button>
+                sx={{ minWidth: 56, fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}>生成密码</Button>
               {pwdChangeShowGen && (
                 <Box sx={{ mt: 1 }}>
                   <PasswordGenerator
@@ -612,7 +612,7 @@ export default function AccessManagementDialog({ open, onClose }: Props) {
 
       {/* 密码历史弹窗 */}
       <Dialog open={historyOpen} onClose={() => setHistoryOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 600, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: 1 }}>
+        <DialogTitle sx={{ fontWeight: 600, fontSize: 'calc(1rem * var(--dc-scale, 1))', display: 'flex', alignItems: 'center', gap: 1 }}>
           <HistoryIcon fontSize="small" />
           密码修改历史 - {historyEntry?.username || ''}
         </DialogTitle>
@@ -640,9 +640,9 @@ export default function AccessManagementDialog({ open, onClose }: Props) {
               <Table size="small">
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: 600, fontSize: '0.8rem' }}>密码</TableCell>
-                    <TableCell sx={{ fontWeight: 600, fontSize: '0.8rem' }}>修改时间</TableCell>
-                    <TableCell sx={{ fontWeight: 600, fontSize: '0.8rem' }}>操作者</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>密码</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>修改时间</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>操作者</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -651,24 +651,24 @@ export default function AccessManagementDialog({ open, onClose }: Props) {
                     const hasPwd = !!h.password;
                     return (
                       <TableRow key={h.id}>
-                        <TableCell sx={{ fontSize: '0.8rem' }}>
+                        <TableCell sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>
                           {hasPwd ? (
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                               <TextField
                                 size="small"
                                 type={isRevealed ? 'text' : 'password'}
                                 value={h.password}
-                                InputProps={{ readOnly: true, sx: { fontSize: '0.8rem' } }}
+                                InputProps={{ readOnly: true, sx: { fontSize: 'calc(0.8rem * var(--dc-scale, 1))' } }}
                                 sx={{ width: 180 }}
                               />
                               <Tooltip title={isRevealed ? '隐藏' : '显示'}>
                                 <IconButton size="small" onClick={() => toggleHistoryReveal(h.id)}>
-                                  {isRevealed ? <VisibilityOffIcon sx={{ fontSize: '0.875rem' }} /> : <VisibilityIcon sx={{ fontSize: '0.875rem' }} />}
+                                  {isRevealed ? <VisibilityOffIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} /> : <VisibilityIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} />}
                                 </IconButton>
                               </Tooltip>
                               <Tooltip title="复制">
                                 <IconButton size="small" onClick={() => navigator.clipboard.writeText(h.password)}>
-                                  <ContentCopyIcon sx={{ fontSize: '0.875rem' }} />
+                                  <ContentCopyIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} />
                                 </IconButton>
                               </Tooltip>
                             </Box>
@@ -678,10 +678,10 @@ export default function AccessManagementDialog({ open, onClose }: Props) {
                             </Typography>
                           )}
                         </TableCell>
-                        <TableCell sx={{ fontSize: '0.8rem' }}>
+                        <TableCell sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>
                           {new Date(h.changed_at).toLocaleString('zh-CN')}
                         </TableCell>
-                        <TableCell sx={{ fontSize: '0.8rem' }}>{h.changed_by || '-'}</TableCell>
+                        <TableCell sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>{h.changed_by || '-'}</TableCell>
                       </TableRow>
                     );
                   })}

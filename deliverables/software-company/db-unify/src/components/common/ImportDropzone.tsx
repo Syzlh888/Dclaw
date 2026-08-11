@@ -73,15 +73,15 @@ const ImportDropzone: React.FC<ImportDropzoneProps> = ({
       >
         <CloudUploadIcon
           sx={{
-            fontSize: '2.75rem',
+            fontSize: 'calc(2.75rem * var(--dc-scale, 1))',
             color: dragOver ? 'primary.main' : 'action.disabled',
             mb: 1.5,
           }}
         />
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5, fontSize: '0.85rem' }}>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5, fontSize: 'calc(0.85rem * var(--dc-scale, 1))' }}>
           点击选择文件，或拖拽文件到此处
         </Typography>
-        <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: 'block', fontSize: '0.75rem' }}>
+        <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: 'block', fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>
           {hint}
         </Typography>
 
@@ -92,9 +92,9 @@ const ImportDropzone: React.FC<ImportDropzoneProps> = ({
           <Button
             variant="contained"
             size="small"
-            startIcon={<CloudUploadIcon sx={{ fontSize: '1rem' }} />}
+            startIcon={<CloudUploadIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} />}
             onClick={() => fileInputRef.current?.click()}
-            sx={{ textTransform: 'none', fontSize: '0.8rem', py: 0.5 }}
+            sx={{ textTransform: 'none', fontSize: 'calc(0.8rem * var(--dc-scale, 1))', py: 0.5 }}
           >
             {selectLabel}
           </Button>
@@ -102,10 +102,10 @@ const ImportDropzone: React.FC<ImportDropzoneProps> = ({
             <Button
               variant="outlined"
               size="small"
-              startIcon={<DownloadIcon sx={{ fontSize: '1rem' }} />}
+              startIcon={<DownloadIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} />}
               onClick={onDownloadTemplate}
               disabled={downloading}
-              sx={{ textTransform: 'none', fontSize: '0.8rem', py: 0.5 }}
+              sx={{ textTransform: 'none', fontSize: 'calc(0.8rem * var(--dc-scale, 1))', py: 0.5 }}
             >
               {downloading ? '下载中...' : downloadLabel}
             </Button>
@@ -130,7 +130,7 @@ const ImportDropzone: React.FC<ImportDropzoneProps> = ({
           <Typography
             variant="caption"
             color="text.secondary"
-            sx={{ fontWeight: 600, display: 'block', mb: 0.5, fontSize: '0.75rem' }}
+            sx={{ fontWeight: 600, display: 'block', mb: 0.5, fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}
           >
             模板说明
           </Typography>
@@ -138,7 +138,7 @@ const ImportDropzone: React.FC<ImportDropzoneProps> = ({
             variant="caption"
             color="text.secondary"
             component="div"
-            sx={{ fontSize: '0.75rem', lineHeight: 1.7 }}
+            sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', lineHeight: 1.7 }}
           >
             {templateInfo}
           </Typography>

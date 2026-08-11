@@ -195,14 +195,14 @@ const ServerDetailPanel: React.FC<Props> = ({ onEdit, onDelete }) => {
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Box>
-              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1.1rem' }}>{server.name}</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: 'calc(1.1rem * var(--dc-scale, 1))' }}>{server.name}</Typography>
             </Box>
             {server.os && <Chip label={server.os} size="small" color="primary" variant="outlined" />}
             {server.serverType && <Chip label={server.serverType} size="small" />}
           </Box>
           <Box sx={{ display: 'flex', gap: 0.5 }}>
-            <Tooltip title="查看密码"><IconButton size="small" onClick={() => setVerifyOpen(true)}><KeyIcon sx={{ fontSize: '1.125rem' }} /></IconButton></Tooltip>
-            <Tooltip title="密码历史"><IconButton size="small" onClick={() => setHistoryOpen(true)}><HistoryIcon sx={{ fontSize: '1.125rem' }} /></IconButton></Tooltip>
+            <Tooltip title="查看密码"><IconButton size="small" onClick={() => setVerifyOpen(true)}><KeyIcon sx={{ fontSize: 'calc(1.125rem * var(--dc-scale, 1))' }} /></IconButton></Tooltip>
+            <Tooltip title="密码历史"><IconButton size="small" onClick={() => setHistoryOpen(true)}><HistoryIcon sx={{ fontSize: 'calc(1.125rem * var(--dc-scale, 1))' }} /></IconButton></Tooltip>
             <Button size="small" variant="outlined" startIcon={<EditIcon />} onClick={onEdit}>编辑</Button>
             <Button size="small" color="error" variant="outlined" startIcon={<DeleteIcon />} onClick={onDelete}>删除</Button>
           </Box>
@@ -243,7 +243,7 @@ const ServerDetailPanel: React.FC<Props> = ({ onEdit, onDelete }) => {
 
         {(server.tags && server.tags.length > 0) && (
           <Box sx={{ mt: 1, display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-            {server.tags.map(t => <Chip key={t} label={t} size="small" sx={{ fontSize: '0.65rem', height: 20 }} />)}
+            {server.tags.map(t => <Chip key={t} label={t} size="small" sx={{ fontSize: 'calc(0.65rem * var(--dc-scale, 1))', height: 20 }} />)}
           </Box>
         )}
         {server.notes && <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>{server.notes}</Typography>}
@@ -265,7 +265,7 @@ const ServerDetailPanel: React.FC<Props> = ({ onEdit, onDelete }) => {
               {al.pwdKey ? (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0, ml: 0.5 }}>
                   <Typography sx={{
-                    fontFamily: 'monospace', fontSize: '0.65rem',
+                    fontFamily: 'monospace', fontSize: 'calc(0.65rem * var(--dc-scale, 1))',
                     userSelect: isRevealed ? 'text' : 'none',
                     letterSpacing: isRevealed ? '0' : '2px',
                     color: isRevealed ? 'text.primary' : 'text.disabled',
@@ -275,7 +275,7 @@ const ServerDetailPanel: React.FC<Props> = ({ onEdit, onDelete }) => {
                   </Typography>
                   <Tooltip title="查看密码">
                     <IconButton size="small" onClick={() => requestViewPassword(al.entryId, al.pwdKey, al.credIndex, al.user)} sx={{ p: 0.2 }}>
-                      {isRevealed ? <VisibilityOffIcon sx={{ fontSize: '0.875rem' }} /> : <VisibilityIcon sx={{ fontSize: '0.875rem' }} />}
+                      {isRevealed ? <VisibilityOffIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} /> : <VisibilityIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} />}
                     </IconButton>
                   </Tooltip>
                 </Box>
@@ -287,12 +287,12 @@ const ServerDetailPanel: React.FC<Props> = ({ onEdit, onDelete }) => {
 
       {/* 下半部分：Tab 页 */}
       <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ minHeight: 36, borderBottom: '1px solid', borderColor: 'divider', px: 2 }}>
-        <Tab label={`数据库 (${dbInstances.length})`} sx={{ minHeight: 36, textTransform: 'none', fontSize: '0.7rem' }} />
-        <Tab label={`应用 (${appInstances.length})`} sx={{ minHeight: 36, textTransform: 'none', fontSize: '0.7rem' }} />
-        <Tab label={`API (${apiInstances.length})`} sx={{ minHeight: 36, textTransform: 'none', fontSize: '0.7rem' }} />
-        <Tab label={`中间件 (${midInstances.length})`} sx={{ minHeight: 36, textTransform: 'none', fontSize: '0.7rem' }} />
-        <Tab label={`端口 (${ports.length})`} sx={{ minHeight: 36, textTransform: 'none', fontSize: '0.7rem' }} />
-        <Tab label={`关联连接 (${linkedConnections.length})`} sx={{ minHeight: 36, textTransform: 'none', fontSize: '0.7rem' }} />
+        <Tab label={`数据库 (${dbInstances.length})`} sx={{ minHeight: 36, textTransform: 'none', fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }} />
+        <Tab label={`应用 (${appInstances.length})`} sx={{ minHeight: 36, textTransform: 'none', fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }} />
+        <Tab label={`API (${apiInstances.length})`} sx={{ minHeight: 36, textTransform: 'none', fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }} />
+        <Tab label={`中间件 (${midInstances.length})`} sx={{ minHeight: 36, textTransform: 'none', fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }} />
+        <Tab label={`端口 (${ports.length})`} sx={{ minHeight: 36, textTransform: 'none', fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }} />
+        <Tab label={`关联连接 (${linkedConnections.length})`} sx={{ minHeight: 36, textTransform: 'none', fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }} />
       </Tabs>
 
       <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
@@ -312,25 +312,25 @@ const ServerDetailPanel: React.FC<Props> = ({ onEdit, onDelete }) => {
               <TableContainer>
                 <Table size="small">
                   <TableHead><TableRow>
-                    <TableCell sx={{ fontWeight: 600, fontSize: '0.65rem' }}>连接名称</TableCell>
-                    <TableCell sx={{ fontWeight: 600, fontSize: '0.65rem' }}>驱动</TableCell>
-                    <TableCell sx={{ fontWeight: 600, fontSize: '0.65rem' }}>主机:端口</TableCell>
-                    <TableCell sx={{ fontWeight: 600, fontSize: '0.65rem' }}>数据库</TableCell>
-                    <TableCell sx={{ fontWeight: 600, fontSize: '0.65rem' }}>状态</TableCell>
-                    <TableCell sx={{ fontWeight: 600, fontSize: '0.65rem' }}>操作</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.65rem * var(--dc-scale, 1))' }}>连接名称</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.65rem * var(--dc-scale, 1))' }}>驱动</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.65rem * var(--dc-scale, 1))' }}>主机:端口</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.65rem * var(--dc-scale, 1))' }}>数据库</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.65rem * var(--dc-scale, 1))' }}>状态</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.65rem * var(--dc-scale, 1))' }}>操作</TableCell>
                   </TableRow></TableHead>
                   <TableBody>
                     {linkedConnections.map(c => (
                       <TableRow key={c.id}>
-                        <TableCell sx={{ fontSize: '0.7rem' }}>{c.name}</TableCell>
-                        <TableCell><Chip label={c.driver} size="small" sx={{ fontSize: '0.65rem' }} /></TableCell>
-                        <TableCell sx={{ fontSize: '0.7rem' }}>{c.host}:{c.port}</TableCell>
-                        <TableCell sx={{ fontSize: '0.7rem' }}>{c.database || '-'}</TableCell>
+                        <TableCell sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}>{c.name}</TableCell>
+                        <TableCell><Chip label={c.driver} size="small" sx={{ fontSize: 'calc(0.65rem * var(--dc-scale, 1))' }} /></TableCell>
+                        <TableCell sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}>{c.host}:{c.port}</TableCell>
+                        <TableCell sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}>{c.database || '-'}</TableCell>
                         <TableCell>
-                          <Chip label={c.status} size="small" color={c.status === 'online' ? 'success' : 'default'} sx={{ fontSize: '0.65rem', height: 20 }} />
+                          <Chip label={c.status} size="small" color={c.status === 'online' ? 'success' : 'default'} sx={{ fontSize: 'calc(0.65rem * var(--dc-scale, 1))', height: 20 }} />
                         </TableCell>
                         <TableCell>
-                          <Tooltip title="取消关联"><IconButton size="small" onClick={() => handleUnlink(c.id)}><LinkOffIcon sx={{ fontSize: '0.875rem' }} /></IconButton></Tooltip>
+                          <Tooltip title="取消关联"><IconButton size="small" onClick={() => handleUnlink(c.id)}><LinkOffIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} /></IconButton></Tooltip>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -362,7 +362,7 @@ const ServerDetailPanel: React.FC<Props> = ({ onEdit, onDelete }) => {
         onClose={() => { setAccessVerifyOpen(false); setAccessVerifyTarget(null); setAccessVerifyError(''); setAccessVerifyInput(''); }}
         maxWidth="xs" fullWidth
       >
-        <DialogTitle sx={{ fontWeight: 600, fontSize: '0.95rem' }}>
+        <DialogTitle sx={{ fontWeight: 600, fontSize: 'calc(0.95rem * var(--dc-scale, 1))' }}>
           二次验证 - 查看访问密码
         </DialogTitle>
         <DialogContent>

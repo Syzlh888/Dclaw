@@ -218,21 +218,21 @@ const EditTableDialog: React.FC<EditTableDialogProps> = ({
           },
         }}
       >
-        <DialogTitle sx={{ color: 'text.primary', fontSize: '0.85rem', fontWeight: 600, pb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <EditNoteIcon sx={{ fontSize: '1.125rem' }} />
+        <DialogTitle sx={{ color: 'text.primary', fontSize: 'calc(0.85rem * var(--dc-scale, 1))', fontWeight: 600, pb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <EditNoteIcon sx={{ fontSize: 'calc(1.125rem * var(--dc-scale, 1))' }} />
           编辑表：{tableName}
         </DialogTitle>
         <DialogContent sx={{ pt: '8px !important' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-            <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, fontSize: '0.7rem' }}>
+            <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}>
               列列表（点击行右侧编辑按钮修改已有列；添加新列使用下方按钮）
             </Typography>
             <Button
               size="small"
               variant="outlined"
-              startIcon={<AddIcon sx={{ fontSize: '0.75rem' }} />}
+              startIcon={<AddIcon sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }} />}
               onClick={handleAddColumn}
-              sx={{ fontSize: '0.62rem', py: 0, minHeight: 20, textTransform: 'none' }}
+              sx={{ fontSize: 'calc(0.62rem * var(--dc-scale, 1))', py: 0, minHeight: 20, textTransform: 'none' }}
             >
               添加新列
             </Button>
@@ -251,13 +251,13 @@ const EditTableDialog: React.FC<EditTableDialogProps> = ({
             <Table size="small" sx={{ minWidth: 600 }}>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ color: 'text.secondary', fontSize: '0.6rem', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5, width: 50 }}>状态</TableCell>
-                  <TableCell sx={{ color: 'text.secondary', fontSize: '0.6rem', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5 }}>列名</TableCell>
-                  <TableCell sx={{ color: 'text.secondary', fontSize: '0.6rem', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5 }}>类型</TableCell>
-                  <TableCell sx={{ color: 'text.secondary', fontSize: '0.6rem', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5 }}>NULL</TableCell>
-                  <TableCell sx={{ color: 'text.secondary', fontSize: '0.6rem', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5 }}>默认值</TableCell>
-                  <TableCell sx={{ color: 'text.secondary', fontSize: '0.6rem', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5 }}>注释</TableCell>
-                  <TableCell sx={{ color: 'text.secondary', fontSize: '0.6rem', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5, width: 70 }}>操作</TableCell>
+                  <TableCell sx={{ color: 'text.secondary', fontSize: 'calc(0.6rem * var(--dc-scale, 1))', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5, width: 50 }}>状态</TableCell>
+                  <TableCell sx={{ color: 'text.secondary', fontSize: 'calc(0.6rem * var(--dc-scale, 1))', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5 }}>列名</TableCell>
+                  <TableCell sx={{ color: 'text.secondary', fontSize: 'calc(0.6rem * var(--dc-scale, 1))', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5 }}>类型</TableCell>
+                  <TableCell sx={{ color: 'text.secondary', fontSize: 'calc(0.6rem * var(--dc-scale, 1))', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5 }}>NULL</TableCell>
+                  <TableCell sx={{ color: 'text.secondary', fontSize: 'calc(0.6rem * var(--dc-scale, 1))', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5 }}>默认值</TableCell>
+                  <TableCell sx={{ color: 'text.secondary', fontSize: 'calc(0.6rem * var(--dc-scale, 1))', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5 }}>注释</TableCell>
+                  <TableCell sx={{ color: 'text.secondary', fontSize: 'calc(0.6rem * var(--dc-scale, 1))', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5, width: 70 }}>操作</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -269,34 +269,34 @@ const EditTableDialog: React.FC<EditTableDialogProps> = ({
                         size="small"
                         color={isNewColumn(idx) ? 'success' : 'default'}
                         variant="outlined"
-                        sx={{ fontSize: '0.5rem', height: 16, minWidth: 28 }}
+                        sx={{ fontSize: 'calc(0.5rem * var(--dc-scale, 1))', height: 16, minWidth: 28 }}
                       />
                     </TableCell>
-                    <TableCell sx={{ color: 'text.primary', fontSize: '0.68rem', borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.25 }}>
+                    <TableCell sx={{ color: 'text.primary', fontSize: 'calc(0.68rem * var(--dc-scale, 1))', borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.25 }}>
                       {col.name}
                     </TableCell>
-                    <TableCell sx={{ color: 'text.secondary', fontSize: '0.62rem', borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.25 }}>
+                    <TableCell sx={{ color: 'text.secondary', fontSize: 'calc(0.62rem * var(--dc-scale, 1))', borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.25 }}>
                       {col.type}{col.length ? `(${col.length})` : ''}
                     </TableCell>
-                    <TableCell sx={{ color: col.nullable ? 'text.secondary' : '#fbbf24', fontSize: '0.62rem', borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.25 }}>
+                    <TableCell sx={{ color: col.nullable ? 'text.secondary' : '#fbbf24', fontSize: 'calc(0.62rem * var(--dc-scale, 1))', borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.25 }}>
                       {col.nullable ? 'YES' : 'NOT NULL'}
                     </TableCell>
-                    <TableCell sx={{ color: 'text.secondary', fontSize: '0.62rem', borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.25 }}>
+                    <TableCell sx={{ color: 'text.secondary', fontSize: 'calc(0.62rem * var(--dc-scale, 1))', borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.25 }}>
                       {col.defaultValue || '-'}
                     </TableCell>
-                    <TableCell sx={{ color: 'text.secondary', fontSize: '0.62rem', borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.25 }}>
+                    <TableCell sx={{ color: 'text.secondary', fontSize: 'calc(0.62rem * var(--dc-scale, 1))', borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.25 }}>
                       {col.comment || '-'}
                     </TableCell>
                     <TableCell sx={{ borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.25, px: 0.25 }}>
                       <Tooltip title="编辑列">
                         <IconButton size="small" onClick={() => handleOpenEdit(idx)} sx={{ p: 0.25 }}>
-                          <EditIcon sx={{ fontSize: '0.75rem', color: '#0ea5e9' }} />
+                          <EditIcon sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', color: '#0ea5e9' }} />
                         </IconButton>
                       </Tooltip>
                       {isNewColumn(idx) && (
                         <Tooltip title="删除列">
                           <IconButton size="small" onClick={() => handleDeleteClick(idx)} sx={{ p: 0.25 }}>
-                            <DeleteIcon sx={{ fontSize: '0.75rem', color: '#f87171' }} />
+                            <DeleteIcon sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', color: '#f87171' }} />
                           </IconButton>
                         </Tooltip>
                       )}
@@ -308,7 +308,7 @@ const EditTableDialog: React.FC<EditTableDialogProps> = ({
           </TableContainer>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={onClose} size="small" sx={{ color: 'text.secondary', fontSize: '0.7rem', textTransform: 'none' }}>
+          <Button onClick={onClose} size="small" sx={{ color: 'text.secondary', fontSize: 'calc(0.7rem * var(--dc-scale, 1))', textTransform: 'none' }}>
             取消
           </Button>
           <Button
@@ -316,7 +316,7 @@ const EditTableDialog: React.FC<EditTableDialogProps> = ({
             variant="contained"
             size="small"
             disabled={saving}
-            sx={{ bgcolor: '#0ea5e9', color: '#fff', fontSize: '0.7rem', textTransform: 'none', '&:hover': { bgcolor: '#0284c7' } }}
+            sx={{ bgcolor: '#0ea5e9', color: '#fff', fontSize: 'calc(0.7rem * var(--dc-scale, 1))', textTransform: 'none', '&:hover': { bgcolor: '#0284c7' } }}
           >
             {saving ? '保存中...' : '保存修改'}
           </Button>
@@ -331,7 +331,7 @@ const EditTableDialog: React.FC<EditTableDialogProps> = ({
         fullWidth
         PaperProps={{ sx: { bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1 } }}
       >
-        <DialogTitle sx={{ color: 'text.primary', fontSize: '0.85rem', fontWeight: 600, pb: 1 }}>
+        <DialogTitle sx={{ color: 'text.primary', fontSize: 'calc(0.85rem * var(--dc-scale, 1))', fontWeight: 600, pb: 1 }}>
           编辑列
         </DialogTitle>
         <DialogContent sx={{ pt: '8px !important' }}>
@@ -341,25 +341,25 @@ const EditTableDialog: React.FC<EditTableDialogProps> = ({
               label="列名"
               value={editCol.name}
               onChange={(e) => setEditCol(prev => ({ ...prev, name: e.target.value }))}
-              sx={{ flex: 1, '& .MuiInputBase-root': { fontSize: '0.75rem' }, '& .MuiFormLabel-root': { fontSize: '0.7rem' } }}
+              sx={{ flex: 1, '& .MuiInputBase-root': { fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }, '& .MuiFormLabel-root': { fontSize: 'calc(0.7rem * var(--dc-scale, 1))' } }}
             />
             <FormControl size="small" sx={{ width: 120 }}>
-              <InputLabel sx={{ fontSize: '0.7rem' }}>类型</InputLabel>
+              <InputLabel sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}>类型</InputLabel>
               <Select
                 value={editCol.type}
                 label="类型"
                 onChange={(e) => setEditCol(prev => ({ ...prev, type: e.target.value }))}
-                sx={{ fontSize: '0.75rem' }}
+                sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}
               >
                 {COMMON_TYPES.map(t => (
-                  <MenuItem key={t} value={t} sx={{ fontSize: '0.75rem' }}>{t}</MenuItem>
+                  <MenuItem key={t} value={t} sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>{t}</MenuItem>
                 ))}
               </Select>
             </FormControl>
           </Box>
           <Box sx={{ display: 'flex', gap: 2, mb: 1.5, alignItems: 'center' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography variant="caption" sx={{ fontSize: '0.68rem', color: 'text.secondary' }}>NULL</Typography>
+              <Typography variant="caption" sx={{ fontSize: 'calc(0.68rem * var(--dc-scale, 1))', color: 'text.secondary' }}>NULL</Typography>
               <Switch
                 size="small"
                 checked={editCol.nullable}
@@ -371,7 +371,7 @@ const EditTableDialog: React.FC<EditTableDialogProps> = ({
               label="默认值"
               value={editCol.defaultValue || ''}
               onChange={(e) => setEditCol(prev => ({ ...prev, defaultValue: e.target.value }))}
-              sx={{ flex: 1, '& .MuiInputBase-root': { fontSize: '0.75rem' }, '& .MuiFormLabel-root': { fontSize: '0.7rem' } }}
+              sx={{ flex: 1, '& .MuiInputBase-root': { fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }, '& .MuiFormLabel-root': { fontSize: 'calc(0.7rem * var(--dc-scale, 1))' } }}
             />
           </Box>
           <TextField
@@ -380,11 +380,11 @@ const EditTableDialog: React.FC<EditTableDialogProps> = ({
             value={editCol.comment || ''}
             onChange={(e) => setEditCol(prev => ({ ...prev, comment: e.target.value }))}
             fullWidth
-            sx={{ '& .MuiInputBase-root': { fontSize: '0.75rem' }, '& .MuiFormLabel-root': { fontSize: '0.7rem' } }}
+            sx={{ '& .MuiInputBase-root': { fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }, '& .MuiFormLabel-root': { fontSize: 'calc(0.7rem * var(--dc-scale, 1))' } }}
           />
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => setEditColOpen(false)} size="small" sx={{ color: 'text.secondary', fontSize: '0.7rem', textTransform: 'none' }}>
+          <Button onClick={() => setEditColOpen(false)} size="small" sx={{ color: 'text.secondary', fontSize: 'calc(0.7rem * var(--dc-scale, 1))', textTransform: 'none' }}>
             取消
           </Button>
           <Button
@@ -392,7 +392,7 @@ const EditTableDialog: React.FC<EditTableDialogProps> = ({
             variant="contained"
             size="small"
             disabled={!editCol.name.trim() || saving}
-            sx={{ bgcolor: '#0ea5e9', color: '#fff', fontSize: '0.7rem', textTransform: 'none', '&:hover': { bgcolor: '#0284c7' } }}
+            sx={{ bgcolor: '#0ea5e9', color: '#fff', fontSize: 'calc(0.7rem * var(--dc-scale, 1))', textTransform: 'none', '&:hover': { bgcolor: '#0284c7' } }}
           >
             {saving ? '保存中...' : '保存'}
           </Button>
@@ -416,7 +416,7 @@ const EditTableDialog: React.FC<EditTableDialogProps> = ({
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         {snackbar ? (
-          <Alert severity={snackbar.severity} sx={{ width: '100%', fontSize: '0.75rem' }}>
+          <Alert severity={snackbar.severity} sx={{ width: '100%', fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>
             {snackbar.msg}
           </Alert>
         ) : undefined}

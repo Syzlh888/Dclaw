@@ -97,7 +97,7 @@ const CredentialHistoryDialog: React.FC<Props> = ({ open, serverId, credentialIn
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle sx={{ fontWeight: 600, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: 1 }}>
+      <DialogTitle sx={{ fontWeight: 600, fontSize: 'calc(1rem * var(--dc-scale, 1))', display: 'flex', alignItems: 'center', gap: 1 }}>
         <HistoryIcon fontSize="small" />
         密码修改历史 - {username}
       </DialogTitle>
@@ -134,8 +134,8 @@ const CredentialHistoryDialog: React.FC<Props> = ({ open, serverId, credentialIn
                     <ListItemText
                       primary={`修改时间: ${formatTime(item.changed_at)}`}
                       secondary={`操作人: ${item.changed_by}`}
-                      primaryTypographyProps={{ fontSize: '0.85rem' }}
-                      secondaryTypographyProps={{ fontSize: '0.75rem' }}
+                      primaryTypographyProps={{ fontSize: 'calc(0.85rem * var(--dc-scale, 1))' }}
+                      secondaryTypographyProps={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}
                     />
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
                       <Typography variant="caption" color="text.secondary" sx={{ minWidth: 40 }}>密码:</Typography>
@@ -145,17 +145,17 @@ const CredentialHistoryDialog: React.FC<Props> = ({ open, serverId, credentialIn
                             size="small"
                             type={isRevealed ? 'text' : 'password'}
                             value={item.password}
-                            InputProps={{ readOnly: true, sx: { fontSize: '0.8rem' } }}
+                            InputProps={{ readOnly: true, sx: { fontSize: 'calc(0.8rem * var(--dc-scale, 1))' } }}
                             sx={{ width: 160 }}
                           />
                           <Tooltip title={isRevealed ? '隐藏' : '显示'}>
                             <IconButton size="small" onClick={() => toggleReveal(item.id)}>
-                              {isRevealed ? <VisibilityOffIcon sx={{ fontSize: '0.875rem' }} /> : <VisibilityIcon sx={{ fontSize: '0.875rem' }} />}
+                              {isRevealed ? <VisibilityOffIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} /> : <VisibilityIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} />}
                             </IconButton>
                           </Tooltip>
                           <Tooltip title="复制">
                             <IconButton size="small" onClick={() => handleCopy(item.password!)}>
-                              <ContentCopyIcon sx={{ fontSize: '0.875rem' }} />
+                              <ContentCopyIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} />
                             </IconButton>
                           </Tooltip>
                         </>

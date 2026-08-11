@@ -297,7 +297,7 @@ const BulkImportDialog: React.FC<BulkImportDialogProps> = ({ open, onClose }) =>
     }
     return (
       <>
-        <Button onClick={handleReset} size="small" startIcon={<RefreshIcon sx={{ fontSize: '1rem' }} />} sx={{ textTransform: 'none' }}>
+        <Button onClick={handleReset} size="small" startIcon={<RefreshIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} />} sx={{ textTransform: 'none' }}>
           重新导入
         </Button>
         <Button variant="contained" size="small" onClick={onClose} sx={{ textTransform: 'none' }}>
@@ -312,7 +312,7 @@ const BulkImportDialog: React.FC<BulkImportDialogProps> = ({ open, onClose }) =>
       open={open}
       onClose={onClose}
       title="批量导入数据库连接"
-      icon={<CloudUploadIcon sx={{ fontSize: '1.25rem' }} />}
+      icon={<CloudUploadIcon sx={{ fontSize: 'calc(1.25rem * var(--dc-scale, 1))' }} />}
       steps={steps}
       activeStep={activeStep}
       error={error}
@@ -347,31 +347,31 @@ const BulkImportDialog: React.FC<BulkImportDialogProps> = ({ open, onClose }) =>
       {activeStep === 1 && parsedRows.length > 0 && (
         <>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5, flexWrap: 'wrap' }}>
-            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
+            <Typography variant="body2" color="text.secondary" sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>
               文件：{fileName} · 共 {parsedRows.length} 行
             </Typography>
             <Chip
-              icon={<CheckCircleIcon sx={{ fontSize: '0.875rem' }} />}
+              icon={<CheckCircleIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} />}
               label={`${validCount} 行通过`}
               size="small"
               color={validCount > 0 ? 'success' : 'default'}
               variant="outlined"
-              sx={{ fontSize: '0.7rem', height: 22 }}
+              sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))', height: 22 }}
             />
             {invalidCount > 0 && (
               <Chip
-                icon={<ErrorIcon sx={{ fontSize: '0.875rem' }} />}
+                icon={<ErrorIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} />}
                 label={`${invalidCount} 行失败`}
                 size="small"
                 color="error"
                 variant="outlined"
-                sx={{ fontSize: '0.7rem', height: 22 }}
+                sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))', height: 22 }}
               />
             )}
             <Box sx={{ flex: 1 }} />
             <Tooltip title="重新选择文件">
               <IconButton size="small" onClick={handleReset}>
-                <RefreshIcon sx={{ fontSize: '1rem' }} />
+                <RefreshIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} />
               </IconButton>
             </Tooltip>
             <Tooltip title="删除无效行">
@@ -380,7 +380,7 @@ const BulkImportDialog: React.FC<BulkImportDialogProps> = ({ open, onClose }) =>
                 onClick={() => setParsedRows(parsedRows.filter((r) => r._valid))}
                 disabled={invalidCount === 0}
               >
-                <DeleteIcon sx={{ fontSize: '1rem' }} />
+                <DeleteIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} />
               </IconButton>
             </Tooltip>
           </Box>
@@ -389,13 +389,13 @@ const BulkImportDialog: React.FC<BulkImportDialogProps> = ({ open, onClose }) =>
             <Table size="small" stickyHeader>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontSize: '0.75rem', fontWeight: 600, py: 0.75 }}>#</TableCell>
-                  <TableCell sx={{ fontSize: '0.75rem', fontWeight: 600, py: 0.75 }}>名称</TableCell>
-                  <TableCell sx={{ fontSize: '0.75rem', fontWeight: 600, py: 0.75 }}>驱动</TableCell>
-                  <TableCell sx={{ fontSize: '0.75rem', fontWeight: 600, py: 0.75 }}>主机:端口</TableCell>
-                  <TableCell sx={{ fontSize: '0.75rem', fontWeight: 600, py: 0.75 }}>数据库</TableCell>
-                  <TableCell sx={{ fontSize: '0.75rem', fontWeight: 600, py: 0.75 }}>层级路径</TableCell>
-                  <TableCell sx={{ fontSize: '0.75rem', fontWeight: 600, py: 0.75 }}>状态</TableCell>
+                  <TableCell sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', fontWeight: 600, py: 0.75 }}>#</TableCell>
+                  <TableCell sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', fontWeight: 600, py: 0.75 }}>名称</TableCell>
+                  <TableCell sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', fontWeight: 600, py: 0.75 }}>驱动</TableCell>
+                  <TableCell sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', fontWeight: 600, py: 0.75 }}>主机:端口</TableCell>
+                  <TableCell sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', fontWeight: 600, py: 0.75 }}>数据库</TableCell>
+                  <TableCell sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', fontWeight: 600, py: 0.75 }}>层级路径</TableCell>
+                  <TableCell sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', fontWeight: 600, py: 0.75 }}>状态</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -407,28 +407,28 @@ const BulkImportDialog: React.FC<BulkImportDialogProps> = ({ open, onClose }) =>
                       '&:hover': { bgcolor: row._valid ? 'action.hover' : 'error.light' },
                     }}
                   >
-                    <TableCell sx={{ fontSize: '0.75rem', py: 0.5 }}>{row._row}</TableCell>
-                    <TableCell sx={{ fontSize: '0.75rem', py: 0.5 }}>{row.name || '-'}</TableCell>
-                    <TableCell sx={{ fontSize: '0.75rem', py: 0.5 }}>
+                    <TableCell sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', py: 0.5 }}>{row._row}</TableCell>
+                    <TableCell sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', py: 0.5 }}>{row.name || '-'}</TableCell>
+                    <TableCell sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', py: 0.5 }}>
                       {row.driver ? (
-                        <Chip label={row.driver} size="small" variant="outlined" sx={{ fontSize: '0.65rem', height: 18 }} />
+                        <Chip label={row.driver} size="small" variant="outlined" sx={{ fontSize: 'calc(0.65rem * var(--dc-scale, 1))', height: 18 }} />
                       ) : '-'}
                     </TableCell>
-                    <TableCell sx={{ fontSize: '0.75rem', py: 0.5, fontFamily: 'monospace' }}>
+                    <TableCell sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', py: 0.5, fontFamily: 'monospace' }}>
                       {row.host ? `${row.host}:${row.port || '-'}` : '-'}
                     </TableCell>
-                    <TableCell sx={{ fontSize: '0.75rem', py: 0.5 }}>{row.database || '-'}</TableCell>
-                    <TableCell sx={{ fontSize: '0.75rem', py: 0.5, color: 'text.secondary' }}>
+                    <TableCell sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', py: 0.5 }}>{row.database || '-'}</TableCell>
+                    <TableCell sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', py: 0.5, color: 'text.secondary' }}>
                       {row.platform || row.predb_type || row.district
                         ? [row.platform, row.predb_type, row.district].filter(Boolean).join(' > ')
                         : '-'}
                     </TableCell>
-                    <TableCell sx={{ fontSize: '0.75rem', py: 0.5 }}>
+                    <TableCell sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', py: 0.5 }}>
                       {row._valid ? (
-                        <CheckCircleIcon sx={{ fontSize: '1rem', color: 'success.main' }} />
+                        <CheckCircleIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))', color: 'success.main' }} />
                       ) : (
                         <Tooltip title={row._errors.join('；')}>
-                          <ErrorIcon sx={{ fontSize: '1rem', color: 'error.main' }} />
+                          <ErrorIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))', color: 'error.main' }} />
                         </Tooltip>
                       )}
                     </TableCell>
@@ -445,25 +445,25 @@ const BulkImportDialog: React.FC<BulkImportDialogProps> = ({ open, onClose }) =>
         <Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
             <Chip
-              icon={<CheckCircleIcon sx={{ fontSize: '0.875rem' }} />}
+              icon={<CheckCircleIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} />}
               label={`成功 ${importResult.success} 条`}
               size="small"
               color={importResult.success > 0 ? 'success' : 'default'}
               variant="filled"
-              sx={{ fontSize: '0.75rem' }}
+              sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}
             />
             <Chip
-              icon={<ErrorIcon sx={{ fontSize: '0.875rem' }} />}
+              icon={<ErrorIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} />}
               label={`失败 ${importResult.failed} 条`}
               size="small"
               color={importResult.failed > 0 ? 'error' : 'default'}
               variant="filled"
-              sx={{ fontSize: '0.75rem' }}
+              sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}
             />
           </Box>
 
           {importResult.failed > 0 && (
-            <Alert severity="warning" sx={{ mb: 1.5, fontSize: '0.8rem' }}>
+            <Alert severity="warning" sx={{ mb: 1.5, fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>
               部分连接导入失败，请检查以下记录并修正后重新导入
             </Alert>
           )}
@@ -472,25 +472,25 @@ const BulkImportDialog: React.FC<BulkImportDialogProps> = ({ open, onClose }) =>
             <Table size="small" stickyHeader>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontSize: '0.75rem', fontWeight: 600, py: 0.75 }}>行号</TableCell>
-                  <TableCell sx={{ fontSize: '0.75rem', fontWeight: 600, py: 0.75 }}>名称</TableCell>
-                  <TableCell sx={{ fontSize: '0.75rem', fontWeight: 600, py: 0.75 }}>结果</TableCell>
-                  <TableCell sx={{ fontSize: '0.75rem', fontWeight: 600, py: 0.75 }}>详情</TableCell>
+                  <TableCell sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', fontWeight: 600, py: 0.75 }}>行号</TableCell>
+                  <TableCell sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', fontWeight: 600, py: 0.75 }}>名称</TableCell>
+                  <TableCell sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', fontWeight: 600, py: 0.75 }}>结果</TableCell>
+                  <TableCell sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', fontWeight: 600, py: 0.75 }}>详情</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {importResult.results.map((r, i) => (
                   <TableRow key={i}>
-                    <TableCell sx={{ fontSize: '0.75rem', py: 0.5 }}>{r.row}</TableCell>
-                    <TableCell sx={{ fontSize: '0.75rem', py: 0.5 }}>{r.name}</TableCell>
-                    <TableCell sx={{ fontSize: '0.75rem', py: 0.5 }}>
+                    <TableCell sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', py: 0.5 }}>{r.row}</TableCell>
+                    <TableCell sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', py: 0.5 }}>{r.name}</TableCell>
+                    <TableCell sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', py: 0.5 }}>
                       {r.status === 'created' ? (
-                        <Chip label="已创建" size="small" color="success" variant="outlined" sx={{ fontSize: '0.65rem', height: 18 }} />
+                        <Chip label="已创建" size="small" color="success" variant="outlined" sx={{ fontSize: 'calc(0.65rem * var(--dc-scale, 1))', height: 18 }} />
                       ) : (
-                        <Chip label="失败" size="small" color="error" variant="outlined" sx={{ fontSize: '0.65rem', height: 18 }} />
+                        <Chip label="失败" size="small" color="error" variant="outlined" sx={{ fontSize: 'calc(0.65rem * var(--dc-scale, 1))', height: 18 }} />
                       )}
                     </TableCell>
-                    <TableCell sx={{ fontSize: '0.75rem', py: 0.5, color: r.status === 'failed' ? 'error.main' : 'text.secondary' }}>
+                    <TableCell sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', py: 0.5, color: r.status === 'failed' ? 'error.main' : 'text.secondary' }}>
                       {r.error || '-'}
                     </TableCell>
                   </TableRow>

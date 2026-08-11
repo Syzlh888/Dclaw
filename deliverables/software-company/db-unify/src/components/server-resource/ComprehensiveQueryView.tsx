@@ -310,7 +310,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
             <Button
               size="small"
               onClick={onBack}
-              sx={{ textTransform: 'none', fontSize: '0.8rem', minWidth: 'auto' }}
+              sx={{ textTransform: 'none', fontSize: 'calc(0.8rem * var(--dc-scale, 1))', minWidth: 'auto' }}
             >
               ← 返回
             </Button>
@@ -323,7 +323,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
               label={`${selectedFields.length} 个字段`}
               size="small"
               variant="outlined"
-              sx={{ fontSize: '0.72rem', height: 22 }}
+              sx={{ fontSize: 'calc(0.72rem * var(--dc-scale, 1))', height: 22 }}
             />
           )}
           {filters.length > 0 && (
@@ -331,7 +331,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
               label={`${filters.length} 个条件`}
               size="small"
               variant="outlined"
-              sx={{ fontSize: '0.72rem', height: 22 }}
+              sx={{ fontSize: 'calc(0.72rem * var(--dc-scale, 1))', height: 22 }}
             />
           )}
         </Box>
@@ -340,9 +340,9 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
             <Button
               size="small"
               variant="outlined"
-              startIcon={<ExportIcon sx={{ fontSize: '1.125rem' }} />}
+              startIcon={<ExportIcon sx={{ fontSize: 'calc(1.125rem * var(--dc-scale, 1))' }} />}
               onClick={handleExport}
-              sx={{ textTransform: 'none', fontSize: '0.8rem' }}
+              sx={{ textTransform: 'none', fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}
             >
               导出 XLSX
             </Button>
@@ -350,10 +350,10 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
           <Button
             size="small"
             variant="contained"
-            startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <SearchIcon sx={{ fontSize: '1.125rem' }} />}
+            startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <SearchIcon sx={{ fontSize: 'calc(1.125rem * var(--dc-scale, 1))' }} />}
             onClick={handleExecute}
             disabled={loading || selectedFields.length === 0}
-            sx={{ textTransform: 'none', fontSize: '0.8rem' }}
+            sx={{ textTransform: 'none', fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}
           >
             {loading ? '查询中...' : '执行查询'}
           </Button>
@@ -406,7 +406,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                 borderColor: sidebarTab === 'fields' ? 'primary.main' : 'transparent',
                 color: sidebarTab === 'fields' ? 'primary.main' : 'text.secondary',
                 fontWeight: sidebarTab === 'fields' ? 600 : 400,
-                fontSize: '0.8rem',
+                fontSize: 'calc(0.8rem * var(--dc-scale, 1))',
                 mb: '-2px',
                 transition: 'all 0.15s',
                 '&:hover': { bgcolor: 'action.hover' },
@@ -417,7 +417,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                 <Chip
                   label={selectedFields.length}
                   size="small"
-                  sx={{ ml: 0.5, height: 18, fontSize: '0.65rem', fontWeight: 600 }}
+                  sx={{ ml: 0.5, height: 18, fontSize: 'calc(0.65rem * var(--dc-scale, 1))', fontWeight: 600 }}
                   color="primary"
                   variant="filled"
                 />
@@ -434,7 +434,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                 borderColor: sidebarTab === 'templates' ? 'primary.main' : 'transparent',
                 color: sidebarTab === 'templates' ? 'primary.main' : 'text.secondary',
                 fontWeight: sidebarTab === 'templates' ? 600 : 400,
-                fontSize: '0.8rem',
+                fontSize: 'calc(0.8rem * var(--dc-scale, 1))',
                 mb: '-2px',
                 transition: 'all 0.15s',
                 '&:hover': { bgcolor: 'action.hover' },
@@ -445,7 +445,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                 <Chip
                   label={templates.length}
                   size="small"
-                  sx={{ ml: 0.5, height: 18, fontSize: '0.65rem', fontWeight: 600 }}
+                  sx={{ ml: 0.5, height: 18, fontSize: 'calc(0.65rem * var(--dc-scale, 1))', fontWeight: 600 }}
                   color="primary"
                   variant="filled"
                 />
@@ -471,14 +471,14 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                   borderColor: 'divider',
                 }}
               >
-                <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.72rem' }}>
+                <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: 'calc(0.72rem * var(--dc-scale, 1))' }}>
                   勾选需要查询的字段
                 </Typography>
                 {selectedFields.length > 0 && (
                   <Button
                     size="small"
                     onClick={() => setSelectedFields([])}
-                    sx={{ textTransform: 'none', fontSize: '0.7rem', minWidth: 'auto', px: 0.5 }}
+                    sx={{ textTransform: 'none', fontSize: 'calc(0.7rem * var(--dc-scale, 1))', minWidth: 'auto', px: 0.5 }}
                   >
                     清空全部
                   </Button>
@@ -501,7 +501,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                     }}
                   >
                     <AccordionSummary
-                      expandIcon={<ExpandMoreIcon sx={{ fontSize: '1.125rem' }} />}
+                      expandIcon={<ExpandMoreIcon sx={{ fontSize: 'calc(1.125rem * var(--dc-scale, 1))' }} />}
                       sx={{
                         minHeight: 40,
                         '& .MuiAccordionSummary-content': { my: 0.5 },
@@ -518,12 +518,12 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                           onClick={(e) => e.stopPropagation()}
                           sx={{ py: 0, mr: 0.5 }}
                         />
-                        <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8rem' }}>
+                        <Typography variant="body2" sx={{ fontWeight: 600, fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>
                           {group.group}
                         </Typography>
                         <Typography
                           variant="caption"
-                          sx={{ ml: 'auto', color: 'text.secondary', fontSize: '0.68rem' }}
+                          sx={{ ml: 'auto', color: 'text.secondary', fontSize: 'calc(0.68rem * var(--dc-scale, 1))' }}
                         >
                           {checkedCount}/{group.fields.length}
                         </Typography>
@@ -550,7 +550,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                             checked={selectedFields.includes(field.key)}
                             sx={{ py: 0 }}
                           />
-                          <Typography variant="body2" sx={{ fontSize: '0.76rem' }}>
+                          <Typography variant="body2" sx={{ fontSize: 'calc(0.76rem * var(--dc-scale, 1))' }}>
                             {field.label}
                           </Typography>
                         </Box>
@@ -568,15 +568,15 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
               {/* 模板列表 */}
               <Box sx={{ flex: 1, overflow: 'auto' }}>
                 <Box sx={{ px: 2, pt: 1.5, pb: 0.75 }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem', fontWeight: 500 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))', fontWeight: 500 }}>
                     已有模板 {templates.length > 0 ? `(${templates.length})` : ''}
                   </Typography>
                 </Box>
 
                 {templates.length === 0 ? (
                   <Box sx={{ px: 2, py: 4, textAlign: 'center' }}>
-                    <SaveIcon sx={{ fontSize: '2rem', color: 'text.disabled', mb: 1 }} />
-                    <Typography variant="body2" color="text.disabled" sx={{ fontSize: '0.75rem' }}>
+                    <SaveIcon sx={{ fontSize: 'calc(2rem * var(--dc-scale, 1))', color: 'text.disabled', mb: 1 }} />
+                    <Typography variant="body2" color="text.disabled" sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>
                       还没有保存任何模板
                     </Typography>
                   </Box>
@@ -621,7 +621,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                                   }}
                                   onBlur={handleConfirmRename}
                                   sx={{
-                                    '& .MuiOutlinedInput-root': { fontSize: '0.78rem', bgcolor: 'background.paper' },
+                                    '& .MuiOutlinedInput-root': { fontSize: 'calc(0.78rem * var(--dc-scale, 1))', bgcolor: 'background.paper' },
                                   }}
                                   inputProps={{ style: { padding: '4px 8px' } }}
                                 />
@@ -630,7 +630,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                                   <Typography
                                     variant="body2"
                                     sx={{
-                                      fontSize: '0.78rem',
+                                      fontSize: 'calc(0.78rem * var(--dc-scale, 1))',
                                       fontWeight: 500,
                                       overflow: 'hidden',
                                       textOverflow: 'ellipsis',
@@ -640,11 +640,11 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                                     {t.name}
                                   </Typography>
                                   <Box sx={{ display: 'flex', gap: 1, mt: 0.25 }}>
-                                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.66rem' }}>
+                                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: 'calc(0.66rem * var(--dc-scale, 1))' }}>
                                       {t.fields?.length || 0} 个字段
                                     </Typography>
                                     {t.filters && t.filters.length > 0 && (
-                                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.66rem' }}>
+                                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: 'calc(0.66rem * var(--dc-scale, 1))' }}>
                                         {t.filters.length} 个条件
                                       </Typography>
                                     )}
@@ -657,22 +657,22 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, flexShrink: 0 }}>
                                 <Tooltip title={isExpanded ? '收起字段' : '查看字段'}>
                                   <IconButton size="small" onClick={() => setExpandedTemplateId(isExpanded ? null : t.id)}>
-                                    <VisibilityIcon sx={{ fontSize: '0.9375rem' }} />
+                                    <VisibilityIcon sx={{ fontSize: 'calc(0.9375rem * var(--dc-scale, 1))' }} />
                                   </IconButton>
                                 </Tooltip>
                                 <Tooltip title="加载">
                                   <IconButton size="small" onClick={() => { handleLoadTemplate(t); setSidebarTab('fields'); }}>
-                                    <NavigateNextIcon sx={{ fontSize: '0.9375rem' }} />
+                                    <NavigateNextIcon sx={{ fontSize: 'calc(0.9375rem * var(--dc-scale, 1))' }} />
                                   </IconButton>
                                 </Tooltip>
                                 <Tooltip title="重命名">
                                   <IconButton size="small" onClick={() => handleStartRename(t)}>
-                                    <EditIcon sx={{ fontSize: '0.9375rem' }} />
+                                    <EditIcon sx={{ fontSize: 'calc(0.9375rem * var(--dc-scale, 1))' }} />
                                   </IconButton>
                                 </Tooltip>
                                 <Tooltip title="删除">
                                   <IconButton size="small" onClick={(e) => { e.stopPropagation(); handleDeleteTemplate(t.id); }}>
-                                    <DeleteIcon sx={{ fontSize: '0.9375rem' }} />
+                                    <DeleteIcon sx={{ fontSize: 'calc(0.9375rem * var(--dc-scale, 1))' }} />
                                   </IconButton>
                                 </Tooltip>
                               </Box>
@@ -692,13 +692,13 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                                 {/* 字段列表 */}
                                 <Box sx={{ px: 1.5, py: 1 }}>
                                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.75 }}>
-                                    <Typography variant="caption" sx={{ fontSize: '0.7rem', fontWeight: 600, color: 'text.primary' }}>
+                                    <Typography variant="caption" sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))', fontWeight: 600, color: 'text.primary' }}>
                                       字段列表
                                     </Typography>
                                     <Chip
                                       label={t.fields?.length || 0}
                                       size="small"
-                                      sx={{ height: 18, fontSize: '0.6rem', minWidth: 18, bgcolor: 'action.selected' }}
+                                      sx={{ height: 18, fontSize: 'calc(0.6rem * var(--dc-scale, 1))', minWidth: 18, bgcolor: 'action.selected' }}
                                     />
                                   </Box>
                                   {t.fields && t.fields.length > 0 ? (
@@ -718,7 +718,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                                           <Typography
                                             variant="caption"
                                             sx={{
-                                              fontSize: '0.7rem',
+                                              fontSize: 'calc(0.7rem * var(--dc-scale, 1))',
                                               color: 'text.secondary',
                                               minWidth: 20,
                                               fontWeight: 500,
@@ -726,11 +726,11 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                                           >
                                             {idx + 1}.
                                           </Typography>
-                                          <Typography variant="body2" sx={{ fontSize: '0.74rem', flex: 1 }}>
+                                          <Typography variant="body2" sx={{ fontSize: 'calc(0.74rem * var(--dc-scale, 1))', flex: 1 }}>
                                             <Typography
                                               component="span"
                                               variant="caption"
-                                              sx={{ color: 'text.secondary', mr: 0.5, fontSize: '0.65rem' }}
+                                              sx={{ color: 'text.secondary', mr: 0.5, fontSize: 'calc(0.65rem * var(--dc-scale, 1))' }}
                                             >
                                               [{fieldGroupMap[f] || ''}]
                                             </Typography>
@@ -742,14 +742,14 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                                               onClick={() => handleRemoveFieldFromTemplate(t.id, f)}
                                               sx={{ p: 0.25, opacity: 0.4, '&:hover': { opacity: 1, color: 'error.main' } }}
                                             >
-                                              <CloseIcon sx={{ fontSize: '0.8125rem' }} />
+                                              <CloseIcon sx={{ fontSize: 'calc(0.8125rem * var(--dc-scale, 1))' }} />
                                             </IconButton>
                                           </Tooltip>
                                         </Box>
                                       ))}
                                     </Stack>
                                   ) : (
-                                    <Typography variant="caption" color="text.disabled" sx={{ fontSize: '0.68rem' }}>
+                                    <Typography variant="caption" color="text.disabled" sx={{ fontSize: 'calc(0.68rem * var(--dc-scale, 1))' }}>
                                       无字段
                                     </Typography>
                                   )}
@@ -764,9 +764,9 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                                           }
                                         }}
                                         displayEmpty
-                                        sx={{ fontSize: '0.68rem', '& .MuiSelect-select': { py: 0.5 } }}
+                                        sx={{ fontSize: 'calc(0.68rem * var(--dc-scale, 1))', '& .MuiSelect-select': { py: 0.5 } }}
                                       >
-                                        <MenuItem value="" disabled sx={{ fontSize: '0.68rem' }}>
+                                        <MenuItem value="" disabled sx={{ fontSize: 'calc(0.68rem * var(--dc-scale, 1))' }}>
                                           <em>+ 添加字段</em>
                                         </MenuItem>
                                         {fieldGroups.flatMap(g =>
@@ -774,8 +774,8 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                                             .filter(fd => !(t.fields || []).includes(fd.key))
                                             .map(fd => ({ ...fd, groupName: g.group }))
                                         ).map(fd => (
-                                          <MenuItem key={fd.key} value={fd.key} sx={{ fontSize: '0.68rem' }}>
-                                            <Typography variant="caption" color="text.secondary" sx={{ mr: 0.5, fontSize: '0.62rem' }}>
+                                          <MenuItem key={fd.key} value={fd.key} sx={{ fontSize: 'calc(0.68rem * var(--dc-scale, 1))' }}>
+                                            <Typography variant="caption" color="text.secondary" sx={{ mr: 0.5, fontSize: 'calc(0.62rem * var(--dc-scale, 1))' }}>
                                               [{fd.groupName}]
                                             </Typography>
                                             {fd.label}
@@ -792,13 +792,13 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                                     <Divider />
                                     <Box sx={{ px: 1.5, py: 1 }}>
                                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.75 }}>
-                                        <Typography variant="caption" sx={{ fontSize: '0.7rem', fontWeight: 600, color: 'text.primary' }}>
+                                        <Typography variant="caption" sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))', fontWeight: 600, color: 'text.primary' }}>
                                           过滤条件
                                         </Typography>
                                         <Chip
                                           label={t.filters.length}
                                           size="small"
-                                          sx={{ height: 18, fontSize: '0.6rem', minWidth: 18, bgcolor: 'warning.light', color: 'warning.dark' }}
+                                          sx={{ height: 18, fontSize: 'calc(0.6rem * var(--dc-scale, 1))', minWidth: 18, bgcolor: 'warning.light', color: 'warning.dark' }}
                                         />
                                       </Box>
                                       <Stack spacing={0}>
@@ -817,7 +817,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                                             <Typography
                                               variant="caption"
                                               sx={{
-                                                fontSize: '0.7rem',
+                                                fontSize: 'calc(0.7rem * var(--dc-scale, 1))',
                                                 color: 'text.secondary',
                                                 minWidth: 20,
                                                 fontWeight: 500,
@@ -828,13 +828,13 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                                             <Chip
                                               label={fieldLabelMap[f.field] || f.field}
                                               size="small"
-                                              sx={{ height: 20, fontSize: '0.68rem', fontWeight: 500, mr: 0.75 }}
+                                              sx={{ height: 20, fontSize: 'calc(0.68rem * var(--dc-scale, 1))', fontWeight: 500, mr: 0.75 }}
                                             />
-                                            <Typography variant="caption" sx={{ fontSize: '0.68rem', color: 'text.secondary', mr: 0.75 }}>
+                                            <Typography variant="caption" sx={{ fontSize: 'calc(0.68rem * var(--dc-scale, 1))', color: 'text.secondary', mr: 0.75 }}>
                                               {OPERATORS.find((op) => op.value === f.operator)?.label || f.operator}
                                             </Typography>
                                             {!['isEmpty', 'isNotEmpty'].includes(f.operator) && (
-                                              <Typography variant="caption" sx={{ fontSize: '0.68rem', color: 'primary.main' }}>
+                                              <Typography variant="caption" sx={{ fontSize: 'calc(0.68rem * var(--dc-scale, 1))', color: 'primary.main' }}>
                                                 {f.value || '(空)'}
                                               </Typography>
                                             )}
@@ -877,7 +877,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                     fullWidth
                     sx={{
                       '& .MuiOutlinedInput-root': {
-                        fontSize: '0.78rem',
+                        fontSize: 'calc(0.78rem * var(--dc-scale, 1))',
                         bgcolor: 'background.paper',
                       },
                     }}
@@ -887,12 +887,12 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                   <Button
                     size="small"
                     variant="contained"
-                    startIcon={<SaveIcon sx={{ fontSize: '1rem' }} />}
+                    startIcon={<SaveIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} />}
                     onClick={handleSaveTemplate}
                     disabled={savingTemplate || !templateName.trim()}
                     sx={{
                       textTransform: 'none',
-                      fontSize: '0.75rem',
+                      fontSize: 'calc(0.75rem * var(--dc-scale, 1))',
                       minWidth: 72,
                       px: 1.5,
                       whiteSpace: 'nowrap',
@@ -907,7 +907,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                     <Chip
                       label={`${selectedFields.length} 个字段`}
                       size="small"
-                      sx={{ height: 20, fontSize: '0.65rem' }}
+                      sx={{ height: 20, fontSize: 'calc(0.65rem * var(--dc-scale, 1))' }}
                       color="primary"
                       variant="outlined"
                     />
@@ -916,7 +916,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                         size="small"
                         variant="text"
                         onClick={handleUpdateTemplateWithCurrent}
-                        sx={{ textTransform: 'none', fontSize: '0.68rem', minWidth: 0, px: 0.5, py: 0 }}
+                        sx={{ textTransform: 'none', fontSize: 'calc(0.68rem * var(--dc-scale, 1))', minWidth: 0, px: 0.5, py: 0 }}
                       >
                         更新到已选模板
                       </Button>
@@ -972,16 +972,16 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                     bgcolor: filters.length > 0 ? 'success.main' : 'grey.400',
                   }}
                 />
-                <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.8rem' }}>
+                <Typography variant="body2" sx={{ fontWeight: 500, fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>
                   过滤条件
                 </Typography>
                 {filters.length > 0 && (
-                  <Chip label={filters.length} size="small" color="primary" sx={{ height: 20, fontSize: '0.68rem' }} />
+                  <Chip label={filters.length} size="small" color="primary" sx={{ height: 20, fontSize: 'calc(0.68rem * var(--dc-scale, 1))' }} />
                 )}
               </Box>
               <ExpandMoreIcon
                 sx={{
-                  fontSize: '1.25rem',
+                  fontSize: 'calc(1.25rem * var(--dc-scale, 1))',
                   transform: filterExpanded ? 'rotate(180deg)' : 'none',
                   transition: 'transform 0.2s',
                 }}
@@ -991,7 +991,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
             {filterExpanded && (
               <Box sx={{ px: 2, pb: 1.5 }}>
                 {filters.length === 0 ? (
-                  <Typography variant="body2" color="text.secondary" sx={{ py: 1, fontSize: '0.78rem' }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ py: 1, fontSize: 'calc(0.78rem * var(--dc-scale, 1))' }}>
                     暂无过滤条件，点击下方按钮添加
                   </Typography>
                 ) : (
@@ -1003,14 +1003,14 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                             value={f.field}
                             onChange={(e) => updateFilter(i, { field: e.target.value })}
                             displayEmpty
-                            sx={{ fontSize: '0.76rem' }}
+                            sx={{ fontSize: 'calc(0.76rem * var(--dc-scale, 1))' }}
                           >
                             <MenuItem value="" disabled>
                               <em style={{ color: theme.palette.text.disabled }}>选择字段</em>
                             </MenuItem>
                             {fieldGroups.flatMap((g) =>
                               g.fields.map((fd) => (
-                                <MenuItem key={fd.key} value={fd.key} sx={{ fontSize: '0.76rem' }}>
+                                <MenuItem key={fd.key} value={fd.key} sx={{ fontSize: 'calc(0.76rem * var(--dc-scale, 1))' }}>
                                   <Typography variant="caption" color="text.secondary" sx={{ mr: 0.5 }}>
                                     [{g.group}]
                                   </Typography>
@@ -1026,10 +1026,10 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                             onChange={(e) =>
                               updateFilter(i, { operator: e.target.value as FilterCondition['operator'] })
                             }
-                            sx={{ fontSize: '0.76rem' }}
+                            sx={{ fontSize: 'calc(0.76rem * var(--dc-scale, 1))' }}
                           >
                             {OPERATORS.map((op) => (
-                              <MenuItem key={op.value} value={op.value} sx={{ fontSize: '0.76rem' }}>
+                              <MenuItem key={op.value} value={op.value} sx={{ fontSize: 'calc(0.76rem * var(--dc-scale, 1))' }}>
                                 {op.label}
                               </MenuItem>
                             ))}
@@ -1041,7 +1041,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                             placeholder="输入值"
                             value={f.value}
                             onChange={(e) => updateFilter(i, { value: e.target.value })}
-                            sx={{ flex: 1, '& .MuiOutlinedInput-root': { fontSize: '0.76rem' } }}
+                            sx={{ flex: 1, '& .MuiOutlinedInput-root': { fontSize: 'calc(0.76rem * var(--dc-scale, 1))' } }}
                             inputProps={{ style: { padding: '4px 8px' } }}
                           />
                         )}
@@ -1058,9 +1058,9 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                 )}
                 <Button
                   size="small"
-                  startIcon={<AddIcon sx={{ fontSize: '1rem' }} />}
+                  startIcon={<AddIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} />}
                   onClick={addFilter}
-                  sx={{ mt: 1, textTransform: 'none', fontSize: '0.73rem' }}
+                  sx={{ mt: 1, textTransform: 'none', fontSize: 'calc(0.73rem * var(--dc-scale, 1))' }}
                 >
                   添加条件
                 </Button>
@@ -1071,7 +1071,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
           {/* 查询结果头部 */}
           {queryResult && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mx: 3, mt: 1.5 }}>
-              <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
+              <Typography variant="body2" color="text.secondary" sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>
                 查询结果 {queryResult.total} 条
               </Typography>
               <ToggleButtonGroup
@@ -1081,12 +1081,12 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                 size="small"
                 sx={{ ml: 'auto' }}
               >
-                <ToggleButton value="table" sx={{ textTransform: 'none', px: 1.5, py: 0.5, fontSize: '0.73rem' }}>
-                  <TableIcon sx={{ fontSize: '1rem', mr: 0.5 }} />
+                <ToggleButton value="table" sx={{ textTransform: 'none', px: 1.5, py: 0.5, fontSize: 'calc(0.73rem * var(--dc-scale, 1))' }}>
+                  <TableIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))', mr: 0.5 }} />
                   表格
                 </ToggleButton>
-                <ToggleButton value="chart" sx={{ textTransform: 'none', px: 1.5, py: 0.5, fontSize: '0.73rem' }}>
-                  <ChartLineIcon sx={{ fontSize: '1rem', mr: 0.5 }} />
+                <ToggleButton value="chart" sx={{ textTransform: 'none', px: 1.5, py: 0.5, fontSize: 'calc(0.73rem * var(--dc-scale, 1))' }}>
+                  <ChartLineIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))', mr: 0.5 }} />
                   图表
                 </ToggleButton>
               </ToggleButtonGroup>
@@ -1112,7 +1112,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                     color: 'text.secondary',
                   }}
                 >
-                  <SearchIcon sx={{ fontSize: '3rem', color: 'text.disabled', mb: 1 }} />
+                  <SearchIcon sx={{ fontSize: 'calc(3rem * var(--dc-scale, 1))', color: 'text.disabled', mb: 1 }} />
                   <Typography variant="body1" color="text.secondary">
                     请在左侧选择字段，点击"执行查询"获取结果
                   </Typography>
@@ -1134,7 +1134,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                           sx={{
                             bgcolor: 'action.hover',
                             fontWeight: 600,
-                            fontSize: '0.76rem',
+                            fontSize: 'calc(0.76rem * var(--dc-scale, 1))',
                             borderBottom: '2px solid',
                             borderColor: 'divider',
                           }}
@@ -1147,7 +1147,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                             sx={{
                               bgcolor: 'action.hover',
                               fontWeight: 600,
-                              fontSize: '0.76rem',
+                              fontSize: 'calc(0.76rem * var(--dc-scale, 1))',
                               whiteSpace: 'nowrap',
                               borderBottom: '2px solid',
                               borderColor: 'divider',
@@ -1165,14 +1165,14 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                           hover
                           sx={{ '&:nth-of-type(odd)': { bgcolor: 'action.hover' } }}
                         >
-                          <TableCell sx={{ fontSize: '0.72rem', color: 'text.secondary' }}>
+                          <TableCell sx={{ fontSize: 'calc(0.72rem * var(--dc-scale, 1))', color: 'text.secondary' }}>
                             {idx + 1}
                           </TableCell>
                           {queryResult.columns.map((col) => (
                             <TableCell
                               key={col.key}
                               sx={{
-                                fontSize: '0.73rem',
+                                fontSize: 'calc(0.73rem * var(--dc-scale, 1))',
                                 whiteSpace: 'nowrap',
                                 maxWidth: 300,
                                 overflow: 'hidden',
@@ -1232,7 +1232,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
           {queryResult ? `共 ${queryResult.total} 条记录 | 显示前 ${Math.min(queryResult.total, 500)} 条` : '请选择字段后执行查询'}
         </Typography>
         {onBack && (
-          <Button size="small" onClick={onBack} sx={{ textTransform: 'none', fontSize: '0.75rem' }}>
+          <Button size="small" onClick={onBack} sx={{ textTransform: 'none', fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>
             返回服务器资源
           </Button>
         )}

@@ -23,15 +23,15 @@ const ExecutionItem: React.FC<ExecutionItemProps> = ({ task }) => {
   const getStatusIcon = () => {
     switch (task.status) {
       case ExecutionStatus.Success:
-        return <CheckCircleIcon sx={{ fontSize: '1.125rem', color: 'success.main' }} />;
+        return <CheckCircleIcon sx={{ fontSize: 'calc(1.125rem * var(--dc-scale, 1))', color: 'success.main' }} />;
       case ExecutionStatus.Failed:
-        return <ErrorIcon sx={{ fontSize: '1.125rem', color: 'error.main' }} />;
+        return <ErrorIcon sx={{ fontSize: 'calc(1.125rem * var(--dc-scale, 1))', color: 'error.main' }} />;
       case ExecutionStatus.Running:
-        return <AutorenewIcon sx={{ fontSize: '1.125rem', color: 'info.main', animation: 'spin 1s linear infinite' }} />;
+        return <AutorenewIcon sx={{ fontSize: 'calc(1.125rem * var(--dc-scale, 1))', color: 'info.main', animation: 'spin 1s linear infinite' }} />;
       case ExecutionStatus.Pending:
-        return <HourglassEmptyIcon sx={{ fontSize: '1.125rem', color: 'text.disabled' }} />;
+        return <HourglassEmptyIcon sx={{ fontSize: 'calc(1.125rem * var(--dc-scale, 1))', color: 'text.disabled' }} />;
       case ExecutionStatus.Timeout:
-        return <TimerIcon sx={{ fontSize: '1.125rem', color: 'warning.main' }} />;
+        return <TimerIcon sx={{ fontSize: 'calc(1.125rem * var(--dc-scale, 1))', color: 'warning.main' }} />;
       default:
         return null;
     }
@@ -101,7 +101,7 @@ const ExecutionItem: React.FC<ExecutionItemProps> = ({ task }) => {
         }}
         onClick={handleClickName}
       >
-        <Typography variant="body2" sx={{ fontSize: '0.85rem' }}>
+        <Typography variant="body2" sx={{ fontSize: 'calc(0.85rem * var(--dc-scale, 1))' }}>
           {task.hospitalName}
         </Typography>
         {task.status === ExecutionStatus.Success && (
@@ -149,7 +149,7 @@ const ExecutionItem: React.FC<ExecutionItemProps> = ({ task }) => {
           >
             <PushPinIcon
               sx={{
-                fontSize: '0.875rem',
+                fontSize: 'calc(0.875rem * var(--dc-scale, 1))',
                 color: pinnedResults[task.dbConnectionId!] ? 'primary.main' : 'text.disabled',
               }}
             />

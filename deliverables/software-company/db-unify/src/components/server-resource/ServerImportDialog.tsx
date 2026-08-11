@@ -323,9 +323,9 @@ const ServerImportDialog: React.FC<Props> = ({ open, onClose }) => {
         <Table size="small" stickyHeader>
           <TableHead>
             <TableRow>
-              <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', py: 0.75, width: 40 }}>#</TableCell>
+              <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.75rem * var(--dc-scale, 1))', py: 0.75, width: 40 }}>#</TableCell>
               {sheet.headers.map((h) => (
-                <TableCell key={h} sx={{ fontWeight: 600, fontSize: '0.75rem', py: 0.75 }}>
+                <TableCell key={h} sx={{ fontWeight: 600, fontSize: 'calc(0.75rem * var(--dc-scale, 1))', py: 0.75 }}>
                   {h}
                   {effectiveRequired.has(h) && <span style={{ color: '#f44336', marginLeft: 2 }}>*</span>}
                 </TableCell>
@@ -335,7 +335,7 @@ const ServerImportDialog: React.FC<Props> = ({ open, onClose }) => {
           <TableBody>
             {previewRows.map((r, i) => (
               <TableRow key={i} sx={{ '&:hover': { bgcolor: 'action.hover' } }}>
-                <TableCell sx={{ fontSize: '0.75rem', py: 0.5, color: 'text.secondary' }}>{r._row}</TableCell>
+                <TableCell sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', py: 0.5, color: 'text.secondary' }}>{r._row}</TableCell>
                 {sheet.headers.map((h, j) => {
                   const key = sheet.columnMap[h] || h;
                   const val = key === 'tags' && Array.isArray(r[key]) ? r[key].join(', ') : String(r[key] ?? '');
@@ -343,7 +343,7 @@ const ServerImportDialog: React.FC<Props> = ({ open, onClose }) => {
                     <TableCell
                       key={j}
                       sx={{
-                        fontSize: '0.75rem', py: 0.5,
+                        fontSize: 'calc(0.75rem * var(--dc-scale, 1))', py: 0.5,
                         maxWidth: 140, overflow: 'hidden',
                         textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                       }}
@@ -391,7 +391,7 @@ const ServerImportDialog: React.FC<Props> = ({ open, onClose }) => {
         <Button
           onClick={reset}
           size="small"
-          startIcon={<RefreshIcon sx={{ fontSize: '1rem' }} />}
+          startIcon={<RefreshIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} />}
           sx={{ textTransform: 'none' }}
         >
           重新导入
@@ -408,7 +408,7 @@ const ServerImportDialog: React.FC<Props> = ({ open, onClose }) => {
       open={open}
       onClose={handleClose}
       title="批量导入服务器资源"
-      icon={<CloudUploadIcon sx={{ fontSize: '1.25rem' }} />}
+      icon={<CloudUploadIcon sx={{ fontSize: 'calc(1.25rem * var(--dc-scale, 1))' }} />}
       steps={steps}
       activeStep={activeStep}
       error={errMsg}
@@ -445,21 +445,21 @@ const ServerImportDialog: React.FC<Props> = ({ open, onClose }) => {
       {activeStep === 1 && sheets.length > 0 && (
         <>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5, flexWrap: 'wrap' }}>
-            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
+            <Typography variant="body2" color="text.secondary" sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>
               文件：{fileName} · 共 {sheets.length} 个 Sheet · {totalRows} 条数据
             </Typography>
             <Chip
-              icon={<CheckCircleIcon sx={{ fontSize: '0.875rem' }} />}
+              icon={<CheckCircleIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} />}
               label={`${totalRows} 条待导入`}
               size="small"
               color={totalRows > 0 ? 'success' : 'default'}
               variant="outlined"
-              sx={{ fontSize: '0.7rem', height: 22 }}
+              sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))', height: 22 }}
             />
             <Box sx={{ flex: 1 }} />
             <Tooltip title="重新选择文件">
               <IconButton size="small" onClick={reset}>
-                <RefreshIcon sx={{ fontSize: '1rem' }} />
+                <RefreshIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} />
               </IconButton>
             </Tooltip>
           </Box>
@@ -474,7 +474,7 @@ const ServerImportDialog: React.FC<Props> = ({ open, onClose }) => {
               mb: 1.5, minHeight: 32,
               borderBottom: 1, borderColor: 'divider',
               '& .MuiTab-root': {
-                minHeight: 32, py: 0.5, fontSize: '0.75rem', textTransform: 'none',
+                minHeight: 32, py: 0.5, fontSize: 'calc(0.75rem * var(--dc-scale, 1))', textTransform: 'none',
               },
             }}
           >
@@ -488,7 +488,7 @@ const ServerImportDialog: React.FC<Props> = ({ open, onClose }) => {
               <Typography
                 variant="caption"
                 color="text.secondary"
-                sx={{ mb: 0.75, display: 'block', fontSize: '0.72rem' }}
+                sx={{ mb: 0.75, display: 'block', fontSize: 'calc(0.72rem * var(--dc-scale, 1))' }}
               >
                 预览前 10 条 · {activeSheet.headers.length} 列 · 共 {activeSheet.rows.length} 条数据
               </Typography>
@@ -502,40 +502,40 @@ const ServerImportDialog: React.FC<Props> = ({ open, onClose }) => {
       {activeStep === 2 && result && (
         <Box>
           {result.error ? (
-            <Alert severity="error" sx={{ fontSize: '0.8rem' }}>
+            <Alert severity="error" sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>
               导入失败：{result.error}
             </Alert>
           ) : (
             <>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
                 <Chip
-                  icon={<CheckCircleIcon sx={{ fontSize: '0.875rem' }} />}
+                  icon={<CheckCircleIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} />}
                   label={`成功 ${result.success} 条`}
                   size="small"
                   color={result.success > 0 ? 'success' : 'default'}
                   variant="filled"
-                  sx={{ fontSize: '0.75rem' }}
+                  sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}
                 />
                 <Chip
-                  icon={<ErrorIcon sx={{ fontSize: '0.875rem' }} />}
+                  icon={<ErrorIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} />}
                   label={`失败 ${result.failed} 条`}
                   size="small"
                   color={result.failed > 0 ? 'error' : 'default'}
                   variant="filled"
-                  sx={{ fontSize: '0.75rem' }}
+                  sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}
                 />
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>
                   共 {result.total} 条
                 </Typography>
               </Box>
 
               {result.failed > 0 && (
-                <Alert severity="warning" sx={{ fontSize: '0.8rem' }}>
+                <Alert severity="warning" sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>
                   部分数据导入失败，请检查后重新导入
                 </Alert>
               )}
               {result.failed === 0 && result.success > 0 && (
-                <Alert severity="success" sx={{ fontSize: '0.8rem' }}>
+                <Alert severity="success" sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>
                   全部数据已成功导入
                 </Alert>
               )}

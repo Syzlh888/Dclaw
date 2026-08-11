@@ -171,23 +171,23 @@ const ConnectionPanel = forwardRef<ConnectionPanelHandle, ConnectionPanelProps>(
             {abnormalCount > 0 && (
               <Tooltip title={`清除 ${abnormalCount} 个异常连接`}>
                 <IconButton size="small" onClick={handleClearAbnormal} color="error">
-                  <DeleteSweepIcon sx={{ fontSize: '1.125rem' }} />
+                  <DeleteSweepIcon sx={{ fontSize: 'calc(1.125rem * var(--dc-scale, 1))' }} />
                 </IconButton>
               </Tooltip>
             )}
             <Tooltip title="批量导入">
               <IconButton size="small" onClick={() => setBulkImportOpen(true)} color="inherit">
-                <UploadFileIcon sx={{ fontSize: '1.125rem' }} />
+                <UploadFileIcon sx={{ fontSize: 'calc(1.125rem * var(--dc-scale, 1))' }} />
               </IconButton>
             </Tooltip>
             <Tooltip title="驱动管理">
               <IconButton size="small" onClick={onOpenDriverManager} color="inherit">
-                <SettingsInputComponentIcon sx={{ fontSize: '1.125rem' }} />
+                <SettingsInputComponentIcon sx={{ fontSize: 'calc(1.125rem * var(--dc-scale, 1))' }} />
               </IconButton>
             </Tooltip>
             <Tooltip title="添加连接">
               <IconButton size="small" onClick={handleAdd} color="primary">
-                <AddIcon sx={{ fontSize: '1.125rem' }} />
+                <AddIcon sx={{ fontSize: 'calc(1.125rem * var(--dc-scale, 1))' }} />
               </IconButton>
             </Tooltip>
           </Box>
@@ -223,35 +223,35 @@ const ConnectionPanel = forwardRef<ConnectionPanelHandle, ConnectionPanelProps>(
                 <ListItemText
                   primary={
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
-                      <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.8rem' }}>
+                      <Typography variant="body2" sx={{ fontWeight: 500, fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>
                         {conn.name}
                       </Typography>
                       <Chip
                         label={getDriverLabel(conn.driver)}
                         size="small"
                         variant="outlined"
-                        sx={{ fontSize: '0.6rem', height: 18 }}
+                        sx={{ fontSize: 'calc(0.6rem * var(--dc-scale, 1))', height: 18 }}
                       />
                       <Chip
                         label={getStatusLabel(conn.status)}
                         size="small"
                         color={getStatusColor(conn.status)}
-                        sx={{ fontSize: '0.6rem', height: 18 }}
+                        sx={{ fontSize: 'calc(0.6rem * var(--dc-scale, 1))', height: 18 }}
                       />
                     </Box>
                   }
                   secondary={
-                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}>
                       {conn.host}:{conn.port}/{conn.database}
                     </Typography>
                   }
                 />
                 <Box sx={{ display: 'flex', gap: 0, ml: 0.5, flexShrink: 0 }}>
                   <IconButton size="small" onClick={() => handleEdit(conn.id)} sx={{ p: 0.25 }}>
-                    <EditIcon sx={{ fontSize: '0.875rem' }} />
+                    <EditIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} />
                   </IconButton>
                   <IconButton size="small" onClick={() => handleDelete(conn.id)} sx={{ p: 0.25 }}>
-                    <DeleteIcon sx={{ fontSize: '0.875rem' }} />
+                    <DeleteIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} />
                   </IconButton>
                 </Box>
               </ListItem>

@@ -122,7 +122,7 @@ const TreeNodeItem: React.FC<TreeNodeItemProps> = ({ nodeId, level, selectedId, 
           }
         />
         {!canSelect && hasChildren && (
-          <Chip label="展开" size="small" variant="outlined" sx={{ ml: 1, height: 20, fontSize: '0.7rem' }} />
+          <Chip label="展开" size="small" variant="outlined" sx={{ ml: 1, height: 20, fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }} />
         )}
       </ListItem>
       {hasChildren && (

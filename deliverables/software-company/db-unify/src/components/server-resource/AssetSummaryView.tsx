@@ -36,7 +36,7 @@ const AssetSummaryView: React.FC = () => {
 
   return (
     <Box sx={{ p: 3, height: '100%', overflow: 'auto' }}>
-      <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, fontSize: '1.1rem' }}>资产汇总分析</Typography>
+      <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, fontSize: 'calc(1.1rem * var(--dc-scale, 1))' }}>资产汇总分析</Typography>
 
       {/* 统计卡片 */}
       <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
@@ -66,23 +66,23 @@ const AssetSummaryView: React.FC = () => {
       </Box>
 
       {/* OS 分布 */}
-      <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, fontSize: '0.85rem' }}>操作系统分布</Typography>
+      <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, fontSize: 'calc(0.85rem * var(--dc-scale, 1))' }}>操作系统分布</Typography>
       {summary?.osDistribution && summary.osDistribution.length > 0 ? (
         <TableContainer sx={{ mb: 3 }}>
           <Table size="small">
             <TableHead><TableRow>
-              <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>操作系统</TableCell>
-              <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>数量</TableCell>
-              <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>占比</TableCell>
+              <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>操作系统</TableCell>
+              <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>数量</TableCell>
+              <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>占比</TableCell>
             </TableRow></TableHead>
             <TableBody>
               {summary.osDistribution.map(d => (
                 <TableRow key={d.name}>
-                  <TableCell sx={{ fontSize: '0.8rem' }}>{d.name}</TableCell>
-                  <TableCell sx={{ fontSize: '0.8rem' }}>{d.count}</TableCell>
+                  <TableCell sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>{d.name}</TableCell>
+                  <TableCell sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>{d.count}</TableCell>
                   <TableCell>
                     <Chip label={`${((d.count / summary.totalServers) * 100).toFixed(1)}%`} size="small"
-                      sx={{ fontSize: '0.7rem' }} />
+                      sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }} />
                   </TableCell>
                 </TableRow>
               ))}
@@ -92,19 +92,19 @@ const AssetSummaryView: React.FC = () => {
       ) : <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>暂无数据</Typography>}
 
       {/* 服务器类型分布 */}
-      <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, fontSize: '0.85rem' }}>服务器类型分布</Typography>
+      <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, fontSize: 'calc(0.85rem * var(--dc-scale, 1))' }}>服务器类型分布</Typography>
       {summary?.serverTypeDistribution && summary.serverTypeDistribution.length > 0 ? (
         <TableContainer sx={{ mb: 3 }}>
           <Table size="small">
             <TableHead><TableRow>
-              <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>类型</TableCell>
-              <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem' }}>数量</TableCell>
+              <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>类型</TableCell>
+              <TableCell sx={{ fontWeight: 600, fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>数量</TableCell>
             </TableRow></TableHead>
             <TableBody>
               {summary.serverTypeDistribution.map(d => (
                 <TableRow key={d.name}>
-                  <TableCell sx={{ fontSize: '0.8rem' }}>{d.name}</TableCell>
-                  <TableCell sx={{ fontSize: '0.8rem' }}>{d.count}</TableCell>
+                  <TableCell sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>{d.name}</TableCell>
+                  <TableCell sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>{d.count}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

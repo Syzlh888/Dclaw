@@ -21,7 +21,7 @@ const MenuProps = {
       paddingBottom: '8px',
       paddingLeft: '0px',
       paddingRight: '0px',
-      fontSize: '0.5625rem',
+      fontSize: 'calc(0.5625rem * var(--dc-scale, 1))',
       lineHeight: '14px',
       color: '#000000DE',
       textAlign: 'left',
@@ -29,7 +29,7 @@ const MenuProps = {
       height: 260,
     },
     '& .MuiMenuItem-root': {
-      fontSize: '0.5625rem',
+      fontSize: 'calc(0.5625rem * var(--dc-scale, 1))',
       lineHeight: '14px',
       color: '#000000DE',
       textAlign: 'left',
@@ -121,10 +121,10 @@ const AggregateView: React.FC = () => {
               label={result.sourceLabel}
               size="small"
               onDelete={() => unpinResult(id)}
-              deleteIcon={<PushPinIcon sx={{ fontSize: '0.75rem' }} />}
+              deleteIcon={<PushPinIcon sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }} />}
               variant="outlined"
               color="primary"
-              sx={{ fontSize: '0.7rem' }}
+              sx={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}
             />
           ))}
         </Box>
@@ -132,8 +132,8 @@ const AggregateView: React.FC = () => {
 
       {/* Toolbar */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.5, px: 1, flexShrink: 0 }}>
-        <FormControl size="small" sx={{ minWidth: 130, maxWidth: 220, '& .MuiInputBase-root': { fontSize: '0.72rem', minHeight: 24 } }}>
-          <InputLabel sx={{ fontSize: '0.72rem' }}>来源筛选</InputLabel>
+        <FormControl size="small" sx={{ minWidth: 130, maxWidth: 220, '& .MuiInputBase-root': { fontSize: 'calc(0.72rem * var(--dc-scale, 1))', minHeight: 24 } }}>
+          <InputLabel sx={{ fontSize: 'calc(0.72rem * var(--dc-scale, 1))' }}>来源筛选</InputLabel>
           <Select
             multiple
             value={sourceFilter}
@@ -148,12 +148,12 @@ const AggregateView: React.FC = () => {
               return selected.join(', ');
             }}
             MenuProps={MenuProps}
-            sx={{ fontSize: '0.72rem' }}
+            sx={{ fontSize: 'calc(0.72rem * var(--dc-scale, 1))' }}
           >
             {aggregatedResult.sources.map((s) => (
-              <MenuItem key={s} value={s} sx={{ fontSize: '0.72rem', py: 0.5, minHeight: 28 }}>
+              <MenuItem key={s} value={s} sx={{ fontSize: 'calc(0.72rem * var(--dc-scale, 1))', py: 0.5, minHeight: 28 }}>
                 <Checkbox checked={sourceFilter.indexOf(s) > -1} size="small" />
-                <ListItemText primary={s} primaryTypographyProps={{ fontSize: '0.72rem' }} />
+                <ListItemText primary={s} primaryTypographyProps={{ fontSize: 'calc(0.72rem * var(--dc-scale, 1))' }} />
               </MenuItem>
             ))}
           </Select>
@@ -163,37 +163,37 @@ const AggregateView: React.FC = () => {
           placeholder="搜索结果..."
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
-          sx={{ flex: 1, maxWidth: 220, '& .MuiInputBase-root': { fontSize: '0.72rem', minHeight: 24 } }}
+          sx={{ flex: 1, maxWidth: 220, '& .MuiInputBase-root': { fontSize: 'calc(0.72rem * var(--dc-scale, 1))', minHeight: 24 } }}
         />
         <Box sx={{ flex: 1 }} />
-        <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.75rem' }}>
+        <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>
           共 {filteredRows.length} 行
         </Typography>
         <Button
           size="small"
-          startIcon={<DownloadIcon sx={{ fontSize: '1rem' }} />}
+          startIcon={<DownloadIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} />}
           onClick={handleExportExcel}
           variant="contained"
           color="primary"
-          sx={{ textTransform: 'none', fontSize: '0.8rem', py: 0.25 }}
+          sx={{ textTransform: 'none', fontSize: 'calc(0.8rem * var(--dc-scale, 1))', py: 0.25 }}
         >
           导出 Excel
         </Button>
         <Button
           size="small"
-          startIcon={<DownloadIcon sx={{ fontSize: '1rem' }} />}
+          startIcon={<DownloadIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} />}
           onClick={handleExportCsv}
           variant="outlined"
-          sx={{ textTransform: 'none', fontSize: '0.8rem', py: 0.25 }}
+          sx={{ textTransform: 'none', fontSize: 'calc(0.8rem * var(--dc-scale, 1))', py: 0.25 }}
         >
           导出 CSV
         </Button>
         <Button
           size="small"
-          startIcon={<DownloadIcon sx={{ fontSize: '1rem' }} />}
+          startIcon={<DownloadIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} />}
           onClick={handleExportJson}
           variant="outlined"
-          sx={{ textTransform: 'none', fontSize: '0.8rem', py: 0.25 }}
+          sx={{ textTransform: 'none', fontSize: 'calc(0.8rem * var(--dc-scale, 1))', py: 0.25 }}
         >
           导出 JSON
         </Button>

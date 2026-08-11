@@ -278,13 +278,13 @@ const DatabaseTree: React.FC = () => {
     return (
       <Box sx={{ py: 0.5, px: 1.5 }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5, py: 4 }}>
-          <Box sx={{ fontSize: '0.85rem', color: 'text.secondary' }}>
+          <Box sx={{ fontSize: 'calc(0.85rem * var(--dc-scale, 1))', color: 'text.secondary' }}>
             暂无数据，请先创建项目
           </Box>
           <Button
             variant="outlined"
             size="small"
-            startIcon={<AddIcon sx={{ fontSize: '1rem' }} />}
+            startIcon={<AddIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} />}
             onClick={handleAddPlatform}
           >
             创建项目
@@ -298,7 +298,7 @@ const DatabaseTree: React.FC = () => {
           maxWidth="xs"
           fullWidth
         >
-          <DialogTitle sx={{ fontSize: '0.95rem', pb: 1 }}>
+          <DialogTitle sx={{ fontSize: 'calc(0.92rem * var(--dc-scale, 1))', pb: 0.75 }}>
             {dialogMode === 'add' ? '新增项目' : '修改项目'}
           </DialogTitle>
           <DialogContent>
@@ -318,7 +318,7 @@ const DatabaseTree: React.FC = () => {
               fullWidth
             />
           </DialogContent>
-          <DialogActions sx={{ px: 3, pb: 2 }}>
+          <DialogActions sx={{ px: 2, py: 1 }}>
             <Button onClick={() => setDialogOpen(false)} size="small">
               取消
             </Button>
@@ -372,14 +372,14 @@ const DatabaseTree: React.FC = () => {
       })}
 
       {/* 添加项目按钮 - 始终可见 */}
-      <Box sx={{ px: 1, pt: 0.5, pb: 0.5 }}>
+      <Box sx={{ px: 0.75, pt: 0.25, pb: 0.5 }}>
         <Button
           variant="text"
           size="small"
-          startIcon={<AddIcon sx={{ fontSize: '0.875rem' }} />}
+          startIcon={<AddIcon sx={{ fontSize: 'calc(0.78rem * var(--dc-scale, 1))' }} />}
           onClick={handleAddPlatform}
           sx={{
-            fontSize: '0.8rem',
+            fontSize: 'calc(0.72rem * var(--dc-scale, 1))',
             color: 'text.secondary',
             textTransform: 'none',
             width: '100%',
@@ -398,7 +398,7 @@ const DatabaseTree: React.FC = () => {
         maxWidth="xs"
         fullWidth
       >
-        <DialogTitle sx={{ fontSize: '0.95rem', pb: 1 }}>
+        <DialogTitle sx={{ fontSize: 'calc(0.92rem * var(--dc-scale, 1))', pb: 0.75 }}>
           {!dialogTargetId
             ? (dialogMode === 'add' ? '新增项目' : '修改项目')
             : (dialogMode === 'add' ? '新增节点' : '修改节点')}
@@ -420,7 +420,7 @@ const DatabaseTree: React.FC = () => {
             fullWidth
           />
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
+        <DialogActions sx={{ px: 2, py: 1 }}>
           <Button onClick={() => setDialogOpen(false)} size="small">
             取消
           </Button>
@@ -448,8 +448,8 @@ const DatabaseTree: React.FC = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            pb: 1,
-            fontSize: '0.95rem',
+            pb: 0.75,
+            fontSize: 'calc(0.92rem * var(--dc-scale, 1))',
           }}
         >
           新增连接
@@ -480,8 +480,8 @@ const DatabaseTree: React.FC = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            pb: 1,
-            fontSize: '0.95rem',
+            pb: 0.75,
+            fontSize: 'calc(0.92rem * var(--dc-scale, 1))',
           }}
         >
           修改连接
@@ -512,15 +512,15 @@ const DatabaseTree: React.FC = () => {
         maxWidth="xs"
         fullWidth
       >
-        <DialogTitle sx={{ fontSize: '0.95rem', pb: 1 }}>
+        <DialogTitle sx={{ fontSize: 'calc(0.92rem * var(--dc-scale, 1))', pb: 0.75 }}>
           确认删除
         </DialogTitle>
         <DialogContent>
-          <Box sx={{ fontSize: '0.85rem', color: 'text.secondary' }}>
+          <Box sx={{ fontSize: 'calc(0.78rem * var(--dc-scale, 1))', color: 'text.secondary' }}>
             确定要删除 "{deleteTargetName}" 及其所有子节点吗？此操作不可撤销。
           </Box>
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
+        <DialogActions sx={{ px: 2, py: 1 }}>
           <Button onClick={() => setDeleteDialogOpen(false)} size="small">
             取消
           </Button>

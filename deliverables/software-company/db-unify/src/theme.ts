@@ -5,12 +5,14 @@ type ThemeMode = 'light' | 'dark';
 /**
  * 根据模式和缩放比例创建 MUI 主题
  * @param mode 'light' | 'dark'
- * @param scale 缩放比例，1.0 = 100%，范围 0.7~1.5
+ * @param scale 缩放比例，1.0 = 100%，范围 0.4~1.5
  */
 export function createAppTheme(mode: ThemeMode, scale: number) {
-  const baseFontSize = 13;
+  // 精修（v1.6+）：baseFontSize 13→12, htmlFontSizePx 默认 16→15
+  // 让默认 scale=1.0 比 v1.5 更精致紧凑，但保留 --dc-scale 跟随缩放
+  const baseFontSize = 12;
   const fontSize = Math.round(baseFontSize * scale);
-  const htmlFontSizePx = Math.round(16 * scale);
+  const htmlFontSizePx = Math.round(15 * scale);
   // 关键修复：rem 转换的分母必须使用 htmlFontSizePx（同步缩放），否则 0.7rem 等字面量会锁死在 16px 基准上
   const rem = (px: number) => `${(px / htmlFontSizePx).toFixed(4)}rem`;
   const iconSize = scale <= 0.85 ? 'small' : scale >= 1.1 ? 'medium' : 'small';
@@ -47,7 +49,7 @@ export function createAppTheme(mode: ThemeMode, scale: number) {
       },
       typography: {
         fontSize,
-        htmlFontSize: Math.round(16 * scale),
+        htmlFontSize: htmlFontSizePx,
         // 关键：在字体栈里插入 CJK fallback
         fontFamily: FONT_FAMILY,
       },
@@ -87,8 +89,8 @@ export function createAppTheme(mode: ThemeMode, scale: number) {
             },
           },
         },
-        MuiIconButton: { styleOverrides: { sizeSmall: { padding: Math.round(4 * scale) }, root: { padding: Math.round(6 * scale) } } },
-        MuiTab: { styleOverrides: { root: { fontSize: rem(fontSize), minHeight: Math.round(36 * scale) } } },
+        MuiIconButton: { styleOverrides: { sizeSmall: { padding: Math.round(3 * scale) }, root: { padding: Math.round(5 * scale) } } },
+        MuiTab: { styleOverrides: { root: { fontSize: rem(fontSize), minHeight: Math.round(28 * scale) } } },
         MuiTableCell: { styleOverrides: { root: { fontSize: rem(fontSize) } } },
         MuiInputBase: { styleOverrides: { input: { fontSize: rem(fontSize) }, root: { fontSize: rem(fontSize) } } },
         MuiInputLabel: { styleOverrides: { root: { fontSize: rem(fontSize) } } },
@@ -114,7 +116,7 @@ export function createAppTheme(mode: ThemeMode, scale: number) {
     },
     typography: {
       fontSize,
-      htmlFontSize: Math.round(16 * scale),
+      htmlFontSize: htmlFontSizePx,
       fontFamily: FONT_FAMILY,
     },
     components: {
@@ -146,8 +148,8 @@ export function createAppTheme(mode: ThemeMode, scale: number) {
           },
         },
       },
-      MuiIconButton: { styleOverrides: { sizeSmall: { padding: Math.round(4 * scale) }, root: { padding: Math.round(6 * scale) } } },
-      MuiTab: { styleOverrides: { root: { fontSize: rem(fontSize), minHeight: Math.round(36 * scale) } } },
+      MuiIconButton: { styleOverrides: { sizeSmall: { padding: Math.round(3 * scale) }, root: { padding: Math.round(5 * scale) } } },
+      MuiTab: { styleOverrides: { root: { fontSize: rem(fontSize), minHeight: Math.round(28 * scale) } } },
       MuiTableCell: { styleOverrides: { root: { fontSize: rem(fontSize) } } },
       MuiInputBase: { styleOverrides: { input: { fontSize: rem(fontSize) }, root: { fontSize: rem(fontSize) } } },
       MuiInputLabel: { styleOverrides: { root: { fontSize: rem(fontSize) } } },

@@ -326,7 +326,7 @@ const TemplatesDialog: React.FC<TemplatesDialogProps> = ({ open, onClose, onInse
             onChange={(_, val) => val && setSelectedDriver(val)}
           >
             {driverOrder.map(driver => (
-              <ToggleButton key={driver} value={driver} sx={{ px: 1.5, py: 0.4, fontSize: '0.75rem', textTransform: 'none' }}>
+              <ToggleButton key={driver} value={driver} sx={{ px: 1.5, py: 0.4, fontSize: 'calc(0.75rem * var(--dc-scale, 1))', textTransform: 'none' }}>
                 {driverLabels[driver]}
               </ToggleButton>
             ))}
@@ -374,9 +374,9 @@ const TemplatesDialog: React.FC<TemplatesDialogProps> = ({ open, onClose, onInse
                 secondaryAction={
                   <Button
                     size="small"
-                    startIcon={<ContentCopyIcon sx={{ fontSize: '0.875rem' }} />}
+                    startIcon={<ContentCopyIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} />}
                     onClick={() => onInsert(currentSql)}
-                    sx={{ textTransform: 'none', fontSize: '0.75rem' }}
+                    sx={{ textTransform: 'none', fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}
                   >
                     使用
                   </Button>
@@ -392,12 +392,12 @@ const TemplatesDialog: React.FC<TemplatesDialogProps> = ({ open, onClose, onInse
                     primary={
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <Typography variant="body2" sx={{ fontWeight: 500 }}>{t.name}</Typography>
-                        <Chip label={t.category} size="small" variant="outlined" sx={{ fontSize: '0.65rem', height: 18 }} />
+                        <Chip label={t.category} size="small" variant="outlined" sx={{ fontSize: 'calc(0.65rem * var(--dc-scale, 1))', height: 18 }} />
                         <Chip
                           label={driverLabels[selectedDriver]}
                           size="small"
-                          icon={<StorageIcon sx={{ fontSize: '0.75rem' }} />}
-                          sx={{ fontSize: '0.65rem', height: 18 }}
+                          icon={<StorageIcon sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }} />}
+                          sx={{ fontSize: 'calc(0.65rem * var(--dc-scale, 1))', height: 18 }}
                         />
                       </Box>
                     }
@@ -409,7 +409,7 @@ const TemplatesDialog: React.FC<TemplatesDialogProps> = ({ open, onClose, onInse
                           sx={{
                             mt: 0.5,
                             p: 0.75,
-                            fontSize: '0.7rem',
+                            fontSize: 'calc(0.7rem * var(--dc-scale, 1))',
                             bgcolor: 'action.hover',
                             borderRadius: 0.5,
                             maxHeight: 70,

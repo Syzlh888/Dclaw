@@ -36,18 +36,18 @@ const ResultTabs: React.FC<ResultTabsProps> = ({ showExecution = false }) => {
         onChange={(_, val) => setActiveTab(val)}
         sx={{ minHeight: 36, borderBottom: '1px solid', borderColor: 'divider' }}
       >
-        <Tab label="单库详情" sx={{ minHeight: 36, textTransform: 'none', fontSize: '0.85rem' }} />
-        <Tab label="聚合视图" sx={{ minHeight: 36, textTransform: 'none', fontSize: '0.85rem' }} />
-        <Tab label="对比视图" sx={{ minHeight: 36, textTransform: 'none', fontSize: '0.85rem' }} />
+        <Tab label="单库详情" sx={{ minHeight: 36, textTransform: 'none', fontSize: 'calc(0.85rem * var(--dc-scale, 1))' }} />
+        <Tab label="聚合视图" sx={{ minHeight: 36, textTransform: 'none', fontSize: 'calc(0.85rem * var(--dc-scale, 1))' }} />
+        <Tab label="对比视图" sx={{ minHeight: 36, textTransform: 'none', fontSize: 'calc(0.85rem * var(--dc-scale, 1))' }} />
         {totalCount > 0 && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, ml: 2, pr: 1 }}>
             {successCount > 0 && (
-              <Badge badgeContent={successCount} color="success" sx={{ '& .MuiBadge-badge': { fontSize: '0.65rem', minWidth: 18, height: 18 } }}>
+              <Badge badgeContent={successCount} color="success" sx={{ '& .MuiBadge-badge': { fontSize: 'calc(0.65rem * var(--dc-scale, 1))', minWidth: 18, height: 18 } }}>
                 <Box sx={{ width: 8 }} />
               </Badge>
             )}
             {failCount > 0 && (
-              <Badge badgeContent={failCount} color="error" sx={{ '& .MuiBadge-badge': { fontSize: '0.65rem', minWidth: 18, height: 18 } }}>
+              <Badge badgeContent={failCount} color="error" sx={{ '& .MuiBadge-badge': { fontSize: 'calc(0.65rem * var(--dc-scale, 1))', minWidth: 18, height: 18 } }}>
                 <Box sx={{ width: 8 }} />
               </Badge>
             )}

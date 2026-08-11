@@ -106,8 +106,8 @@ const CreateViewDialog: React.FC<CreateViewDialogProps> = ({
           },
         }}
       >
-        <DialogTitle sx={{ color: 'text.primary', fontSize: '0.85rem', fontWeight: 600, pb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <VisibilityIcon sx={{ fontSize: '1.125rem' }} />
+        <DialogTitle sx={{ color: 'text.primary', fontSize: 'calc(0.85rem * var(--dc-scale, 1))', fontWeight: 600, pb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <VisibilityIcon sx={{ fontSize: 'calc(1.125rem * var(--dc-scale, 1))' }} />
           {isEdit ? '编辑视图' : '创建视图'}
         </DialogTitle>
         <DialogContent sx={{ pt: '8px !important' }}>
@@ -118,18 +118,18 @@ const CreateViewDialog: React.FC<CreateViewDialogProps> = ({
               value={viewName}
               onChange={(e) => setViewName(e.target.value)}
               disabled={isEdit}
-              sx={{ flex: 1, '& .MuiInputBase-root': { fontSize: '0.75rem' }, '& .MuiFormLabel-root': { fontSize: '0.7rem' } }}
+              sx={{ flex: 1, '& .MuiInputBase-root': { fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }, '& .MuiFormLabel-root': { fontSize: 'calc(0.7rem * var(--dc-scale, 1))' } }}
             />
             <TextField
               size="small"
               label="注释（可选）"
               value={viewComment}
               onChange={(e) => setViewComment(e.target.value)}
-              sx={{ flex: 1, '& .MuiInputBase-root': { fontSize: '0.75rem' }, '& .MuiFormLabel-root': { fontSize: '0.7rem' } }}
+              sx={{ flex: 1, '& .MuiInputBase-root': { fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }, '& .MuiFormLabel-root': { fontSize: 'calc(0.7rem * var(--dc-scale, 1))' } }}
             />
           </Box>
 
-          <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, fontSize: '0.7rem', mb: 0.5, display: 'block' }}>
+          <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, fontSize: 'calc(0.7rem * var(--dc-scale, 1))', mb: 0.5, display: 'block' }}>
             查询 SQL
           </Typography>
           <TextField
@@ -141,7 +141,7 @@ const CreateViewDialog: React.FC<CreateViewDialogProps> = ({
             fullWidth
             sx={{
               '& .MuiInputBase-root': {
-                fontSize: '0.72rem',
+                fontSize: 'calc(0.72rem * var(--dc-scale, 1))',
                 fontFamily: '"Cascadia Code", "Fira Code", "Consolas", monospace',
                 bgcolor: 'background.default',
                 color: 'text.primary',
@@ -151,7 +151,7 @@ const CreateViewDialog: React.FC<CreateViewDialogProps> = ({
           />
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={onClose} size="small" sx={{ color: 'text.secondary', fontSize: '0.7rem', textTransform: 'none' }}>
+          <Button onClick={onClose} size="small" sx={{ color: 'text.secondary', fontSize: 'calc(0.7rem * var(--dc-scale, 1))', textTransform: 'none' }}>
             取消
           </Button>
           <Button
@@ -159,7 +159,7 @@ const CreateViewDialog: React.FC<CreateViewDialogProps> = ({
             variant="contained"
             size="small"
             disabled={!viewName.trim() || !asSql.trim() || saving}
-            sx={{ bgcolor: '#0ea5e9', color: '#fff', fontSize: '0.7rem', textTransform: 'none', '&:hover': { bgcolor: '#0284c7' } }}
+            sx={{ bgcolor: '#0ea5e9', color: '#fff', fontSize: 'calc(0.7rem * var(--dc-scale, 1))', textTransform: 'none', '&:hover': { bgcolor: '#0284c7' } }}
           >
             {saving ? '保存中...' : (isEdit ? '保存修改' : '创建视图')}
           </Button>
@@ -173,7 +173,7 @@ const CreateViewDialog: React.FC<CreateViewDialogProps> = ({
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         {snackbar ? (
-          <Alert severity={snackbar.severity} sx={{ width: '100%', fontSize: '0.75rem' }}>
+          <Alert severity={snackbar.severity} sx={{ width: '100%', fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>
             {snackbar.msg}
           </Alert>
         ) : undefined}

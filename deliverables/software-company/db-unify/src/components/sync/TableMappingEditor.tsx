@@ -133,7 +133,7 @@ const darkInputSx = {
   '& .MuiOutlinedInput-root': {
     color: 'text.primary',
     bgcolor: 'background.default',
-    fontSize: '0.75rem',
+    fontSize: 'calc(0.75rem * var(--dc-scale, 1))',
     minHeight: 32,
     '& fieldset': { borderColor: 'divider' },
     '&:hover fieldset': { borderColor: 'text.disabled' },
@@ -339,7 +339,7 @@ const TableMappingEditor: React.FC<TableMappingEditorProps> = ({
       <DialogTitle sx={{ p: 0, m: 0, borderBottom: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', px: 2, py: 1.25 }}>
           <AccountTreeIcon sx={{ color: 'primary.main', mr: 1.25 }} />
-          <Typography sx={{ color: 'text.primary', fontWeight: 600, fontSize: '0.95rem' }}>{title}</Typography>
+          <Typography sx={{ color: 'text.primary', fontWeight: 600, fontSize: 'calc(0.95rem * var(--dc-scale, 1))' }}>{title}</Typography>
           <Chip
             size="small"
             label={`${rows.length} 行`}
@@ -354,17 +354,17 @@ const TableMappingEditor: React.FC<TableMappingEditorProps> = ({
 
       <DialogContent sx={{ p: 0, bgcolor: 'background.default' }}>
         {error && (
-          <Box sx={{ px: 2, py: 1, bgcolor: 'background.default', color: 'error.light', fontSize: '0.75rem' }}>{error}</Box>
+          <Box sx={{ px: 2, py: 1, bgcolor: 'background.default', color: 'error.light', fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>{error}</Box>
         )}
         {(sourceLoading || targetLoading) && (
-          <Box sx={{ px: 2, py: 1, display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary', fontSize: '0.75rem' }}>
+          <Box sx={{ px: 2, py: 1, display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary', fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>
             <CircularProgress size={12} sx={{ color: 'primary.main' }} />
             加载表字段…
           </Box>
         )}
 
         <Box sx={{ p: 2 }}>
-          <Typography sx={{ color: 'text.secondary', fontSize: '0.7rem', mb: 1.5 }}>
+          <Typography sx={{ color: 'text.secondary', fontSize: 'calc(0.7rem * var(--dc-scale, 1))', mb: 1.5 }}>
             源: {sourceConnectionId}
             {sourceSchema ? ` / ${sourceSchema}` : ''} · 目标: {targetConnectionId}
             {targetSchema ? ` / ${targetSchema}` : ''}
@@ -377,19 +377,19 @@ const TableMappingEditor: React.FC<TableMappingEditorProps> = ({
             <Table size="small" stickyHeader>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ bgcolor: 'background.paper', color: 'text.secondary', fontSize: '0.7rem', borderBottom: '1px solid', borderColor: 'divider', width: '34%' }}>
+                  <TableCell sx={{ bgcolor: 'background.paper', color: 'text.secondary', fontSize: 'calc(0.7rem * var(--dc-scale, 1))', borderBottom: '1px solid', borderColor: 'divider', width: '34%' }}>
                     源字段
                   </TableCell>
-                  <TableCell sx={{ bgcolor: 'background.paper', color: 'text.secondary', fontSize: '0.7rem', borderBottom: '1px solid', borderColor: 'divider', width: '14%' }}>
+                  <TableCell sx={{ bgcolor: 'background.paper', color: 'text.secondary', fontSize: 'calc(0.7rem * var(--dc-scale, 1))', borderBottom: '1px solid', borderColor: 'divider', width: '14%' }}>
                     源类型
                   </TableCell>
-                  <TableCell sx={{ bgcolor: 'background.paper', color: 'text.secondary', fontSize: '0.7rem', borderBottom: '1px solid', borderColor: 'divider', width: 36 }} align="center">
-                    <ArrowForwardIcon sx={{ fontSize: '0.875rem', color: 'text.disabled' }} />
+                  <TableCell sx={{ bgcolor: 'background.paper', color: 'text.secondary', fontSize: 'calc(0.7rem * var(--dc-scale, 1))', borderBottom: '1px solid', borderColor: 'divider', width: 36 }} align="center">
+                    <ArrowForwardIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))', color: 'text.disabled' }} />
                   </TableCell>
-                  <TableCell sx={{ bgcolor: 'background.paper', color: 'text.secondary', fontSize: '0.7rem', borderBottom: '1px solid', borderColor: 'divider', width: '34%' }}>
+                  <TableCell sx={{ bgcolor: 'background.paper', color: 'text.secondary', fontSize: 'calc(0.7rem * var(--dc-scale, 1))', borderBottom: '1px solid', borderColor: 'divider', width: '34%' }}>
                     目标字段
                   </TableCell>
-                  <TableCell sx={{ bgcolor: 'background.paper', color: 'text.secondary', fontSize: '0.7rem', borderBottom: '1px solid', borderColor: 'divider', width: '14%' }}>
+                  <TableCell sx={{ bgcolor: 'background.paper', color: 'text.secondary', fontSize: 'calc(0.7rem * var(--dc-scale, 1))', borderBottom: '1px solid', borderColor: 'divider', width: '14%' }}>
                     目标类型
                   </TableCell>
                   <TableCell sx={{ bgcolor: 'background.paper', borderBottom: '1px solid', borderColor: 'divider', width: 36 }} />
@@ -398,7 +398,7 @@ const TableMappingEditor: React.FC<TableMappingEditorProps> = ({
               <TableBody>
                 {rows.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={6} sx={{ borderBottom: 'none', py: 4, textAlign: 'center', color: 'text.disabled', fontSize: '0.75rem' }}>
+                    <TableCell colSpan={6} sx={{ borderBottom: 'none', py: 4, textAlign: 'center', color: 'text.disabled', fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>
                       {sourceLoading || targetLoading
                         ? '加载中…'
                         : '未配置字段映射（点击「添加行」或「自动匹配同名」）'}
@@ -437,12 +437,12 @@ const TableMappingEditor: React.FC<TableMappingEditorProps> = ({
                             componentsProps={{ paper: { sx: { bgcolor: 'background.paper', color: 'text.primary' } } }}
                           />
                         ) : (
-                          <Box sx={{ display: 'flex', alignItems: 'center', minHeight: 32, pl: 1, color: 'text.primary', fontSize: '0.75rem' }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', minHeight: 32, pl: 1, color: 'text.primary', fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>
                             {row.source}
                           </Box>
                         )}
                       </TableCell>
-                      <TableCell sx={{ borderBottom: '1px solid', borderColor: 'divider', py: 0.15, color: 'text.secondary', fontSize: '0.7rem' }}>
+                      <TableCell sx={{ borderBottom: '1px solid', borderColor: 'divider', py: 0.15, color: 'text.secondary', fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}>
                         {row.sourceType || '-'}
                       </TableCell>
                       <TableCell sx={{ borderBottom: '1px solid', borderColor: 'divider', py: 0.15, color: 'text.disabled', textAlign: 'center' }}>
@@ -465,13 +465,13 @@ const TableMappingEditor: React.FC<TableMappingEditorProps> = ({
                           componentsProps={{ paper: { sx: { bgcolor: 'background.paper', color: 'text.primary' } } }}
                         />
                       </TableCell>
-                      <TableCell sx={{ borderBottom: '1px solid', borderColor: 'divider', py: 0.15, color: 'text.secondary', fontSize: '0.7rem' }}>
+                      <TableCell sx={{ borderBottom: '1px solid', borderColor: 'divider', py: 0.15, color: 'text.secondary', fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}>
                         {tc?.type || row.targetType || '-'}
                       </TableCell>
                       <TableCell sx={{ borderBottom: '1px solid', borderColor: 'divider', py: 0.15, pr: 1 }}>
                         <Tooltip title="删除此行">
                           <IconButton size="small" onClick={() => removeRow(row.key)} sx={{ color: 'text.secondary', '&:hover': { color: 'error.main' } }}>
-                            <DeleteOutlineIcon sx={{ fontSize: '1rem' }} />
+                            <DeleteOutlineIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} />
                           </IconButton>
                         </Tooltip>
                       </TableCell>
@@ -503,13 +503,13 @@ const TableMappingEditor: React.FC<TableMappingEditorProps> = ({
               添加行
             </Button>
             <Box sx={{ flex: 1 }} />
-            <Typography sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
+            <Typography sx={{ color: 'text.secondary', fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}>
               共 {rows.length} 行，已配对 {rows.filter((r) => r.source && r.target).length} 行
             </Typography>
           </Box>
 
           <Divider sx={{ my: 1.5, borderColor: 'divider' }} />
-          <Typography sx={{ color: 'text.disabled', fontSize: '0.7rem' }}>
+          <Typography sx={{ color: 'text.disabled', fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}>
             提示：源列来自源表结构；目标列下拉来自目标表结构。「自动匹配同名」按 name 相同配对；同名后会自动带类型。
             无法匹配的行可点击「添加行」手动创建。「保存」会把当前配对写回表映射。
           </Typography>
@@ -523,7 +523,7 @@ const TableMappingEditor: React.FC<TableMappingEditorProps> = ({
         <Button
           onClick={handleSave}
           variant="contained"
-          startIcon={<AccountTreeIcon sx={{ fontSize: '1rem' }} />}
+          startIcon={<AccountTreeIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} />}
         >
           保存
         </Button>

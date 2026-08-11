@@ -387,7 +387,7 @@ const SqlEditor: React.FC<SqlEditorProps> = ({ onExecute }) => {
               justifyContent: 'center',
               bgcolor: fb.bg,
               color: fb.color,
-              fontSize: '0.85rem',
+              fontSize: 'calc(0.85rem * var(--dc-scale, 1))',
             }}
           >
             加载编辑器...

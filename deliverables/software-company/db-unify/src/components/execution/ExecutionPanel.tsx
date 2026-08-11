@@ -25,7 +25,7 @@ const ExecutionPanel: React.FC = () => {
             alignItems: 'center',
             justifyContent: 'center',
             color: 'text.disabled',
-            fontSize: '0.9rem',
+            fontSize: 'calc(0.9rem * var(--dc-scale, 1))',
           }}
         >
           执行 SQL 后在此查看状态

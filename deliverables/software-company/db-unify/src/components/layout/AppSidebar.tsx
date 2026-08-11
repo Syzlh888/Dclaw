@@ -37,21 +37,21 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ width, onWidthChange }) => {
         value={activeTab}
         onChange={(_, v) => setActiveTab(v)}
         variant="fullWidth"
-        sx={{ minHeight: 36, borderBottom: '1px solid', borderColor: 'divider' }}
+        sx={{ minHeight: 28, borderBottom: '1px solid', borderColor: 'divider' }}
       >
         <Tab
           value="tree"
-          icon={<AccountTreeIcon sx={{ fontSize: '1rem' }} />}
+          icon={<AccountTreeIcon sx={{ fontSize: 'calc(0.95rem * var(--dc-scale, 1))' }} />}
           iconPosition="start"
           label="数据库"
-          sx={{ minHeight: 36, py: 0, textTransform: 'none', fontSize: '0.8rem' }}
+          sx={{ minHeight: 28, py: 0, textTransform: 'none', fontSize: 'calc(0.78rem * var(--dc-scale, 1))' }}
         />
         <Tab
           value="groups"
-          icon={<GroupWorkIcon sx={{ fontSize: '1rem' }} />}
+          icon={<GroupWorkIcon sx={{ fontSize: 'calc(0.95rem * var(--dc-scale, 1))' }} />}
           iconPosition="start"
           label="分组"
-          sx={{ minHeight: 36, py: 0, textTransform: 'none', fontSize: '0.8rem' }}
+          sx={{ minHeight: 28, py: 0, textTransform: 'none', fontSize: 'calc(0.78rem * var(--dc-scale, 1))' }}
         />
       </Tabs>
 

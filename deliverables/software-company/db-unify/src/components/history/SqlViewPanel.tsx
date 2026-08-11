@@ -28,7 +28,7 @@ const SqlViewPanel: React.FC = () => {
       timeout: { label: '超时', color: 'warning' },
     };
     const s = statusMap[task.status];
-    return s ? <Chip label={s.label} size="small" color={s.color as any} variant="outlined" sx={{ fontSize: '0.58rem', height: 16 }} /> : null;
+    return s ? <Chip label={s.label} size="small" color={s.color as any} variant="outlined" sx={{ fontSize: 'calc(0.58rem * var(--dc-scale, 1))', height: 16 }} /> : null;
   };
 
   if (!hasData) {
@@ -47,11 +47,11 @@ const SqlViewPanel: React.FC = () => {
           <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>执行的 SQL</Typography>
           <Tooltip title="复制 SQL">
             <IconButton size="small" onClick={() => handleCopySql(currentSql)} sx={{ p: 0.25 }}>
-              <ContentCopyIcon sx={{ fontSize: '0.8125rem' }} />
+              <ContentCopyIcon sx={{ fontSize: 'calc(0.8125rem * var(--dc-scale, 1))' }} />
             </IconButton>
           </Tooltip>
         </Box>
-        <Typography variant="caption" sx={{ fontSize: '0.72rem', fontFamily: 'monospace', whiteSpace: 'pre-wrap', wordBreak: 'break-all', lineHeight: 1.5 }}>
+        <Typography variant="caption" sx={{ fontSize: 'calc(0.72rem * var(--dc-scale, 1))', fontFamily: 'monospace', whiteSpace: 'pre-wrap', wordBreak: 'break-all', lineHeight: 1.5 }}>
           {currentSql}
         </Typography>
       </Box>
@@ -70,17 +70,17 @@ const SqlViewPanel: React.FC = () => {
           return (
             <Box key={conn.id} sx={{ mb: 1.5, p: 1, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5, flexWrap: 'wrap' }}>
-                <Typography variant="caption" sx={{ fontWeight: 600, fontSize: '0.72rem' }}>{conn.hospitalName}</Typography>
-                {conn.preDbTypeName && <Chip label={conn.preDbTypeName} size="small" variant="outlined" sx={{ fontSize: '0.55rem', height: 16 }} />}
+                <Typography variant="caption" sx={{ fontWeight: 600, fontSize: 'calc(0.72rem * var(--dc-scale, 1))' }}>{conn.hospitalName}</Typography>
+                {conn.preDbTypeName && <Chip label={conn.preDbTypeName} size="small" variant="outlined" sx={{ fontSize: 'calc(0.55rem * var(--dc-scale, 1))', height: 16 }} />}
                 {statusChip}
-                {conn.schema && <Chip label={`schema: ${conn.schema}`} size="small" color="info" variant="outlined" sx={{ fontSize: '0.55rem', height: 16 }} />}
+                {conn.schema && <Chip label={`schema: ${conn.schema}`} size="small" color="info" variant="outlined" sx={{ fontSize: 'calc(0.55rem * var(--dc-scale, 1))', height: 16 }} />}
                 <Tooltip title="复制此连接的 SQL">
                   <IconButton size="small" onClick={() => handleCopySql(schemaSql)} sx={{ p: 0.25, ml: 'auto' }}>
-                    <ContentCopyIcon sx={{ fontSize: '0.75rem' }} />
+                    <ContentCopyIcon sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }} />
                   </IconButton>
                 </Tooltip>
               </Box>
-              <Typography variant="caption" sx={{ fontSize: '0.65rem', fontFamily: 'monospace', whiteSpace: 'pre-wrap', wordBreak: 'break-all', lineHeight: 1.4 }}>
+              <Typography variant="caption" sx={{ fontSize: 'calc(0.65rem * var(--dc-scale, 1))', fontFamily: 'monospace', whiteSpace: 'pre-wrap', wordBreak: 'break-all', lineHeight: 1.4 }}>
                 {schemaSql}
               </Typography>
             </Box>

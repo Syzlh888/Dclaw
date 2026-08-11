@@ -550,12 +550,12 @@ const ResultTable: React.FC<ResultTableProps> = ({
     if (hasSelection && selBounds) {
       items.push({
         label: '复制 (含表头)',
-        icon: <ContentCopyIcon sx={{ fontSize: '0.9375rem' }} />,
+        icon: <ContentCopyIcon sx={{ fontSize: 'calc(0.9375rem * var(--dc-scale, 1))' }} />,
         onClick: () => copySelectionWithHeaders(),
       });
       items.push({
         label: '复制',
-        icon: <ContentPasteGoIcon sx={{ fontSize: '0.9375rem' }} />,
+        icon: <ContentPasteGoIcon sx={{ fontSize: 'calc(0.9375rem * var(--dc-scale, 1))' }} />,
         onClick: () => copySelectionData(),
         divider: true,
       });
@@ -564,18 +564,18 @@ const ResultTable: React.FC<ResultTableProps> = ({
     // 单元格级复制
     items.push({
       label: '复制单元格值',
-      icon: <ContentPasteGoIcon sx={{ fontSize: '0.9375rem' }} />,
+      icon: <ContentPasteGoIcon sx={{ fontSize: 'calc(0.9375rem * var(--dc-scale, 1))' }} />,
       onClick: () => copyToClipboard(rawVal, rawVal.substring(0, 40) + (rawVal.length > 40 ? '...' : '')),
       disabled: rawVal === '',
     });
     items.push({
       label: '复制为 NULL',
-      icon: <BlockIcon sx={{ fontSize: '0.9375rem' }} />,
+      icon: <BlockIcon sx={{ fontSize: 'calc(0.9375rem * var(--dc-scale, 1))' }} />,
       onClick: () => copyToClipboard(isNull ? '(NULL)' : 'NULL', 'NULL'),
     });
     items.push({
       label: '复制列名',
-      icon: <LabelIcon sx={{ fontSize: '0.9375rem' }} />,
+      icon: <LabelIcon sx={{ fontSize: 'calc(0.9375rem * var(--dc-scale, 1))' }} />,
       onClick: () => copyToClipboard(col, col),
     });
     return items;
@@ -593,12 +593,12 @@ const ResultTable: React.FC<ResultTableProps> = ({
     if (hasSelection && selBounds) {
       items.push({
         label: '复制 (含表头)',
-        icon: <ContentCopyIcon sx={{ fontSize: '0.9375rem' }} />,
+        icon: <ContentCopyIcon sx={{ fontSize: 'calc(0.9375rem * var(--dc-scale, 1))' }} />,
         onClick: () => copySelectionWithHeaders(),
       });
       items.push({
         label: '复制',
-        icon: <ContentPasteGoIcon sx={{ fontSize: '0.9375rem' }} />,
+        icon: <ContentPasteGoIcon sx={{ fontSize: 'calc(0.9375rem * var(--dc-scale, 1))' }} />,
         onClick: () => copySelectionData(),
         divider: true,
       });
@@ -606,7 +606,7 @@ const ResultTable: React.FC<ResultTableProps> = ({
 
     items.push({
       label: '复制整行 (TSV)',
-      icon: <ViewStreamIcon sx={{ fontSize: '0.9375rem' }} />,
+      icon: <ViewStreamIcon sx={{ fontSize: 'calc(0.9375rem * var(--dc-scale, 1))' }} />,
       onClick: () => {
         const tsv = columns.map((col) => getCellRaw(row, col)).join('\t');
         copyToClipboard(tsv, `第 ${ctxTarget.rowIndex + 1} 行 (TSV)`);
@@ -614,7 +614,7 @@ const ResultTable: React.FC<ResultTableProps> = ({
     });
     items.push({
       label: '复制为 INSERT SQL',
-      icon: <IntegrationInstructionsIcon sx={{ fontSize: '0.9375rem' }} />,
+      icon: <IntegrationInstructionsIcon sx={{ fontSize: 'calc(0.9375rem * var(--dc-scale, 1))' }} />,
       onClick: () => {
         const colNames = columns.map(quoteSqlName).join(', ');
         const colValues = columns
@@ -626,7 +626,7 @@ const ResultTable: React.FC<ResultTableProps> = ({
     });
     items.push({
       label: '导出选中行 (CSV)',
-      icon: <SaveAltIcon sx={{ fontSize: '0.9375rem' }} />,
+      icon: <SaveAltIcon sx={{ fontSize: 'calc(0.9375rem * var(--dc-scale, 1))' }} />,
       onClick: () => {
         const header = columns.join(',');
         const csvRow = columns
@@ -664,7 +664,7 @@ const ResultTable: React.FC<ResultTableProps> = ({
 
     items.push({
       label: '复制列',
-      icon: <ContentPasteGoIcon sx={{ fontSize: '0.9375rem' }} />,
+      icon: <ContentPasteGoIcon sx={{ fontSize: 'calc(0.9375rem * var(--dc-scale, 1))' }} />,
       onClick: () => {
         const lines = filteredRows.map((row) => getCellRaw(row, col));
         const text = lines.join('\n');
@@ -673,7 +673,7 @@ const ResultTable: React.FC<ResultTableProps> = ({
     });
     items.push({
       label: '复制列 (含表头)',
-      icon: <ContentCopyIcon sx={{ fontSize: '0.9375rem' }} />,
+      icon: <ContentCopyIcon sx={{ fontSize: 'calc(0.9375rem * var(--dc-scale, 1))' }} />,
       divider: true,
       onClick: () => {
         const lines = [col, ...filteredRows.map((row) => getCellRaw(row, col))];
@@ -683,7 +683,7 @@ const ResultTable: React.FC<ResultTableProps> = ({
     });
     items.push({
       label: '复制列名',
-      icon: <LabelIcon sx={{ fontSize: '0.9375rem' }} />,
+      icon: <LabelIcon sx={{ fontSize: 'calc(0.9375rem * var(--dc-scale, 1))' }} />,
       onClick: () => copyToClipboard(col, col),
     });
 
@@ -859,7 +859,7 @@ const ResultTable: React.FC<ResultTableProps> = ({
             }}
           >
             {selectedIndices.size > 0 ? (
-              <Typography variant="caption" sx={{ fontSize: '0.6rem', color: 'primary.main' }}>
+              <Typography variant="caption" sx={{ fontSize: 'calc(0.6rem * var(--dc-scale, 1))', color: 'primary.main' }}>
                 {selectedIndices.size} 行
               </Typography>
             ) : hasActiveFilters ? (
@@ -869,10 +869,10 @@ const ResultTable: React.FC<ResultTableProps> = ({
                 title="清除全部过滤"
                 sx={{ color: 'primary.main', p: 0.25 }}
               >
-                <FilterAltOffIcon sx={{ fontSize: '0.875rem' }} />
+                <FilterAltOffIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} />
               </IconButton>
             ) : (
-              <Typography variant="caption" sx={{ fontSize: '0.6rem', color: 'text.disabled' }}>#</Typography>
+              <Typography variant="caption" sx={{ fontSize: 'calc(0.6rem * var(--dc-scale, 1))', color: 'text.disabled' }}>#</Typography>
             )}
           </Box>
 
@@ -913,8 +913,8 @@ const ResultTable: React.FC<ResultTableProps> = ({
               <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{col}</span>
               {sortCol === col && (
                 sortDir === 'asc'
-                  ? <ArrowUpwardIcon sx={{ fontSize: '0.875rem', ml: 0.25, flexShrink: 0, color: 'primary.main' }} />
-                  : <ArrowDownwardIcon sx={{ fontSize: '0.875rem', ml: 0.25, flexShrink: 0, color: 'primary.main' }} />
+                  ? <ArrowUpwardIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))', ml: 0.25, flexShrink: 0, color: 'primary.main' }} />
+                  : <ArrowDownwardIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))', ml: 0.25, flexShrink: 0, color: 'primary.main' }} />
               )}
               {/* 过滤器图标 */}
               <IconButton
@@ -934,7 +934,7 @@ const ResultTable: React.FC<ResultTableProps> = ({
                   invisible={!filters[col]}
                   overlap="circular"
                 >
-                  <FilterListIcon sx={{ fontSize: '0.875rem' }} />
+                  <FilterListIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} />
                 </Badge>
               </IconButton>
               {/* 拖拽手柄 */}
@@ -980,7 +980,7 @@ const ResultTable: React.FC<ResultTableProps> = ({
                 if (e.key === 'Escape') closeFilterPopover();
               }}
               variant="outlined"
-              sx={{ fontSize: '0.85rem' }}
+              sx={{ fontSize: 'calc(0.85rem * var(--dc-scale, 1))' }}
             />
             <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1 }}>
               <IconButton
@@ -990,7 +990,7 @@ const ResultTable: React.FC<ResultTableProps> = ({
                   closeFilterPopover();
                 }}
                 disabled={!filterCol || !filters[filterCol]}
-                sx={{ fontSize: '0.8rem', color: 'text.secondary' }}
+                sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))', color: 'text.secondary' }}
               >
                 清除
               </IconButton>
@@ -998,7 +998,7 @@ const ResultTable: React.FC<ResultTableProps> = ({
                 <IconButton
                   size="small"
                   onClick={closeFilterPopover}
-                  sx={{ fontSize: '0.8rem', color: 'text.secondary' }}
+                  sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))', color: 'text.secondary' }}
                 >
                   取消
                 </IconButton>
@@ -1006,7 +1006,7 @@ const ResultTable: React.FC<ResultTableProps> = ({
                   size="small"
                   onClick={applyFilter}
                   color="primary"
-                  sx={{ fontSize: '0.8rem' }}
+                  sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}
                 >
                   确定
                 </IconButton>

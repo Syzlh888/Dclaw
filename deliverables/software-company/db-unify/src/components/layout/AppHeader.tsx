@@ -84,7 +84,7 @@ const AppHeader: React.FC<Props> = ({ mainView, onNavigate, onToggleAI }) => {
   return (
     <Box
       sx={(theme) => ({
-        height: 48,
+        height: 40,
         display: 'flex',
         alignItems: 'center',
         px: 2,
@@ -96,8 +96,8 @@ const AppHeader: React.FC<Props> = ({ mainView, onNavigate, onToggleAI }) => {
     >
       {/* Logo */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <StorageIcon sx={{ fontSize: '1.75rem' }} />
-        <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem', letterSpacing: 0.5 }}>
+        <StorageIcon sx={{ fontSize: 'calc(1.75rem * var(--dc-scale, 1))' }} />
+        <Typography variant="h6" sx={{ fontWeight: 600, fontSize: 'calc(1rem * var(--dc-scale, 1))', letterSpacing: 0.5 }}>
           DClaw 数据钳
         </Typography>
       </Box>
@@ -105,10 +105,10 @@ const AppHeader: React.FC<Props> = ({ mainView, onNavigate, onToggleAI }) => {
       {/* 三个主视图页签：SQL编辑器 / 服务器资源管理 / 数据同步 */}
       <Box sx={{ display: 'flex', gap: 0.5, ml: 2 }}>
         {([
-          { id: 'sql-editor' as const, label: 'SQL编辑器', icon: <CodeIcon sx={{ fontSize: '1rem' }} /> },
-          { id: 'server-resource' as const, label: '服务器资源管理', icon: <LanIcon sx={{ fontSize: '1rem' }} /> },
-          { id: 'data-sync' as const, label: '数据同步', icon: <SyncAltIcon sx={{ fontSize: '1rem' }} /> },
-          { id: 'db-proxy' as const, label: '数据库代理', icon: <StorageIcon sx={{ fontSize: '1rem' }} /> },
+          { id: 'sql-editor' as const, label: 'SQL编辑器', icon: <CodeIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} /> },
+          { id: 'server-resource' as const, label: '服务器资源管理', icon: <LanIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} /> },
+          { id: 'data-sync' as const, label: '数据同步', icon: <SyncAltIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} /> },
+          { id: 'db-proxy' as const, label: '数据库代理', icon: <StorageIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} /> },
         ] as const).map((tab) => {
           const active = mainView === tab.id || (mainView === 'comprehensive-query' && tab.id === 'server-resource');
           return (
@@ -119,10 +119,10 @@ const AppHeader: React.FC<Props> = ({ mainView, onNavigate, onToggleAI }) => {
               onClick={() => onNavigate?.(tab.id)}
               sx={{
                 textTransform: 'none',
-                fontSize: '0.78rem',
+                fontSize: 'calc(0.78rem * var(--dc-scale, 1))',
                 px: 1.2,
-                py: 0.5,
-                minHeight: 30,
+                py: 0.25,
+                minHeight: 26,
                 borderRadius: 1,
                 bgcolor: active ? 'rgba(255,255,255,0.25)' : 'transparent',
                 color: active ? '#FFF' : 'rgba(255,255,255,0.7)',
@@ -159,7 +159,7 @@ const AppHeader: React.FC<Props> = ({ mainView, onNavigate, onToggleAI }) => {
             minWidth: 36,
             textAlign: 'center',
             fontWeight: 600,
-            fontSize: '0.75rem',
+            fontSize: 'calc(0.75rem * var(--dc-scale, 1))',
             userSelect: 'none',
           }}
         >

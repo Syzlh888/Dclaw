@@ -203,7 +203,7 @@ export const ExportStepSource: React.FC = () => {
                   bgcolor: '#3C5F41',
                   color: '#FFF',
                   fontWeight: 600,
-                  fontSize: '0.75rem',
+                  fontSize: 'calc(0.75rem * var(--dc-scale, 1))',
                 }}
               />
             </Box>
@@ -293,7 +293,7 @@ export const ExportStepSource: React.FC = () => {
                     <CircularProgress size={20} sx={{ color: '#BBBBBB' }} />
                   </Box>
                 ) : tables.length === 0 ? (
-                  <Typography sx={{ color: '#888', textAlign: 'center', fontSize: '0.75rem', py: 2 }}>
+                  <Typography sx={{ color: '#888', textAlign: 'center', fontSize: 'calc(0.75rem * var(--dc-scale, 1))', py: 2 }}>
                     {activeSchema ? `${activeSchema} 下没有任何表` : '请先选择 schema'}
                   </Typography>
                 ) : (
@@ -330,14 +330,14 @@ export const ExportStepSource: React.FC = () => {
                             '&.Mui-checked': { color: '#4CAF50' },
                           }}
                         />
-                        <Typography sx={{ fontSize: '0.8125rem', color: '#FFF' }}>{t.name}</Typography>
+                        <Typography sx={{ fontSize: 'calc(0.8125rem * var(--dc-scale, 1))', color: '#FFF' }}>{t.name}</Typography>
                         {t.obj_type === 'VIEW' && (
-                          <Typography sx={{ color: '#DAAA4E', fontSize: '0.625rem', ml: 0.75 }}>
+                          <Typography sx={{ color: '#DAAA4E', fontSize: 'calc(0.625rem * var(--dc-scale, 1))', ml: 0.75 }}>
                             VIEW
                           </Typography>
                         )}
                         {typeof t.rows === 'number' && (
-                          <Typography sx={{ color: '#888', fontSize: '0.6875rem', ml: 'auto' }}>
+                          <Typography sx={{ color: '#888', fontSize: 'calc(0.6875rem * var(--dc-scale, 1))', ml: 'auto' }}>
                             ~{t.rows.toLocaleString()} 行
                           </Typography>
                         )}
@@ -365,7 +365,7 @@ export const ExportStepSource: React.FC = () => {
                           </span>
                         }
                         onDelete={() => removeSelectedTable(t)}
-                        deleteIcon={<CloseIcon sx={{ fontSize: '0.875rem' }} />}
+                        deleteIcon={<CloseIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))' }} />}
                         sx={{ bgcolor: '#3C3F41', border: '1px solid #4B4B4B' }}
                       />
                     ))}
@@ -393,7 +393,7 @@ export const ExportStepSource: React.FC = () => {
                 bgcolor: '#1E1E1E',
                 color: '#DDDDDD',
                 fontFamily: 'monospace',
-                fontSize: '0.8125rem',
+                fontSize: 'calc(0.8125rem * var(--dc-scale, 1))',
               },
             }}
           />

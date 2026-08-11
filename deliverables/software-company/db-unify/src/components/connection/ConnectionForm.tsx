@@ -552,7 +552,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
         {/* 从服务器资源快速填充 — 放在页面最上面 */}
         <Button size="small" variant="outlined" startIcon={<DnsIcon />}
           onClick={() => setServerPickerOpen(true)}
-          sx={{ textTransform: 'none', fontSize: '0.75rem' }}>
+          sx={{ textTransform: 'none', fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>
           从服务器资源快速填充
         </Button>
         <TextField
@@ -645,7 +645,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
         </Box>
         {/* 数据库类型警告提示 */}
         {dbTypeWarning && (
-          <Alert severity="warning" onClose={() => setDbTypeWarning('')} sx={{ py: 0, '& .MuiAlert-message': { fontSize: '0.75rem' } }}>
+          <Alert severity="warning" onClose={() => setDbTypeWarning('')} sx={{ py: 0, '& .MuiAlert-message': { fontSize: 'calc(0.75rem * var(--dc-scale, 1))' } }}>
             {dbTypeWarning}
           </Alert>
         )}
@@ -674,7 +674,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
             endAdornment: (
               <InputAdornment position="end">
                 <IconButton size="small" onClick={() => setShowPwd(!showPwd)} sx={{ p: 0.25 }}>
-                  {showPwd ? <VisibilityOffIcon sx={{ fontSize: '1rem' }} /> : <VisibilityIcon sx={{ fontSize: '1rem' }} />}
+                  {showPwd ? <VisibilityOffIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} /> : <VisibilityIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} />}
                 </IconButton>
               </InputAdornment>
             ),
@@ -859,7 +859,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
       {/* 从服务器资源快速填充 — 所有数据库实例扁平列表 */}
       <Dialog open={serverPickerOpen} onClose={() => setServerPickerOpen(false)} maxWidth="sm" fullWidth
         PaperProps={{ sx: { maxHeight: '70vh' } }}>
-        <DialogTitle sx={{ fontWeight: 600, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: 1 }}>
+        <DialogTitle sx={{ fontWeight: 600, fontSize: 'calc(1rem * var(--dc-scale, 1))', display: 'flex', alignItems: 'center', gap: 1 }}>
           选择数据库实例
           <Typography variant="caption" color="text.secondary" sx={{ ml: 'auto' }}>
             {dbInstances.length} 个实例
@@ -903,7 +903,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                     <ListItemText
                       primary={
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>
+                          <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>
                             {di.dbType.toUpperCase()}
                           </Typography>
                           <Typography variant="body2" fontWeight={500}>{di.dbName}</Typography>
@@ -938,8 +938,8 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                           )}
                         </Box>
                       }
-                      primaryTypographyProps={{ fontSize: '0.85rem' }}
-                      secondaryTypographyProps={{ fontSize: '0.7rem' }}
+                      primaryTypographyProps={{ fontSize: 'calc(0.85rem * var(--dc-scale, 1))' }}
+                      secondaryTypographyProps={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}
                     />
                   </ListItemButton>
                 );
@@ -956,7 +956,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
 
       {/* 凭据选择器：多个凭据时让用户选哪个 */}
       <Dialog open={credentialPickerOpen} onClose={() => !decryptingPwd && setCredentialPickerOpen(false)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 600, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: 1 }}>
+        <DialogTitle sx={{ fontWeight: 600, fontSize: 'calc(1rem * var(--dc-scale, 1))', display: 'flex', alignItems: 'center', gap: 1 }}>
           {decryptingPwd ? '解密中...' : '选择凭据'}
         </DialogTitle>
         <DialogContent>
@@ -986,8 +986,8 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                         {cred.username}{cred.notes ? ` · ${cred.notes}` : ''}{cred.region ? ` · ${cred.region}` : ''}
                       </Typography>
                     }
-                    primaryTypographyProps={{ fontSize: '0.85rem' }}
-                    secondaryTypographyProps={{ fontSize: '0.7rem' }}
+                    primaryTypographyProps={{ fontSize: 'calc(0.85rem * var(--dc-scale, 1))' }}
+                    secondaryTypographyProps={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}
                   />
                 </ListItemButton>
               ))}

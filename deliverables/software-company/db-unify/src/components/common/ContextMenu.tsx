@@ -128,7 +128,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
     borderRadius: 0.5,
     py: 0.15,
     minHeight: 22,
-    fontSize: '0.68rem',
+    fontSize: 'calc(0.68rem * var(--dc-scale, 1))',
     color: danger ? '#f87171' : 'text.primary',
     display: 'flex',
     alignItems: 'center',
@@ -146,7 +146,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
       fontSize: '0.6875rem !important',
     },
     '& .MuiListItemText-primary': {
-      fontSize: '0.68rem',
+      fontSize: 'calc(0.68rem * var(--dc-scale, 1))',
       textAlign: 'left',
     },
     '&.Mui-disabled': { opacity: 0.4 },
@@ -214,7 +214,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
                     m: 0,
                     flex: 1,
                     '& .MuiListItemText-primary': {
-                      fontSize: '0.68rem',
+                      fontSize: 'calc(0.68rem * var(--dc-scale, 1))',
                       lineHeight: 1.25,
                       color: item.danger ? '#f87171' : 'text.primary',
                       textAlign: 'left',
@@ -223,7 +223,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
                 />
                 {hasChildren && (
                   <Box sx={{ display: 'flex', alignItems: 'center', ml: 0.5 }}>
-                    <ChevronRightIcon sx={{ fontSize: '0.875rem', color: 'text.secondary' }} />
+                    <ChevronRightIcon sx={{ fontSize: 'calc(0.875rem * var(--dc-scale, 1))', color: 'text.secondary' }} />
                   </Box>
                 )}
               </MenuItem>
@@ -274,7 +274,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
                   m: 0,
                   flex: 1,
                   '& .MuiListItemText-primary': {
-                    fontSize: '0.68rem',
+                    fontSize: 'calc(0.68rem * var(--dc-scale, 1))',
                     lineHeight: 1.25,
                     color: sub.danger ? '#f87171' : 'text.primary',
                     textAlign: 'left',

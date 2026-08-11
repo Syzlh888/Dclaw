@@ -87,7 +87,7 @@ const FolderPicker: React.FC<FolderPickerProps> = ({ open, onClose, onSelect, cu
       <DialogTitle>选择文件夹</DialogTitle>
       <DialogContent dividers sx={{ minHeight: 350 }}>
         {/* 当前路径面包屑 */}
-        <Breadcrumbs sx={{ mb: 1.5, fontSize: '0.8rem', flexWrap: 'wrap' }}>
+        <Breadcrumbs sx={{ mb: 1.5, fontSize: 'calc(0.8rem * var(--dc-scale, 1))', flexWrap: 'wrap' }}>
           {showDrives || pathSegments.length === 0 ? (
             <Typography variant="body2" color="text.secondary">此电脑</Typography>
           ) : (
@@ -96,7 +96,7 @@ const FolderPicker: React.FC<FolderPickerProps> = ({ open, onClose, onSelect, cu
                 component="button"
                 underline="hover"
                 onClick={loadDrives}
-                sx={{ fontSize: '0.8rem', cursor: 'pointer' }}
+                sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))', cursor: 'pointer' }}
               >
                 此电脑
               </Link>
@@ -110,7 +110,7 @@ const FolderPicker: React.FC<FolderPickerProps> = ({ open, onClose, onSelect, cu
                     component="button"
                     underline="hover"
                     onClick={() => loadDir(segPath)}
-                    sx={{ fontSize: '0.8rem', cursor: 'pointer' }}
+                    sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))', cursor: 'pointer' }}
                   >
                     {seg}
                   </Link>
@@ -143,7 +143,7 @@ const FolderPicker: React.FC<FolderPickerProps> = ({ open, onClose, onSelect, cu
                   <ListItemIcon sx={{ minWidth: 36 }}>
                     <FolderIcon fontSize="small" sx={{ color: 'primary.main' }} />
                   </ListItemIcon>
-                  <ListItemText primary={d.name} secondary="本地磁盘" primaryTypographyProps={{ fontSize: '0.85rem' }} secondaryTypographyProps={{ fontSize: '0.7rem' }} />
+                  <ListItemText primary={d.name} secondary="本地磁盘" primaryTypographyProps={{ fontSize: 'calc(0.85rem * var(--dc-scale, 1))' }} secondaryTypographyProps={{ fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }} />
                 </ListItemButton>
               ))
             ) : (
@@ -154,7 +154,7 @@ const FolderPicker: React.FC<FolderPickerProps> = ({ open, onClose, onSelect, cu
                   <ListItemIcon sx={{ minWidth: 36 }}>
                     <ArrowUpwardIcon fontSize="small" color="action" />
                   </ListItemIcon>
-                  <ListItemText primary={parent ? '..' : '此电脑'} primaryTypographyProps={{ fontSize: '0.85rem' }} />
+                  <ListItemText primary={parent ? '..' : '此电脑'} primaryTypographyProps={{ fontSize: 'calc(0.85rem * var(--dc-scale, 1))' }} />
                 </ListItemButton>
                 {dirs.map((d) => (
                   <ListItemButton
@@ -169,7 +169,7 @@ const FolderPicker: React.FC<FolderPickerProps> = ({ open, onClose, onSelect, cu
                     <ListItemIcon sx={{ minWidth: 36 }}>
                       <FolderIcon fontSize="small" sx={{ color: '#FFB300' }} />
                     </ListItemIcon>
-                    <ListItemText primary={d.name} primaryTypographyProps={{ fontSize: '0.85rem' }} />
+                    <ListItemText primary={d.name} primaryTypographyProps={{ fontSize: 'calc(0.85rem * var(--dc-scale, 1))' }} />
                   </ListItemButton>
                 ))}
                 {dirs.length === 0 && parent === null && (

@@ -155,8 +155,8 @@ const CreateTableDialog: React.FC<CreateTableDialogProps> = ({
           },
         }}
       >
-        <DialogTitle sx={{ color: 'text.primary', fontSize: '0.85rem', fontWeight: 600, pb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <TableChartIcon sx={{ fontSize: '1.125rem' }} />
+        <DialogTitle sx={{ color: 'text.primary', fontSize: 'calc(0.85rem * var(--dc-scale, 1))', fontWeight: 600, pb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <TableChartIcon sx={{ fontSize: 'calc(1.125rem * var(--dc-scale, 1))' }} />
           创建表
         </DialogTitle>
         <DialogContent sx={{ pt: '8px !important' }}>
@@ -167,28 +167,28 @@ const CreateTableDialog: React.FC<CreateTableDialogProps> = ({
               label="表名"
               value={tableName}
               onChange={(e) => setTableName(e.target.value)}
-              sx={{ flex: 1, '& .MuiInputBase-root': { fontSize: '0.75rem' }, '& .MuiFormLabel-root': { fontSize: '0.7rem' } }}
+              sx={{ flex: 1, '& .MuiInputBase-root': { fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }, '& .MuiFormLabel-root': { fontSize: 'calc(0.7rem * var(--dc-scale, 1))' } }}
             />
             <TextField
               size="small"
               label="注释（可选）"
               value={tableComment}
               onChange={(e) => setTableComment(e.target.value)}
-              sx={{ flex: 1, '& .MuiInputBase-root': { fontSize: '0.75rem' }, '& .MuiFormLabel-root': { fontSize: '0.7rem' } }}
+              sx={{ flex: 1, '& .MuiInputBase-root': { fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }, '& .MuiFormLabel-root': { fontSize: 'calc(0.7rem * var(--dc-scale, 1))' } }}
             />
           </Box>
 
           {/* Column table */}
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-            <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, fontSize: '0.7rem' }}>
+            <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, fontSize: 'calc(0.7rem * var(--dc-scale, 1))' }}>
               列定义
             </Typography>
             <Button
               size="small"
               variant="outlined"
-              startIcon={<AddIcon sx={{ fontSize: '0.75rem' }} />}
+              startIcon={<AddIcon sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }} />}
               onClick={handleAddColumn}
-              sx={{ fontSize: '0.62rem', py: 0, minHeight: 20, textTransform: 'none' }}
+              sx={{ fontSize: 'calc(0.62rem * var(--dc-scale, 1))', py: 0, minHeight: 20, textTransform: 'none' }}
             >
               添加列
             </Button>
@@ -207,16 +207,16 @@ const CreateTableDialog: React.FC<CreateTableDialogProps> = ({
             <Table size="small" sx={{ minWidth: 650 }}>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ color: 'text.secondary', fontSize: '0.6rem', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5, width: 24 }}></TableCell>
-                  <TableCell sx={{ color: 'text.secondary', fontSize: '0.6rem', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5 }}>列名</TableCell>
-                  <TableCell sx={{ color: 'text.secondary', fontSize: '0.6rem', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5, width: 110 }}>类型</TableCell>
-                  <TableCell sx={{ color: 'text.secondary', fontSize: '0.6rem', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5, width: 60 }}>长度</TableCell>
-                  <TableCell sx={{ color: 'text.secondary', fontSize: '0.6rem', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5, width: 85 }}>主键</TableCell>
-                  <TableCell sx={{ color: 'text.secondary', fontSize: '0.6rem', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5, width: 70 }}>自增</TableCell>
-                  <TableCell sx={{ color: 'text.secondary', fontSize: '0.6rem', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5, width: 90 }}>NULL</TableCell>
-                  <TableCell sx={{ color: 'text.secondary', fontSize: '0.6rem', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5, width: 100 }}>默认值</TableCell>
-                  <TableCell sx={{ color: 'text.secondary', fontSize: '0.6rem', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5 }}>注释</TableCell>
-                  <TableCell sx={{ color: 'text.secondary', fontSize: '0.6rem', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5, width: 24 }}></TableCell>
+                  <TableCell sx={{ color: 'text.secondary', fontSize: 'calc(0.6rem * var(--dc-scale, 1))', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5, width: 24 }}></TableCell>
+                  <TableCell sx={{ color: 'text.secondary', fontSize: 'calc(0.6rem * var(--dc-scale, 1))', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5 }}>列名</TableCell>
+                  <TableCell sx={{ color: 'text.secondary', fontSize: 'calc(0.6rem * var(--dc-scale, 1))', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5, width: 110 }}>类型</TableCell>
+                  <TableCell sx={{ color: 'text.secondary', fontSize: 'calc(0.6rem * var(--dc-scale, 1))', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5, width: 60 }}>长度</TableCell>
+                  <TableCell sx={{ color: 'text.secondary', fontSize: 'calc(0.6rem * var(--dc-scale, 1))', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5, width: 85 }}>主键</TableCell>
+                  <TableCell sx={{ color: 'text.secondary', fontSize: 'calc(0.6rem * var(--dc-scale, 1))', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5, width: 70 }}>自增</TableCell>
+                  <TableCell sx={{ color: 'text.secondary', fontSize: 'calc(0.6rem * var(--dc-scale, 1))', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5, width: 90 }}>NULL</TableCell>
+                  <TableCell sx={{ color: 'text.secondary', fontSize: 'calc(0.6rem * var(--dc-scale, 1))', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5, width: 100 }}>默认值</TableCell>
+                  <TableCell sx={{ color: 'text.secondary', fontSize: 'calc(0.6rem * var(--dc-scale, 1))', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5 }}>注释</TableCell>
+                  <TableCell sx={{ color: 'text.secondary', fontSize: 'calc(0.6rem * var(--dc-scale, 1))', fontWeight: 600, borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.5, width: 24 }}></TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -225,10 +225,10 @@ const CreateTableDialog: React.FC<CreateTableDialogProps> = ({
                     <TableCell sx={{ borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.25, px: 0.5 }}>
                       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                         <IconButton size="small" onClick={() => handleMoveUp(idx)} disabled={idx === 0} sx={{ p: 0, minWidth: 14, height: 12 }}>
-                          <ArrowUpwardIcon sx={{ fontSize: '0.625rem' }} />
+                          <ArrowUpwardIcon sx={{ fontSize: 'calc(0.625rem * var(--dc-scale, 1))' }} />
                         </IconButton>
                         <IconButton size="small" onClick={() => handleMoveDown(idx)} disabled={idx >= columns.length - 1} sx={{ p: 0, minWidth: 14, height: 12 }}>
-                          <ArrowDownwardIcon sx={{ fontSize: '0.625rem' }} />
+                          <ArrowDownwardIcon sx={{ fontSize: 'calc(0.625rem * var(--dc-scale, 1))' }} />
                         </IconButton>
                       </Box>
                     </TableCell>
@@ -238,7 +238,7 @@ const CreateTableDialog: React.FC<CreateTableDialogProps> = ({
                         value={col.name}
                         onChange={(e) => handleColumnChange(idx, 'name', e.target.value)}
                         placeholder="列名"
-                        sx={{ '& .MuiInputBase-input': { fontSize: '0.68rem', py: 0.25 } }}
+                        sx={{ '& .MuiInputBase-input': { fontSize: 'calc(0.68rem * var(--dc-scale, 1))', py: 0.25 } }}
                       />
                     </TableCell>
                     <TableCell sx={{ borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.25, px: 0.5 }}>
@@ -246,10 +246,10 @@ const CreateTableDialog: React.FC<CreateTableDialogProps> = ({
                         <Select
                           value={col.type}
                           onChange={(e) => handleColumnChange(idx, 'type', e.target.value)}
-                          sx={{ fontSize: '0.68rem', '& .MuiSelect-select': { py: 0.25 } }}
+                          sx={{ fontSize: 'calc(0.68rem * var(--dc-scale, 1))', '& .MuiSelect-select': { py: 0.25 } }}
                         >
                           {COMMON_TYPES.map(t => (
-                            <MenuItem key={t} value={t} sx={{ fontSize: '0.68rem' }}>{t}</MenuItem>
+                            <MenuItem key={t} value={t} sx={{ fontSize: 'calc(0.68rem * var(--dc-scale, 1))' }}>{t}</MenuItem>
                           ))}
                         </Select>
                       </FormControl>
@@ -261,7 +261,7 @@ const CreateTableDialog: React.FC<CreateTableDialogProps> = ({
                         value={col.length || ''}
                         onChange={(e) => handleColumnChange(idx, 'length', e.target.value ? parseInt(e.target.value) : undefined)}
                         disabled={!['VARCHAR', 'CHAR', 'DECIMAL'].includes(col.type)}
-                        sx={{ width: 55, '& .MuiInputBase-input': { fontSize: '0.68rem', py: 0.25 } }}
+                        sx={{ width: 55, '& .MuiInputBase-input': { fontSize: 'calc(0.68rem * var(--dc-scale, 1))', py: 0.25 } }}
                       />
                     </TableCell>
                     <TableCell sx={{ borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.25, px: 0.5 }}>
@@ -293,7 +293,7 @@ const CreateTableDialog: React.FC<CreateTableDialogProps> = ({
                         value={col.defaultValue || ''}
                         onChange={(e) => handleColumnChange(idx, 'defaultValue', e.target.value)}
                         placeholder="默认值"
-                        sx={{ '& .MuiInputBase-input': { fontSize: '0.68rem', py: 0.25 } }}
+                        sx={{ '& .MuiInputBase-input': { fontSize: 'calc(0.68rem * var(--dc-scale, 1))', py: 0.25 } }}
                       />
                     </TableCell>
                     <TableCell sx={{ borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.25, px: 0.5 }}>
@@ -302,12 +302,12 @@ const CreateTableDialog: React.FC<CreateTableDialogProps> = ({
                         value={col.comment || ''}
                         onChange={(e) => handleColumnChange(idx, 'comment', e.target.value)}
                         placeholder="注释"
-                        sx={{ '& .MuiInputBase-input': { fontSize: '0.68rem', py: 0.25 } }}
+                        sx={{ '& .MuiInputBase-input': { fontSize: 'calc(0.68rem * var(--dc-scale, 1))', py: 0.25 } }}
                       />
                     </TableCell>
                     <TableCell sx={{ borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.25, px: 0.25 }}>
                       <IconButton size="small" onClick={() => handleRemoveColumn(idx)} disabled={columns.length <= 1} sx={{ p: 0 }}>
-                        <DeleteIcon sx={{ fontSize: '0.75rem', color: '#f87171' }} />
+                        <DeleteIcon sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', color: '#f87171' }} />
                       </IconButton>
                     </TableCell>
                   </TableRow>
@@ -317,7 +317,7 @@ const CreateTableDialog: React.FC<CreateTableDialogProps> = ({
           </TableContainer>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={onClose} size="small" sx={{ color: 'text.secondary', fontSize: '0.7rem', textTransform: 'none' }}>
+          <Button onClick={onClose} size="small" sx={{ color: 'text.secondary', fontSize: 'calc(0.7rem * var(--dc-scale, 1))', textTransform: 'none' }}>
             取消
           </Button>
           <Button
@@ -325,7 +325,7 @@ const CreateTableDialog: React.FC<CreateTableDialogProps> = ({
             variant="contained"
             size="small"
             disabled={!tableName.trim() || saving}
-            sx={{ bgcolor: '#0ea5e9', color: '#fff', fontSize: '0.7rem', textTransform: 'none', '&:hover': { bgcolor: '#0284c7' } }}
+            sx={{ bgcolor: '#0ea5e9', color: '#fff', fontSize: 'calc(0.7rem * var(--dc-scale, 1))', textTransform: 'none', '&:hover': { bgcolor: '#0284c7' } }}
           >
             {saving ? '创建中...' : '创建表'}
           </Button>
@@ -339,7 +339,7 @@ const CreateTableDialog: React.FC<CreateTableDialogProps> = ({
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         {snackbar ? (
-          <Alert severity={snackbar.severity} sx={{ width: '100%', fontSize: '0.75rem' }}>
+          <Alert severity={snackbar.severity} sx={{ width: '100%', fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>
             {snackbar.msg}
           </Alert>
         ) : undefined}

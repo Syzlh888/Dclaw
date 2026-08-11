@@ -209,12 +209,12 @@ const DriverManager: React.FC<DriverManagerProps> = ({ open, onClose }) => {
     if (!driver.isBuiltIn) {
       return (
         <Chip
-          icon={<ExtensionIcon sx={{ fontSize: '0.8125rem' }} />}
+          icon={<ExtensionIcon sx={{ fontSize: 'calc(0.8125rem * var(--dc-scale, 1))' }} />}
           label="用户定义"
           size="small"
           variant="outlined"
           sx={{
-            fontSize: '0.6rem',
+            fontSize: 'calc(0.6rem * var(--dc-scale, 1))',
             height: 20,
             borderColor: '#FFA726',
             color: '#FFA726',
@@ -226,12 +226,12 @@ const DriverManager: React.FC<DriverManagerProps> = ({ open, onClose }) => {
     if (driver.downloaded) {
       return (
         <Chip
-          icon={<CheckCircleIcon sx={{ fontSize: '0.8125rem' }} />}
+          icon={<CheckCircleIcon sx={{ fontSize: 'calc(0.8125rem * var(--dc-scale, 1))' }} />}
           label="已下载"
           size="small"
           variant="outlined"
           color="success"
-          sx={{ fontSize: '0.6rem', height: 20 }}
+          sx={{ fontSize: 'calc(0.6rem * var(--dc-scale, 1))', height: 20 }}
         />
       );
     }
@@ -241,18 +241,18 @@ const DriverManager: React.FC<DriverManagerProps> = ({ open, onClose }) => {
           label="未下载"
           size="small"
           variant="outlined"
-          sx={{ fontSize: '0.6rem', height: 20, color: 'text.disabled', borderColor: 'divider' }}
+          sx={{ fontSize: 'calc(0.6rem * var(--dc-scale, 1))', height: 20, color: 'text.disabled', borderColor: 'divider' }}
         />
       );
     }
     return (
       <Chip
-        icon={<CancelIcon sx={{ fontSize: '0.8125rem' }} />}
+        icon={<CancelIcon sx={{ fontSize: 'calc(0.8125rem * var(--dc-scale, 1))' }} />}
         label="不可获得"
         size="small"
         variant="outlined"
         color="error"
-        sx={{ fontSize: '0.6rem', height: 20 }}
+        sx={{ fontSize: 'calc(0.6rem * var(--dc-scale, 1))', height: 20 }}
       />
     );
   };
@@ -289,8 +289,8 @@ const DriverManager: React.FC<DriverManagerProps> = ({ open, onClose }) => {
             borderColor: 'divider',
           }}
         >
-          <Inventory2Icon sx={{ fontSize: '1.25rem', color: 'primary.main' }} />
-          <Typography variant="subtitle1" sx={{ fontWeight: 600, fontSize: '0.95rem' }}>
+          <Inventory2Icon sx={{ fontSize: 'calc(1.25rem * var(--dc-scale, 1))', color: 'primary.main' }} />
+          <Typography variant="subtitle1" sx={{ fontWeight: 600, fontSize: 'calc(0.95rem * var(--dc-scale, 1))' }}>
             驱动管理器
           </Typography>
         </DialogTitle>
@@ -316,20 +316,20 @@ const DriverManager: React.FC<DriverManagerProps> = ({ open, onClose }) => {
                     variant="outlined"
                     sx={{
                       '& .MuiOutlinedInput-root': {
-                        fontSize: '0.8rem',
+                        fontSize: 'calc(0.8rem * var(--dc-scale, 1))',
                         borderRadius: 1,
                       },
                     }}
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
-                          <SearchIcon sx={{ fontSize: '1.125rem', color: 'text.disabled' }} />
+                          <SearchIcon sx={{ fontSize: 'calc(1.125rem * var(--dc-scale, 1))', color: 'text.disabled' }} />
                         </InputAdornment>
                       ),
                       endAdornment: searchText ? (
                         <InputAdornment position="end">
                           <IconButton size="small" onClick={handleSearchClear} edge="end">
-                            <ClearIcon sx={{ fontSize: '1rem' }} />
+                            <ClearIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} />
                           </IconButton>
                         </InputAdornment>
                       ) : null,
@@ -341,7 +341,7 @@ const DriverManager: React.FC<DriverManagerProps> = ({ open, onClose }) => {
 
                 {/* 驱动列表头部 */}
                 <Box sx={{ px: 2, py: 0.75, display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                  <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, fontSize: 'calc(0.7rem * var(--dc-scale, 1))', textTransform: 'uppercase', letterSpacing: 0.5 }}>
                     数据库驱动
                   </Typography>
                 </Box>
@@ -350,7 +350,7 @@ const DriverManager: React.FC<DriverManagerProps> = ({ open, onClose }) => {
                 <List dense sx={{ flex: 1, overflow: 'auto', px: 0.5, py: 0 }}>
                   {filteredDrivers.length === 0 ? (
                     <Box sx={{ py: 4, textAlign: 'center' }}>
-                      <Typography variant="body2" color="text.disabled" sx={{ fontSize: '0.8rem' }}>
+                      <Typography variant="body2" color="text.disabled" sx={{ fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>
                         {searchText ? '未找到匹配的驱动' : '暂无驱动'}
                       </Typography>
                     </Box>
@@ -387,7 +387,7 @@ const DriverManager: React.FC<DriverManagerProps> = ({ open, onClose }) => {
                                   alignItems: 'center',
                                   justifyContent: 'center',
                                   color: '#fff',
-                                  fontSize: '0.65rem',
+                                  fontSize: 'calc(0.65rem * var(--dc-scale, 1))',
                                   fontWeight: 700,
                                   flexShrink: 0,
                                 }}
@@ -403,7 +403,7 @@ const DriverManager: React.FC<DriverManagerProps> = ({ open, onClose }) => {
                                   variant="body2"
                                   sx={{
                                     fontWeight: 500,
-                                    fontSize: '0.8rem',
+                                    fontSize: 'calc(0.8rem * var(--dc-scale, 1))',
                                     color: isSelected ? '#fff' : 'text.primary',
                                   }}
                                 >
@@ -436,7 +436,7 @@ const DriverManager: React.FC<DriverManagerProps> = ({ open, onClose }) => {
                                 {downloadingId === driver.id ? (
                                   <CircularProgress size={14} color="inherit" />
                                 ) : (
-                                  <CloudDownloadIcon sx={{ fontSize: '1rem' }} />
+                                  <CloudDownloadIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} />
                                 )}
                               </IconButton>
                             )}
@@ -455,7 +455,7 @@ const DriverManager: React.FC<DriverManagerProps> = ({ open, onClose }) => {
                                 }}
                                 title="手动上传 JAR"
                               >
-                                <CloudUploadIcon sx={{ fontSize: '1rem' }} />
+                                <CloudUploadIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} />
                               </IconButton>
                             )}
                           </ListItemButton>
@@ -482,12 +482,12 @@ const DriverManager: React.FC<DriverManagerProps> = ({ open, onClose }) => {
                   fullWidth
                   variant="outlined"
                   size="small"
-                  startIcon={<AddIcon sx={{ fontSize: '1rem' }} />}
+                  startIcon={<AddIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} />}
                   onClick={handleNew}
                   sx={{
                     textTransform: 'none',
                     justifyContent: 'flex-start',
-                    fontSize: '0.75rem',
+                    fontSize: 'calc(0.75rem * var(--dc-scale, 1))',
                     px: 1,
                   }}
                 >
@@ -498,12 +498,12 @@ const DriverManager: React.FC<DriverManagerProps> = ({ open, onClose }) => {
                   fullWidth
                   variant="outlined"
                   size="small"
-                  startIcon={<ContentCopyIcon sx={{ fontSize: '1rem' }} />}
+                  startIcon={<ContentCopyIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} />}
                   disabled
                   sx={{
                     textTransform: 'none',
                     justifyContent: 'flex-start',
-                    fontSize: '0.75rem',
+                    fontSize: 'calc(0.75rem * var(--dc-scale, 1))',
                     px: 1,
                   }}
                 >
@@ -514,13 +514,13 @@ const DriverManager: React.FC<DriverManagerProps> = ({ open, onClose }) => {
                   fullWidth
                   variant="outlined"
                   size="small"
-                  startIcon={<EditIcon sx={{ fontSize: '1rem' }} />}
+                  startIcon={<EditIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} />}
                   onClick={handleEdit}
                   disabled={!selectedDriver || selectedDriver.isBuiltIn}
                   sx={{
                     textTransform: 'none',
                     justifyContent: 'flex-start',
-                    fontSize: '0.75rem',
+                    fontSize: 'calc(0.75rem * var(--dc-scale, 1))',
                     px: 1,
                   }}
                 >
@@ -531,7 +531,7 @@ const DriverManager: React.FC<DriverManagerProps> = ({ open, onClose }) => {
                   fullWidth
                   variant="outlined"
                   size="small"
-                  startIcon={<DeleteIcon sx={{ fontSize: '1rem' }} />}
+                  startIcon={<DeleteIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} />}
                   onClick={handleDeleteOrUninstall}
                   disabled={
                     !selectedDriver ||
@@ -541,7 +541,7 @@ const DriverManager: React.FC<DriverManagerProps> = ({ open, onClose }) => {
                   sx={{
                     textTransform: 'none',
                     justifyContent: 'flex-start',
-                    fontSize: '0.75rem',
+                    fontSize: 'calc(0.75rem * var(--dc-scale, 1))',
                     px: 1,
                   }}
                 >
@@ -552,12 +552,12 @@ const DriverManager: React.FC<DriverManagerProps> = ({ open, onClose }) => {
                   fullWidth
                   variant="outlined"
                   size="small"
-                  startIcon={<UndoIcon sx={{ fontSize: '1rem' }} />}
+                  startIcon={<UndoIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} />}
                   onClick={handleUncancel}
                   sx={{
                     textTransform: 'none',
                     justifyContent: 'flex-start',
-                    fontSize: '0.75rem',
+                    fontSize: 'calc(0.75rem * var(--dc-scale, 1))',
                     px: 1,
                   }}
                 >
@@ -572,13 +572,13 @@ const DriverManager: React.FC<DriverManagerProps> = ({ open, onClose }) => {
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                     <Box sx={{ width: 10, height: 10, borderRadius: '2px', bgcolor: '#FFA726', flexShrink: 0 }} />
-                    <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.secondary' }}>
+                    <Typography variant="caption" sx={{ fontSize: 'calc(0.65rem * var(--dc-scale, 1))', color: 'text.secondary' }}>
                       用户定义
                     </Typography>
                   </Box>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                    <CancelIcon sx={{ fontSize: '0.75rem', color: 'error.main', flexShrink: 0 }} />
-                    <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.secondary' }}>
+                    <CancelIcon sx={{ fontSize: 'calc(0.75rem * var(--dc-scale, 1))', color: 'error.main', flexShrink: 0 }} />
+                    <Typography variant="caption" sx={{ fontSize: 'calc(0.65rem * var(--dc-scale, 1))', color: 'text.secondary' }}>
                       不可获得
                     </Typography>
                   </Box>
@@ -600,10 +600,10 @@ const DriverManager: React.FC<DriverManagerProps> = ({ open, onClose }) => {
             borderColor: 'divider',
           }}
         >
-          <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.65rem' }}>
+          <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: 'calc(0.65rem * var(--dc-scale, 1))' }}>
             可以在驱动设置中更改全局首选项
           </Typography>
-          <Button onClick={onClose} variant="outlined" size="small" sx={{ textTransform: 'none', fontSize: '0.75rem' }}>
+          <Button onClick={onClose} variant="outlined" size="small" sx={{ textTransform: 'none', fontSize: 'calc(0.75rem * var(--dc-scale, 1))' }}>
             关闭(C)
           </Button>
         </Box>
@@ -617,19 +617,19 @@ const DriverManager: React.FC<DriverManagerProps> = ({ open, onClose }) => {
         fullWidth
       >
         <ConfirmContent>
-          <DialogContentText sx={{ fontSize: '0.85rem' }}>
+          <DialogContentText sx={{ fontSize: 'calc(0.85rem * var(--dc-scale, 1))' }}>
             {confirmMessage}
           </DialogContentText>
         </ConfirmContent>
         <ConfirmActions>
-          <Button onClick={() => setConfirmOpen(false)} sx={{ textTransform: 'none', fontSize: '0.8rem' }}>
+          <Button onClick={() => setConfirmOpen(false)} sx={{ textTransform: 'none', fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>
             取消
           </Button>
           <Button
             onClick={handleConfirm}
             color="error"
             variant="contained"
-            sx={{ textTransform: 'none', fontSize: '0.8rem' }}
+            sx={{ textTransform: 'none', fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}
           >
             {confirmAction === 'uninstall' ? '卸载' : '删除'}
           </Button>
@@ -646,7 +646,7 @@ const DriverManager: React.FC<DriverManagerProps> = ({ open, onClose }) => {
         onClose={() => setSnackMsg('')}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert severity={snackSeverity} sx={{ width: '100%', fontSize: '0.8rem' }}>
+        <Alert severity={snackSeverity} sx={{ width: '100%', fontSize: 'calc(0.8rem * var(--dc-scale, 1))' }}>
           {snackMsg}
         </Alert>
       </Snackbar>
