@@ -360,7 +360,12 @@ router.post('/', async (req, res) => {
   try {
     await Promise.all(workers);
   } catch (err) {
-    sendSSE('error', { message: err.message });
+    // 客户端主动断开 / PG 服务端 cancel 查询 → 静默处理（不发 error 事件）
+    if (aborted || /canceling statement|aborted|connection terminated/i.test(err.message || '')) {
+      console.log('[execute] 客户端已断开或查询被取消，静默处理');
+    } else {
+      sendSSE('error', { message: err.message });
+    }
   }
 
   // 执行完毕
