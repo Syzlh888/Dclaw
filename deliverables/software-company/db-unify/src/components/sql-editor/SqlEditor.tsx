@@ -405,7 +405,7 @@ const SqlEditor: React.FC<SqlEditorProps> = ({ onExecute }) => {
           options={{
             minimap: { enabled: false },
             fontSize,
-            fontFamily: '"JetBrains Mono", "Cascadia Code", "Fira Code", Consolas, "Courier New", monospace',
+            fontFamily: '"JetBrains Mono", "Cascadia Code", "Fira Code", "Source Code Pro", Consolas, "Courier New", monospace',
             fontLigatures: false,        // 关闭连字，保持等宽，token间距均匀
             lineNumbers: 'on',
             scrollBeyondLastLine: false,
