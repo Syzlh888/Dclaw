@@ -321,11 +321,18 @@ router.post('/', async (req, res) => {
       await update('connections', task.connectionId, { status: 'error' });
     } finally {
       if (dbClient) {
-        // 如果客户端已断开，先 cancel 在飞的 query 再关连接
+        // 如果客户端已断开，发 SQL 取消真实数据库连接（瀚高/PostgreSQL 都支持 pg_cancel_backend）
         if (aborted) {
           try {
-            // pg client 没有官方 cancel()，但 cancel query 用 client.query('SELECT pg_cancel_backend(pid)')
-            // 简化方案：直接 destroy() 强制断 socket
+            // 标准 pg.Client：调 cancel() 中断当前 query
+            if (typeof dbClient.cancel === 'function' && dbClient.activeQuery) {
+              dbClient.cancel(dbClient.activeQuery, () => {});
+            }
+            // JDBC 桥接：杀 Java 子进程（HgdbBridge 通过 stdin pipe 通信，子进程会自然结束）
+            if (dbClient.__type === 'jdbc_bridge' && dbClient.client?.process) {
+              dbClient.client.process.kill('SIGTERM');
+            }
+            // 兜底：直接 destroy socket
             if (typeof dbClient.destroy === 'function') dbClient.destroy();
           } catch { /* ignore */ }
         }
