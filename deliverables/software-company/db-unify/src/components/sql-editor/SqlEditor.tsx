@@ -92,9 +92,9 @@ const SqlEditor: React.FC<SqlEditorProps> = ({ onExecute }) => {
         'editor.background': '#2B2B2B',                    // DBeaver 主背景
         'editor.foreground': '#BBBBBB',                    // 主文字色
         'editor.lineHighlightBackground': '#3C3F4180',     // 当前行高亮
-        'editor.selectionBackground': '#3C3F41',           // 选中背景
-        'editor.inactiveSelectionBackground': '#3C3F4166',
-        'editor.selectionHighlightBackground': '#3C3F4199',
+                'editor.selectionBackground': '#42A5F5CC',          // 选中背景：DBeaver 强调蓝 + alpha，鲜明对比
+                'editor.inactiveSelectionBackground': '#42A5F566', // 非聚焦时的选中
+                'editor.selectionHighlightBackground': '#42A5F566', // 词选中高亮
         'editorCursor.foreground': '#DAAA4E',              // 光标金色
         'editorLineNumber.foreground': '#555555',          // 行号
         'editorLineNumber.activeForeground': '#BBBBBB',    // 当前行号
@@ -403,17 +403,18 @@ const SqlEditor: React.FC<SqlEditorProps> = ({ onExecute }) => {
           beforeMount={handleBeforeMount}
           onMount={handleEditorMount}
           options={{
-            minimap: { enabled: false },
-            fontSize,
-            lineNumbers: 'on',
-            scrollBeyondLastLine: false,
-            wordWrap: 'on',
-            automaticLayout: true,
-            padding: { top: 8 },
-            suggestOnTriggerCharacters: true,
-            quickSuggestions: { other: true, comments: false, strings: false },
-            fixedOverflowWidgets: true,
-          }}
+                      minimap: { enabled: false },
+                      fontSize,
+                      lineHeight: Math.max(28, Math.round(fontSize * 2)), // 行间距×2 方便阅读
+                      lineNumbers: 'on',
+                      scrollBeyondLastLine: false,
+                      wordWrap: 'on',
+                      automaticLayout: true,
+                      padding: { top: 12 },
+                      suggestOnTriggerCharacters: true,
+                      quickSuggestions: { other: true, comments: false, strings: false },
+                      fixedOverflowWidgets: true,
+                    }}
         />
       </React.Suspense>
     </Box>
