@@ -47,10 +47,15 @@ export function detectSqlType(sql: string): string {
  * Returns unique parameter names found in the SQL.
  */
 export function detectSqlParams(sql: string): string[] {
+  // 去掉注释 + 把字符串字面量('...' / "...")替换成占位符，
+  // 避免时间字面量（如 '2026-07-28 00:00:00'）里的 ':' 被误识别为参数占位符。
+  const safe = sql
+    .replace(/'(?:''|[^'])*'/g, "''")
+    .replace(/"(?:""|[^"])*"/g, '""');
   const regex = /:(\w+)/g;
   const params = new Set<string>();
   let match;
-  while ((match = regex.exec(sql)) !== null) {
+  while ((match = regex.exec(safe)) !== null) {
     params.add(match[1]);
   }
   return Array.from(params);
