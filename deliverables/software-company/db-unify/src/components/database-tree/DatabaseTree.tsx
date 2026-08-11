@@ -284,7 +284,7 @@ const DatabaseTree: React.FC = () => {
           <Button
             variant="outlined"
             size="small"
-            startIcon={<AddIcon sx={{ fontSize: 16 }} />}
+            startIcon={<AddIcon sx={{ fontSize: '1rem' }} />}
             onClick={handleAddPlatform}
           >
             创建项目
@@ -376,7 +376,7 @@ const DatabaseTree: React.FC = () => {
         <Button
           variant="text"
           size="small"
-          startIcon={<AddIcon sx={{ fontSize: 14 }} />}
+          startIcon={<AddIcon sx={{ fontSize: '0.875rem' }} />}
           onClick={handleAddPlatform}
           sx={{
             fontSize: '0.8rem',

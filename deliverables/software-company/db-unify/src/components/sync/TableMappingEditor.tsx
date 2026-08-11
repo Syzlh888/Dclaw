@@ -384,7 +384,7 @@ const TableMappingEditor: React.FC<TableMappingEditorProps> = ({
                     源类型
                   </TableCell>
                   <TableCell sx={{ bgcolor: 'background.paper', color: 'text.secondary', fontSize: '0.7rem', borderBottom: '1px solid', borderColor: 'divider', width: 36 }} align="center">
-                    <ArrowForwardIcon sx={{ fontSize: 14, color: 'text.disabled' }} />
+                    <ArrowForwardIcon sx={{ fontSize: '0.875rem', color: 'text.disabled' }} />
                   </TableCell>
                   <TableCell sx={{ bgcolor: 'background.paper', color: 'text.secondary', fontSize: '0.7rem', borderBottom: '1px solid', borderColor: 'divider', width: '34%' }}>
                     目标字段
@@ -471,7 +471,7 @@ const TableMappingEditor: React.FC<TableMappingEditorProps> = ({
                       <TableCell sx={{ borderBottom: '1px solid', borderColor: 'divider', py: 0.15, pr: 1 }}>
                         <Tooltip title="删除此行">
                           <IconButton size="small" onClick={() => removeRow(row.key)} sx={{ color: 'text.secondary', '&:hover': { color: 'error.main' } }}>
-                            <DeleteOutlineIcon sx={{ fontSize: 16 }} />
+                            <DeleteOutlineIcon sx={{ fontSize: '1rem' }} />
                           </IconButton>
                         </Tooltip>
                       </TableCell>
@@ -523,7 +523,7 @@ const TableMappingEditor: React.FC<TableMappingEditorProps> = ({
         <Button
           onClick={handleSave}
           variant="contained"
-          startIcon={<AccountTreeIcon sx={{ fontSize: 16 }} />}
+          startIcon={<AccountTreeIcon sx={{ fontSize: '1rem' }} />}
         >
           保存
         </Button>

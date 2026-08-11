@@ -62,11 +62,11 @@ const ProxyListPanel: React.FC<Props> = ({ onCreate, onEdit }) => {
           onChange={(e) => setSearchText(e.target.value)}
           InputProps={{
             startAdornment: (
-              <InputAdornment position="start"><SearchIcon sx={{ fontSize: 14, color: 'text.disabled' }} /></InputAdornment>
+              <InputAdornment position="start"><SearchIcon sx={{ fontSize: '0.875rem', color: 'text.disabled' }} /></InputAdornment>
             ),
             endAdornment: searchText ? (
               <IconButton size="small" onClick={() => setSearchText('')} sx={{ p: 0.2 }}>
-                <CloseIcon sx={{ fontSize: 12 }} />
+                <CloseIcon sx={{ fontSize: '0.75rem' }} />
               </IconButton>
             ) : null,
           }}
@@ -82,7 +82,7 @@ const ProxyListPanel: React.FC<Props> = ({ onCreate, onEdit }) => {
           fullWidth
           variant="text"
           size="small"
-          startIcon={<AddIcon sx={{ fontSize: 14 }} />}
+          startIcon={<AddIcon sx={{ fontSize: '0.875rem' }} />}
           onClick={onCreate}
           sx={{ fontSize: '0.75rem', color: 'text.secondary', textTransform: 'none', justifyContent: 'flex-start', '&:hover': { bgcolor: 'action.hover', color: 'primary.main' } }}
         >
@@ -114,7 +114,7 @@ const ProxyListPanel: React.FC<Props> = ({ onCreate, onEdit }) => {
                   onClick={() => selectConnection(c.id)}
                   sx={{ py: 0.15, px: 1, minHeight: 22, lineHeight: 1.2 }}
                 >
-                  <DnsIcon sx={{ fontSize: 13, color: 'primary.main', mr: 0.75 }} />
+                  <DnsIcon sx={{ fontSize: '0.8125rem', color: 'primary.main', mr: 0.75 }} />
                   <ListItemText
                     disableTypography
                     primary={

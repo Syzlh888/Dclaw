@@ -188,7 +188,7 @@ const HistoryPanel: React.FC = () => {
                 color="error"
                 variant="outlined"
                 onClick={handleDeleteSelected}
-                startIcon={<DeleteOutlineIcon sx={{ fontSize: 16 }} />}
+                startIcon={<DeleteOutlineIcon sx={{ fontSize: '1rem' }} />}
                 sx={{ fontSize: '0.7rem', py: 0.25, px: 1, minWidth: 'auto' }}
               >
                 删除({selectedIds.size})
@@ -196,12 +196,12 @@ const HistoryPanel: React.FC = () => {
             )}
             <Tooltip title="刷新">
               <IconButton size="small" onClick={loadHistory} disabled={loading}>
-                <RefreshIcon sx={{ fontSize: 18 }} />
+                <RefreshIcon sx={{ fontSize: '1.125rem' }} />
               </IconButton>
             </Tooltip>
             <Tooltip title="清空全部历史">
               <IconButton size="small" onClick={handleClear} disabled={list.length === 0} color="error">
-                <DeleteSweepIcon sx={{ fontSize: 18 }} />
+                <DeleteSweepIcon sx={{ fontSize: '1.125rem' }} />
               </IconButton>
             </Tooltip>
           </Box>
@@ -281,7 +281,7 @@ const HistoryPanel: React.FC = () => {
                           onClick={(e) => handleDeleteOne(item.id, e)}
                           sx={{ color: 'text.disabled', '&:hover': { color: 'error.main' }, p: 0.25 }}
                         >
-                          <DeleteOutlineIcon sx={{ fontSize: 16 }} />
+                          <DeleteOutlineIcon sx={{ fontSize: '1rem' }} />
                         </IconButton>
                       </Tooltip>
                     </Box>

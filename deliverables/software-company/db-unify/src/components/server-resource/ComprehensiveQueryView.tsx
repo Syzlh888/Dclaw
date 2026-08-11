@@ -340,7 +340,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
             <Button
               size="small"
               variant="outlined"
-              startIcon={<ExportIcon sx={{ fontSize: 18 }} />}
+              startIcon={<ExportIcon sx={{ fontSize: '1.125rem' }} />}
               onClick={handleExport}
               sx={{ textTransform: 'none', fontSize: '0.8rem' }}
             >
@@ -350,7 +350,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
           <Button
             size="small"
             variant="contained"
-            startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <SearchIcon sx={{ fontSize: 18 }} />}
+            startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <SearchIcon sx={{ fontSize: '1.125rem' }} />}
             onClick={handleExecute}
             disabled={loading || selectedFields.length === 0}
             sx={{ textTransform: 'none', fontSize: '0.8rem' }}
@@ -501,7 +501,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                     }}
                   >
                     <AccordionSummary
-                      expandIcon={<ExpandMoreIcon sx={{ fontSize: 18 }} />}
+                      expandIcon={<ExpandMoreIcon sx={{ fontSize: '1.125rem' }} />}
                       sx={{
                         minHeight: 40,
                         '& .MuiAccordionSummary-content': { my: 0.5 },
@@ -575,7 +575,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
 
                 {templates.length === 0 ? (
                   <Box sx={{ px: 2, py: 4, textAlign: 'center' }}>
-                    <SaveIcon sx={{ fontSize: 32, color: 'text.disabled', mb: 1 }} />
+                    <SaveIcon sx={{ fontSize: '2rem', color: 'text.disabled', mb: 1 }} />
                     <Typography variant="body2" color="text.disabled" sx={{ fontSize: '0.75rem' }}>
                       还没有保存任何模板
                     </Typography>
@@ -657,22 +657,22 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, flexShrink: 0 }}>
                                 <Tooltip title={isExpanded ? '收起字段' : '查看字段'}>
                                   <IconButton size="small" onClick={() => setExpandedTemplateId(isExpanded ? null : t.id)}>
-                                    <VisibilityIcon sx={{ fontSize: 15 }} />
+                                    <VisibilityIcon sx={{ fontSize: '0.9375rem' }} />
                                   </IconButton>
                                 </Tooltip>
                                 <Tooltip title="加载">
                                   <IconButton size="small" onClick={() => { handleLoadTemplate(t); setSidebarTab('fields'); }}>
-                                    <NavigateNextIcon sx={{ fontSize: 15 }} />
+                                    <NavigateNextIcon sx={{ fontSize: '0.9375rem' }} />
                                   </IconButton>
                                 </Tooltip>
                                 <Tooltip title="重命名">
                                   <IconButton size="small" onClick={() => handleStartRename(t)}>
-                                    <EditIcon sx={{ fontSize: 15 }} />
+                                    <EditIcon sx={{ fontSize: '0.9375rem' }} />
                                   </IconButton>
                                 </Tooltip>
                                 <Tooltip title="删除">
                                   <IconButton size="small" onClick={(e) => { e.stopPropagation(); handleDeleteTemplate(t.id); }}>
-                                    <DeleteIcon sx={{ fontSize: 15 }} />
+                                    <DeleteIcon sx={{ fontSize: '0.9375rem' }} />
                                   </IconButton>
                                 </Tooltip>
                               </Box>
@@ -742,7 +742,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                                               onClick={() => handleRemoveFieldFromTemplate(t.id, f)}
                                               sx={{ p: 0.25, opacity: 0.4, '&:hover': { opacity: 1, color: 'error.main' } }}
                                             >
-                                              <CloseIcon sx={{ fontSize: 13 }} />
+                                              <CloseIcon sx={{ fontSize: '0.8125rem' }} />
                                             </IconButton>
                                           </Tooltip>
                                         </Box>
@@ -887,7 +887,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                   <Button
                     size="small"
                     variant="contained"
-                    startIcon={<SaveIcon sx={{ fontSize: 16 }} />}
+                    startIcon={<SaveIcon sx={{ fontSize: '1rem' }} />}
                     onClick={handleSaveTemplate}
                     disabled={savingTemplate || !templateName.trim()}
                     sx={{
@@ -981,7 +981,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
               </Box>
               <ExpandMoreIcon
                 sx={{
-                  fontSize: 20,
+                  fontSize: '1.25rem',
                   transform: filterExpanded ? 'rotate(180deg)' : 'none',
                   transition: 'transform 0.2s',
                 }}
@@ -1058,7 +1058,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                 )}
                 <Button
                   size="small"
-                  startIcon={<AddIcon sx={{ fontSize: 16 }} />}
+                  startIcon={<AddIcon sx={{ fontSize: '1rem' }} />}
                   onClick={addFilter}
                   sx={{ mt: 1, textTransform: 'none', fontSize: '0.73rem' }}
                 >
@@ -1082,11 +1082,11 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                 sx={{ ml: 'auto' }}
               >
                 <ToggleButton value="table" sx={{ textTransform: 'none', px: 1.5, py: 0.5, fontSize: '0.73rem' }}>
-                  <TableIcon sx={{ fontSize: 16, mr: 0.5 }} />
+                  <TableIcon sx={{ fontSize: '1rem', mr: 0.5 }} />
                   表格
                 </ToggleButton>
                 <ToggleButton value="chart" sx={{ textTransform: 'none', px: 1.5, py: 0.5, fontSize: '0.73rem' }}>
-                  <ChartLineIcon sx={{ fontSize: 16, mr: 0.5 }} />
+                  <ChartLineIcon sx={{ fontSize: '1rem', mr: 0.5 }} />
                   图表
                 </ToggleButton>
               </ToggleButtonGroup>
@@ -1112,7 +1112,7 @@ const ComprehensiveQueryView: React.FC<Props> = ({ onBack }) => {
                     color: 'text.secondary',
                   }}
                 >
-                  <SearchIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
+                  <SearchIcon sx={{ fontSize: '3rem', color: 'text.disabled', mb: 1 }} />
                   <Typography variant="body1" color="text.secondary">
                     请在左侧选择字段，点击"执行查询"获取结果
                   </Typography>

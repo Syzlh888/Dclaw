@@ -201,8 +201,8 @@ const ServerDetailPanel: React.FC<Props> = ({ onEdit, onDelete }) => {
             {server.serverType && <Chip label={server.serverType} size="small" />}
           </Box>
           <Box sx={{ display: 'flex', gap: 0.5 }}>
-            <Tooltip title="查看密码"><IconButton size="small" onClick={() => setVerifyOpen(true)}><KeyIcon sx={{ fontSize: 18 }} /></IconButton></Tooltip>
-            <Tooltip title="密码历史"><IconButton size="small" onClick={() => setHistoryOpen(true)}><HistoryIcon sx={{ fontSize: 18 }} /></IconButton></Tooltip>
+            <Tooltip title="查看密码"><IconButton size="small" onClick={() => setVerifyOpen(true)}><KeyIcon sx={{ fontSize: '1.125rem' }} /></IconButton></Tooltip>
+            <Tooltip title="密码历史"><IconButton size="small" onClick={() => setHistoryOpen(true)}><HistoryIcon sx={{ fontSize: '1.125rem' }} /></IconButton></Tooltip>
             <Button size="small" variant="outlined" startIcon={<EditIcon />} onClick={onEdit}>编辑</Button>
             <Button size="small" color="error" variant="outlined" startIcon={<DeleteIcon />} onClick={onDelete}>删除</Button>
           </Box>
@@ -275,7 +275,7 @@ const ServerDetailPanel: React.FC<Props> = ({ onEdit, onDelete }) => {
                   </Typography>
                   <Tooltip title="查看密码">
                     <IconButton size="small" onClick={() => requestViewPassword(al.entryId, al.pwdKey, al.credIndex, al.user)} sx={{ p: 0.2 }}>
-                      {isRevealed ? <VisibilityOffIcon sx={{ fontSize: 14 }} /> : <VisibilityIcon sx={{ fontSize: 14 }} />}
+                      {isRevealed ? <VisibilityOffIcon sx={{ fontSize: '0.875rem' }} /> : <VisibilityIcon sx={{ fontSize: '0.875rem' }} />}
                     </IconButton>
                   </Tooltip>
                 </Box>
@@ -330,7 +330,7 @@ const ServerDetailPanel: React.FC<Props> = ({ onEdit, onDelete }) => {
                           <Chip label={c.status} size="small" color={c.status === 'online' ? 'success' : 'default'} sx={{ fontSize: '0.65rem', height: 20 }} />
                         </TableCell>
                         <TableCell>
-                          <Tooltip title="取消关联"><IconButton size="small" onClick={() => handleUnlink(c.id)}><LinkOffIcon sx={{ fontSize: 14 }} /></IconButton></Tooltip>
+                          <Tooltip title="取消关联"><IconButton size="small" onClick={() => handleUnlink(c.id)}><LinkOffIcon sx={{ fontSize: '0.875rem' }} /></IconButton></Tooltip>
                         </TableCell>
                       </TableRow>
                     ))}

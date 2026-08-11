@@ -272,7 +272,7 @@ const DriverUpload: React.FC<DriverUploadProps> = ({ open, onClose, editDriver, 
                 </Box>
               ) : (
                 <Box>
-                  <CloudUploadIcon sx={{ fontSize: 32, color: 'text.secondary', mb: 0.5 }} />
+                  <CloudUploadIcon sx={{ fontSize: '2rem', color: 'text.secondary', mb: 0.5 }} />
                   <Typography variant="body2" color="text.secondary">
                     拖拽文件到此处，或点击选择文件
                   </Typography>
@@ -318,7 +318,7 @@ const DriverUpload: React.FC<DriverUploadProps> = ({ open, onClose, editDriver, 
                 </Box>
               ) : (
                 <Box>
-                  <CloudUploadIcon sx={{ fontSize: 32, color: 'text.secondary', mb: 0.5 }} />
+                  <CloudUploadIcon sx={{ fontSize: '2rem', color: 'text.secondary', mb: 0.5 }} />
                   <Typography variant="body2" color="text.secondary">
                     为内置驱动选择 JAR 文件
                   </Typography>

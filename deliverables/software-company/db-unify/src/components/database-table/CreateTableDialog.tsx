@@ -156,7 +156,7 @@ const CreateTableDialog: React.FC<CreateTableDialogProps> = ({
         }}
       >
         <DialogTitle sx={{ color: 'text.primary', fontSize: '0.85rem', fontWeight: 600, pb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <TableChartIcon sx={{ fontSize: 18 }} />
+          <TableChartIcon sx={{ fontSize: '1.125rem' }} />
           创建表
         </DialogTitle>
         <DialogContent sx={{ pt: '8px !important' }}>
@@ -186,7 +186,7 @@ const CreateTableDialog: React.FC<CreateTableDialogProps> = ({
             <Button
               size="small"
               variant="outlined"
-              startIcon={<AddIcon sx={{ fontSize: 12 }} />}
+              startIcon={<AddIcon sx={{ fontSize: '0.75rem' }} />}
               onClick={handleAddColumn}
               sx={{ fontSize: '0.62rem', py: 0, minHeight: 20, textTransform: 'none' }}
             >
@@ -225,10 +225,10 @@ const CreateTableDialog: React.FC<CreateTableDialogProps> = ({
                     <TableCell sx={{ borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.25, px: 0.5 }}>
                       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                         <IconButton size="small" onClick={() => handleMoveUp(idx)} disabled={idx === 0} sx={{ p: 0, minWidth: 14, height: 12 }}>
-                          <ArrowUpwardIcon sx={{ fontSize: 10 }} />
+                          <ArrowUpwardIcon sx={{ fontSize: '0.625rem' }} />
                         </IconButton>
                         <IconButton size="small" onClick={() => handleMoveDown(idx)} disabled={idx >= columns.length - 1} sx={{ p: 0, minWidth: 14, height: 12 }}>
-                          <ArrowDownwardIcon sx={{ fontSize: 10 }} />
+                          <ArrowDownwardIcon sx={{ fontSize: '0.625rem' }} />
                         </IconButton>
                       </Box>
                     </TableCell>
@@ -307,7 +307,7 @@ const CreateTableDialog: React.FC<CreateTableDialogProps> = ({
                     </TableCell>
                     <TableCell sx={{ borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.25, px: 0.25 }}>
                       <IconButton size="small" onClick={() => handleRemoveColumn(idx)} disabled={columns.length <= 1} sx={{ p: 0 }}>
-                        <DeleteIcon sx={{ fontSize: 12, color: '#f87171' }} />
+                        <DeleteIcon sx={{ fontSize: '0.75rem', color: '#f87171' }} />
                       </IconButton>
                     </TableCell>
                   </TableRow>

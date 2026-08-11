@@ -144,9 +144,9 @@ const CompareView: React.FC = () => {
           renderOption={(props, option, { selected }) => {
             const { key, ...otherProps } = props as React.HTMLAttributes<HTMLLIElement> & { key: string };
             return (
-              <li key={key} {...otherProps} style={{ fontSize: '9px', lineHeight: '14px', color: '#000000DE', padding: '4px 8px', minHeight: 28, height: 28, width: 160, maxWidth: 160, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <li key={key} {...otherProps} style={{ fontSize: '0.5625rem', lineHeight: '14px', color: '#000000DE', padding: '4px 8px', minHeight: 28, height: 28, width: 160, maxWidth: 160, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 <Checkbox checked={selected} size="small" sx={{ p: '2px' }} />
-                <ListItemText primary={option.label} primaryTypographyProps={{ fontSize: '9px', lineHeight: '14px' }} />
+                <ListItemText primary={option.label} primaryTypographyProps={{ fontSize: '0.5625rem', lineHeight: '14px' }} />
               </li>
             );
           }}

@@ -241,7 +241,7 @@ const FieldViewerDialog: React.FC<FieldViewerDialogProps> = ({
           color: 'text.primary', fontSize: '0.85rem', fontWeight: 600, pb: 1,
           display: 'flex', alignItems: 'center', gap: 1,
         }}>
-          <ListAltIcon sx={{ fontSize: 18 }} />
+          <ListAltIcon sx={{ fontSize: '1.125rem' }} />
           字段管理 — {schemaName ? `${schemaName}.` : ''}{tableName}
         </DialogTitle>
         <DialogContent sx={{ pt: '8px !important' }}>
@@ -252,7 +252,7 @@ const FieldViewerDialog: React.FC<FieldViewerDialogProps> = ({
             <Button
               size="small"
               variant="outlined"
-              startIcon={<AddIcon sx={{ fontSize: 12 }} />}
+              startIcon={<AddIcon sx={{ fontSize: '0.75rem' }} />}
               onClick={handleAddRow}
               sx={{ fontSize: '0.62rem', py: 0, minHeight: 20, textTransform: 'none' }}
             >
@@ -365,7 +365,7 @@ const FieldViewerDialog: React.FC<FieldViewerDialogProps> = ({
                           color: 'action.disabled',
                           '&.Mui-checked': { color: '#f59e0b' },
                           padding: 0.25,
-                          '& .MuiSvgIcon-root': { fontSize: 14 },
+                          '& .MuiSvgIcon-root': { fontSize: '0.875rem' },
                         }}
                       />
                     </TableCell>
@@ -378,7 +378,7 @@ const FieldViewerDialog: React.FC<FieldViewerDialogProps> = ({
                           color: 'action.disabled',
                           '&.Mui-checked': { color: '#0ea5e9' },
                           padding: 0.25,
-                          '& .MuiSvgIcon-root': { fontSize: 14 },
+                          '& .MuiSvgIcon-root': { fontSize: '0.875rem' },
                         }}
                       />
                     </TableCell>
@@ -417,7 +417,7 @@ const FieldViewerDialog: React.FC<FieldViewerDialogProps> = ({
                           onClick={() => handleDeleteRow(row.id)}
                           sx={{ p: 0.25 }}
                         >
-                          <DeleteIcon sx={{ fontSize: 13, color: '#f87171' }} />
+                          <DeleteIcon sx={{ fontSize: '0.8125rem', color: '#f87171' }} />
                         </IconButton>
                       </Tooltip>
                     </TableCell>

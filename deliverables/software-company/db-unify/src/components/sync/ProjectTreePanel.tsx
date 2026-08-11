@@ -161,13 +161,13 @@ const ProjectTreePanel: React.FC<{
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <SearchIcon sx={{ fontSize: 14, color: 'text.disabled' }} />
+                <SearchIcon sx={{ fontSize: '0.875rem', color: 'text.disabled' }} />
               </InputAdornment>
             ),
             endAdornment: searchText ? (
               <InputAdornment position="end">
                 <IconButton size="small" onClick={() => setSearchText('')} sx={{ p: 0.2 }}>
-                  <CloseIcon sx={{ fontSize: 12 }} />
+                  <CloseIcon sx={{ fontSize: '0.75rem' }} />
                 </IconButton>
               </InputAdornment>
             ) : undefined,
@@ -220,9 +220,9 @@ const ProjectTreePanel: React.FC<{
                       onClick={(e) => { e.stopPropagation(); toggleProject(project.id); }}
                       sx={{ p: 0, color: 'text.secondary', mr: 0.25 }}
                     >
-                      {expanded ? <ExpandMoreIcon sx={{ fontSize: 14 }} /> : <ChevronRightIcon sx={{ fontSize: 14 }} />}
+                      {expanded ? <ExpandMoreIcon sx={{ fontSize: '0.875rem' }} /> : <ChevronRightIcon sx={{ fontSize: '0.875rem' }} />}
                     </IconButton>
-                    <FolderIcon sx={{ fontSize: 16, color: 'gold', mr: 0.5 }} />
+                    <FolderIcon sx={{ fontSize: '1rem', color: 'gold', mr: 0.5 }} />
                     <ListItemText
                       primary={project.name}
                       sx={{
@@ -249,7 +249,7 @@ const ProjectTreePanel: React.FC<{
                             onClick={(e) => { e.stopPropagation(); onCreateTask(project.id); }}
                             sx={{ p: 0.25 }}
                           >
-                            <AddIcon sx={{ fontSize: 14 }} />
+                            <AddIcon sx={{ fontSize: '0.875rem' }} />
                           </IconButton>
                         </Tooltip>
                       )}
@@ -259,7 +259,7 @@ const ProjectTreePanel: React.FC<{
                           onClick={(e) => handleEditOpen(e, { type: 'project', id: project.id, name: project.name })}
                           sx={{ p: 0.25 }}
                         >
-                          <EditIcon sx={{ fontSize: 14 }} />
+                          <EditIcon sx={{ fontSize: '0.875rem' }} />
                         </IconButton>
                       </Tooltip>
                       <Tooltip title="删除">
@@ -268,7 +268,7 @@ const ProjectTreePanel: React.FC<{
                           onClick={(e) => handleDeleteOpen(e, { type: 'project', id: project.id, name: project.name })}
                           sx={{ p: 0.25 }}
                         >
-                          <DeleteIcon sx={{ fontSize: 14 }} />
+                          <DeleteIcon sx={{ fontSize: '0.875rem' }} />
                         </IconButton>
                       </Tooltip>
                     </Box>
@@ -310,7 +310,7 @@ const ProjectTreePanel: React.FC<{
                             onClick={(e) => { e.stopPropagation(); toggleTask(task.id); }}
                             sx={{ p: 0, color: 'text.secondary', mr: 0.25 }}
                           >
-                            {taskExpanded ? <ExpandMoreIcon sx={{ fontSize: 14 }} /> : <ChevronRightIcon sx={{ fontSize: 14 }} />}
+                            {taskExpanded ? <ExpandMoreIcon sx={{ fontSize: '0.875rem' }} /> : <ChevronRightIcon sx={{ fontSize: '0.875rem' }} />}
                           </IconButton>
                           <Typography sx={{ fontSize: '0.75rem', color: mark.color, mr: 0.5 }}>{mark.text}</Typography>
                           <ListItemText
@@ -335,7 +335,7 @@ const ProjectTreePanel: React.FC<{
                                   onClick={(e) => { e.stopPropagation(); onCreateMapping(task.id); }}
                                   sx={{ p: 0.25 }}
                                 >
-                                  <AddIcon sx={{ fontSize: 14 }} />
+                                  <AddIcon sx={{ fontSize: '0.875rem' }} />
                                 </IconButton>
                               </Tooltip>
                             )}
@@ -345,7 +345,7 @@ const ProjectTreePanel: React.FC<{
                                 onClick={(e) => handleEditOpen(e, { type: 'task', id: task.id, name: task.name })}
                                 sx={{ p: 0.25 }}
                               >
-                                <EditIcon sx={{ fontSize: 14 }} />
+                                <EditIcon sx={{ fontSize: '0.875rem' }} />
                               </IconButton>
                             </Tooltip>
                             <Tooltip title="删除">
@@ -354,7 +354,7 @@ const ProjectTreePanel: React.FC<{
                                 onClick={(e) => handleDeleteOpen(e, { type: 'task', id: task.id, name: task.name })}
                                 sx={{ p: 0.25 }}
                               >
-                                <DeleteIcon sx={{ fontSize: 14 }} />
+                                <DeleteIcon sx={{ fontSize: '0.875rem' }} />
                               </IconButton>
                             </Tooltip>
                           </Box>
@@ -388,7 +388,7 @@ const ProjectTreePanel: React.FC<{
                                 '&:hover': { bgcolor: mappingSelected ? 'action.selected' : 'action.hover' },
                               }}
                             >
-                              <TableChartIcon sx={{ fontSize: 14, color: mapping.enabled === false ? 'text.disabled' : 'primary.light', mr: 0.5 }} />
+                              <TableChartIcon sx={{ fontSize: '0.875rem', color: mapping.enabled === false ? 'text.disabled' : 'primary.light', mr: 0.5 }} />
                               <ListItemText
                                 primary={`${mapping.source_table} → ${mapping.target_table}`}
                                 sx={{
@@ -402,7 +402,7 @@ const ProjectTreePanel: React.FC<{
                                     onClick={(e) => handleDeleteOpen(e, { type: 'mapping', id: mapping.id, name: `${mapping.source_table} → ${mapping.target_table}` })}
                                     sx={{ p: 0.25 }}
                                   >
-                                    <DeleteIcon sx={{ fontSize: 13 }} />
+                                    <DeleteIcon sx={{ fontSize: '0.8125rem' }} />
                                   </IconButton>
                                 </Tooltip>
                               )}
@@ -424,7 +424,7 @@ const ProjectTreePanel: React.FC<{
             fullWidth
             variant="text"
             size="small"
-            startIcon={<AddIcon sx={{ fontSize: 14 }} />}
+            startIcon={<AddIcon sx={{ fontSize: '0.875rem' }} />}
             onClick={onCreateProject}
             sx={{
               fontSize: '0.8rem',

@@ -550,12 +550,12 @@ const ResultTable: React.FC<ResultTableProps> = ({
     if (hasSelection && selBounds) {
       items.push({
         label: '复制 (含表头)',
-        icon: <ContentCopyIcon sx={{ fontSize: 15 }} />,
+        icon: <ContentCopyIcon sx={{ fontSize: '0.9375rem' }} />,
         onClick: () => copySelectionWithHeaders(),
       });
       items.push({
         label: '复制',
-        icon: <ContentPasteGoIcon sx={{ fontSize: 15 }} />,
+        icon: <ContentPasteGoIcon sx={{ fontSize: '0.9375rem' }} />,
         onClick: () => copySelectionData(),
         divider: true,
       });
@@ -564,18 +564,18 @@ const ResultTable: React.FC<ResultTableProps> = ({
     // 单元格级复制
     items.push({
       label: '复制单元格值',
-      icon: <ContentPasteGoIcon sx={{ fontSize: 15 }} />,
+      icon: <ContentPasteGoIcon sx={{ fontSize: '0.9375rem' }} />,
       onClick: () => copyToClipboard(rawVal, rawVal.substring(0, 40) + (rawVal.length > 40 ? '...' : '')),
       disabled: rawVal === '',
     });
     items.push({
       label: '复制为 NULL',
-      icon: <BlockIcon sx={{ fontSize: 15 }} />,
+      icon: <BlockIcon sx={{ fontSize: '0.9375rem' }} />,
       onClick: () => copyToClipboard(isNull ? '(NULL)' : 'NULL', 'NULL'),
     });
     items.push({
       label: '复制列名',
-      icon: <LabelIcon sx={{ fontSize: 15 }} />,
+      icon: <LabelIcon sx={{ fontSize: '0.9375rem' }} />,
       onClick: () => copyToClipboard(col, col),
     });
     return items;
@@ -593,12 +593,12 @@ const ResultTable: React.FC<ResultTableProps> = ({
     if (hasSelection && selBounds) {
       items.push({
         label: '复制 (含表头)',
-        icon: <ContentCopyIcon sx={{ fontSize: 15 }} />,
+        icon: <ContentCopyIcon sx={{ fontSize: '0.9375rem' }} />,
         onClick: () => copySelectionWithHeaders(),
       });
       items.push({
         label: '复制',
-        icon: <ContentPasteGoIcon sx={{ fontSize: 15 }} />,
+        icon: <ContentPasteGoIcon sx={{ fontSize: '0.9375rem' }} />,
         onClick: () => copySelectionData(),
         divider: true,
       });
@@ -606,7 +606,7 @@ const ResultTable: React.FC<ResultTableProps> = ({
 
     items.push({
       label: '复制整行 (TSV)',
-      icon: <ViewStreamIcon sx={{ fontSize: 15 }} />,
+      icon: <ViewStreamIcon sx={{ fontSize: '0.9375rem' }} />,
       onClick: () => {
         const tsv = columns.map((col) => getCellRaw(row, col)).join('\t');
         copyToClipboard(tsv, `第 ${ctxTarget.rowIndex + 1} 行 (TSV)`);
@@ -614,7 +614,7 @@ const ResultTable: React.FC<ResultTableProps> = ({
     });
     items.push({
       label: '复制为 INSERT SQL',
-      icon: <IntegrationInstructionsIcon sx={{ fontSize: 15 }} />,
+      icon: <IntegrationInstructionsIcon sx={{ fontSize: '0.9375rem' }} />,
       onClick: () => {
         const colNames = columns.map(quoteSqlName).join(', ');
         const colValues = columns
@@ -626,7 +626,7 @@ const ResultTable: React.FC<ResultTableProps> = ({
     });
     items.push({
       label: '导出选中行 (CSV)',
-      icon: <SaveAltIcon sx={{ fontSize: 15 }} />,
+      icon: <SaveAltIcon sx={{ fontSize: '0.9375rem' }} />,
       onClick: () => {
         const header = columns.join(',');
         const csvRow = columns
@@ -664,7 +664,7 @@ const ResultTable: React.FC<ResultTableProps> = ({
 
     items.push({
       label: '复制列',
-      icon: <ContentPasteGoIcon sx={{ fontSize: 15 }} />,
+      icon: <ContentPasteGoIcon sx={{ fontSize: '0.9375rem' }} />,
       onClick: () => {
         const lines = filteredRows.map((row) => getCellRaw(row, col));
         const text = lines.join('\n');
@@ -673,7 +673,7 @@ const ResultTable: React.FC<ResultTableProps> = ({
     });
     items.push({
       label: '复制列 (含表头)',
-      icon: <ContentCopyIcon sx={{ fontSize: 15 }} />,
+      icon: <ContentCopyIcon sx={{ fontSize: '0.9375rem' }} />,
       divider: true,
       onClick: () => {
         const lines = [col, ...filteredRows.map((row) => getCellRaw(row, col))];
@@ -683,7 +683,7 @@ const ResultTable: React.FC<ResultTableProps> = ({
     });
     items.push({
       label: '复制列名',
-      icon: <LabelIcon sx={{ fontSize: 15 }} />,
+      icon: <LabelIcon sx={{ fontSize: '0.9375rem' }} />,
       onClick: () => copyToClipboard(col, col),
     });
 
@@ -869,7 +869,7 @@ const ResultTable: React.FC<ResultTableProps> = ({
                 title="清除全部过滤"
                 sx={{ color: 'primary.main', p: 0.25 }}
               >
-                <FilterAltOffIcon sx={{ fontSize: 14 }} />
+                <FilterAltOffIcon sx={{ fontSize: '0.875rem' }} />
               </IconButton>
             ) : (
               <Typography variant="caption" sx={{ fontSize: '0.6rem', color: 'text.disabled' }}>#</Typography>
@@ -913,8 +913,8 @@ const ResultTable: React.FC<ResultTableProps> = ({
               <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{col}</span>
               {sortCol === col && (
                 sortDir === 'asc'
-                  ? <ArrowUpwardIcon sx={{ fontSize: 14, ml: 0.25, flexShrink: 0, color: 'primary.main' }} />
-                  : <ArrowDownwardIcon sx={{ fontSize: 14, ml: 0.25, flexShrink: 0, color: 'primary.main' }} />
+                  ? <ArrowUpwardIcon sx={{ fontSize: '0.875rem', ml: 0.25, flexShrink: 0, color: 'primary.main' }} />
+                  : <ArrowDownwardIcon sx={{ fontSize: '0.875rem', ml: 0.25, flexShrink: 0, color: 'primary.main' }} />
               )}
               {/* 过滤器图标 */}
               <IconButton
@@ -934,7 +934,7 @@ const ResultTable: React.FC<ResultTableProps> = ({
                   invisible={!filters[col]}
                   overlap="circular"
                 >
-                  <FilterListIcon sx={{ fontSize: 14 }} />
+                  <FilterListIcon sx={{ fontSize: '0.875rem' }} />
                 </Badge>
               </IconButton>
               {/* 拖拽手柄 */}

@@ -122,11 +122,11 @@ const ProxyDetailPanel: React.FC<Props> = ({ connection, onEdit, onRevoke }) => 
         <Box sx={{ flex: 1 }} />
         <Tooltip title="立即探测健康">
           <IconButton size="small" onClick={() => triggerHealthCheck(connection.id)} sx={{ p: 0.5 }}>
-            <RefreshIcon sx={{ fontSize: 14 }} />
+            <RefreshIcon sx={{ fontSize: '0.875rem' }} />
           </IconButton>
         </Tooltip>
-        <Tooltip title="编辑"><IconButton size="small" onClick={() => onEdit(connection.id)} sx={{ p: 0.5 }}><EditIcon sx={{ fontSize: 14 }} /></IconButton></Tooltip>
-        <Tooltip title="撤销"><IconButton size="small" onClick={() => onRevoke(connection.id)} sx={{ p: 0.5 }}><DeleteIcon sx={{ fontSize: 14 }} /></IconButton></Tooltip>
+        <Tooltip title="编辑"><IconButton size="small" onClick={() => onEdit(connection.id)} sx={{ p: 0.5 }}><EditIcon sx={{ fontSize: '0.875rem' }} /></IconButton></Tooltip>
+        <Tooltip title="撤销"><IconButton size="small" onClick={() => onRevoke(connection.id)} sx={{ p: 0.5 }}><DeleteIcon sx={{ fontSize: '0.875rem' }} /></IconButton></Tooltip>
       </Box>
 
       <Divider sx={{ mb: 1, borderColor: 'divider' }} />
@@ -137,13 +137,13 @@ const ProxyDetailPanel: React.FC<Props> = ({ connection, onEdit, onRevoke }) => 
         <Row label="对外端口" value={
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             {connection.proxy_port}
-            <Tooltip title="复制"><IconButton size="small" onClick={() => copy(String(connection.proxy_port))} sx={{ p: 0.2 }}><ContentCopyIcon sx={{ fontSize: 11, color: 'text.disabled' }} /></IconButton></Tooltip>
+            <Tooltip title="复制"><IconButton size="small" onClick={() => copy(String(connection.proxy_port))} sx={{ p: 0.2 }}><ContentCopyIcon sx={{ fontSize: '0.6875rem', color: 'text.disabled' }} /></IconButton></Tooltip>
           </Box>
         } />
         <Row label="临时账号" value={
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             {connection.proxy_username}
-            <Tooltip title="复制"><IconButton size="small" onClick={() => copy(connection.proxy_username)} sx={{ p: 0.2 }}><ContentCopyIcon sx={{ fontSize: 11, color: 'text.disabled' }} /></IconButton></Tooltip>
+            <Tooltip title="复制"><IconButton size="small" onClick={() => copy(connection.proxy_username)} sx={{ p: 0.2 }}><ContentCopyIcon sx={{ fontSize: '0.6875rem', color: 'text.disabled' }} /></IconButton></Tooltip>
           </Box>
         } />
         <Row label="数据库类型" value={connection.db_type} />
@@ -180,7 +180,7 @@ const ProxyDetailPanel: React.FC<Props> = ({ connection, onEdit, onRevoke }) => 
               </>
             )}
             {!editIps ? (
-              <Tooltip title="编辑白名单"><IconButton size="small" onClick={startEditIps} sx={{ p: 0.2 }}><EditIcon sx={{ fontSize: 12, color: 'text.disabled' }} /></IconButton></Tooltip>
+              <Tooltip title="编辑白名单"><IconButton size="small" onClick={startEditIps} sx={{ p: 0.2 }}><EditIcon sx={{ fontSize: '0.75rem', color: 'text.disabled' }} /></IconButton></Tooltip>
             ) : (
               <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5 }}>
                 <Button size="small" variant="contained" onClick={saveIps} sx={{ textTransform: 'none', fontSize: '0.7rem' }}>保存</Button>
@@ -201,7 +201,7 @@ const ProxyDetailPanel: React.FC<Props> = ({ connection, onEdit, onRevoke }) => 
           <Button
             size="small"
             variant="text"
-            startIcon={<FileDownloadIcon sx={{ fontSize: 14 }} />}
+            startIcon={<FileDownloadIcon sx={{ fontSize: '0.875rem' }} />}
             onClick={exportAudit}
             sx={{ color: 'primary.main', textTransform: 'none', fontSize: '0.7rem' }}
           >
@@ -292,7 +292,7 @@ const ProxyDetailPanel: React.FC<Props> = ({ connection, onEdit, onRevoke }) => 
         <Tooltip title="上一页">
           <span>
             <IconButton size="small" disabled={auditPage <= 1} onClick={() => loadAudit({ page: auditPage - 1 })} sx={{ color: 'text.secondary' }}>
-              <ChevronLeftIcon sx={{ fontSize: 16 }} />
+              <ChevronLeftIcon sx={{ fontSize: '1rem' }} />
             </IconButton>
           </span>
         </Tooltip>
@@ -302,7 +302,7 @@ const ProxyDetailPanel: React.FC<Props> = ({ connection, onEdit, onRevoke }) => 
         <Tooltip title="下一页">
           <span>
             <IconButton size="small" disabled={auditPage >= totalPages} onClick={() => loadAudit({ page: auditPage + 1 })} sx={{ color: 'text.secondary' }}>
-              <ChevronRightIcon sx={{ fontSize: 16 }} />
+              <ChevronRightIcon sx={{ fontSize: '1rem' }} />
             </IconButton>
           </span>
         </Tooltip>

@@ -674,7 +674,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
             endAdornment: (
               <InputAdornment position="end">
                 <IconButton size="small" onClick={() => setShowPwd(!showPwd)} sx={{ p: 0.25 }}>
-                  {showPwd ? <VisibilityOffIcon sx={{ fontSize: 16 }} /> : <VisibilityIcon sx={{ fontSize: 16 }} />}
+                  {showPwd ? <VisibilityOffIcon sx={{ fontSize: '1rem' }} /> : <VisibilityIcon sx={{ fontSize: '1rem' }} />}
                 </IconButton>
               </InputAdornment>
             ),

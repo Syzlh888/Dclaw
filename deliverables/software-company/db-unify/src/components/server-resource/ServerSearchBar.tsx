@@ -21,9 +21,9 @@ const ServerSearchBar: React.FC<Props> = ({ filter, onChange, onImport }) => {
         onChange={e => onChange({ keyword: e.target.value })}
         sx={{ flex: 1, '& .MuiOutlinedInput-root': { fontSize: '0.75rem' } }}
         InputProps={{
-          startAdornment: <SearchIcon sx={{ mr: 0.5, color: 'text.secondary', fontSize: 18 }} />,
+          startAdornment: <SearchIcon sx={{ mr: 0.5, color: 'text.secondary', fontSize: '1.125rem' }} />,
           endAdornment: filter.keyword ? (
-            <IconButton size="small" onClick={() => onChange({ keyword: '' })}><ClearIcon sx={{ fontSize: 16 }} /></IconButton>
+            <IconButton size="small" onClick={() => onChange({ keyword: '' })}><ClearIcon sx={{ fontSize: '1rem' }} /></IconButton>
           ) : null,
         }}
       />
@@ -32,7 +32,7 @@ const ServerSearchBar: React.FC<Props> = ({ filter, onChange, onImport }) => {
           size="small"
           onClick={onImport}
           variant="outlined"
-          startIcon={<FileUploadIcon sx={{ fontSize: 14 }} />}
+          startIcon={<FileUploadIcon sx={{ fontSize: '0.875rem' }} />}
           sx={{ textTransform: 'none', fontSize: '0.7rem', py: 0.5, minHeight: 32, whiteSpace: 'nowrap', flexShrink: 0 }}
           title="批量导入服务器资源"
         >

@@ -106,7 +106,7 @@ const GroupPanel: React.FC = () => {
       <Box sx={{ flex: 1, overflow: 'auto' }}>
         {groups.length === 0 ? (
           <Box sx={{ textAlign: 'center', py: 4, color: 'text.disabled', px: 2 }}>
-            <GroupWorkIcon sx={{ fontSize: 36, mb: 1, opacity: 0.3 }} />
+            <GroupWorkIcon sx={{ fontSize: '2.25rem', mb: 1, opacity: 0.3 }} />
             <Typography variant="caption" display="block">
               暂无分组
             </Typography>
@@ -143,7 +143,7 @@ const GroupPanel: React.FC = () => {
                           onClick={(e) => { e.stopPropagation(); handleOpenRename(group.id, group.name); }}
                           sx={{ p: 0.25 }}
                         >
-                          <EditIcon sx={{ fontSize: 13 }} />
+                          <EditIcon sx={{ fontSize: '0.8125rem' }} />
                         </IconButton>
                       </Tooltip>
                       <Tooltip title="编辑实例">
@@ -157,7 +157,7 @@ const GroupPanel: React.FC = () => {
                           }}
                           sx={{ p: 0.25 }}
                         >
-                          <SettingsIcon sx={{ fontSize: 13 }} />
+                          <SettingsIcon sx={{ fontSize: '0.8125rem' }} />
                         </IconButton>
                       </Tooltip>
                       <Tooltip title="删除">
@@ -166,7 +166,7 @@ const GroupPanel: React.FC = () => {
                           onClick={(e) => { e.stopPropagation(); deleteGroup(group.id); }}
                           sx={{ p: 0.25 }}
                         >
-                          <DeleteIcon sx={{ fontSize: 13 }} />
+                          <DeleteIcon sx={{ fontSize: '0.8125rem' }} />
                         </IconButton>
                       </Tooltip>
                     </Box>
@@ -179,9 +179,9 @@ const GroupPanel: React.FC = () => {
                 >
                   <ListItemButton onClick={() => handleToggleActive(group.id)} sx={{ py: 1, px: 1.5 }}>
                     {isActive ? (
-                      <RadioButtonCheckedIcon sx={{ fontSize: 16, color: 'primary.main', mr: 1 }} />
+                      <RadioButtonCheckedIcon sx={{ fontSize: '1rem', color: 'primary.main', mr: 1 }} />
                     ) : (
-                      <RadioButtonUncheckedIcon sx={{ fontSize: 16, color: 'text.disabled', mr: 1 }} />
+                      <RadioButtonUncheckedIcon sx={{ fontSize: '1rem', color: 'text.disabled', mr: 1 }} />
                     )}
                     <ListItemText
                       primary={
@@ -360,8 +360,8 @@ const GroupPanel: React.FC = () => {
                     >
                       {hasChildren ? (
                         node.expanded
-                          ? <ExpandMoreIcon sx={{ fontSize: 14, color: 'text.secondary', mr: 0.5 }} />
-                          : <ChevronRightIcon sx={{ fontSize: 14, color: 'text.secondary', mr: 0.5 }} />
+                          ? <ExpandMoreIcon sx={{ fontSize: '0.875rem', color: 'text.secondary', mr: 0.5 }} />
+                          : <ChevronRightIcon sx={{ fontSize: '0.875rem', color: 'text.secondary', mr: 0.5 }} />
                       ) : (
                         <Box sx={{ width: 18, mr: 0.5 }} />
                       )}

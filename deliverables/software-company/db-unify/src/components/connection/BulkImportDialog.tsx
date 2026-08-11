@@ -297,7 +297,7 @@ const BulkImportDialog: React.FC<BulkImportDialogProps> = ({ open, onClose }) =>
     }
     return (
       <>
-        <Button onClick={handleReset} size="small" startIcon={<RefreshIcon sx={{ fontSize: 16 }} />} sx={{ textTransform: 'none' }}>
+        <Button onClick={handleReset} size="small" startIcon={<RefreshIcon sx={{ fontSize: '1rem' }} />} sx={{ textTransform: 'none' }}>
           重新导入
         </Button>
         <Button variant="contained" size="small" onClick={onClose} sx={{ textTransform: 'none' }}>
@@ -312,7 +312,7 @@ const BulkImportDialog: React.FC<BulkImportDialogProps> = ({ open, onClose }) =>
       open={open}
       onClose={onClose}
       title="批量导入数据库连接"
-      icon={<CloudUploadIcon sx={{ fontSize: 20 }} />}
+      icon={<CloudUploadIcon sx={{ fontSize: '1.25rem' }} />}
       steps={steps}
       activeStep={activeStep}
       error={error}
@@ -351,7 +351,7 @@ const BulkImportDialog: React.FC<BulkImportDialogProps> = ({ open, onClose }) =>
               文件：{fileName} · 共 {parsedRows.length} 行
             </Typography>
             <Chip
-              icon={<CheckCircleIcon sx={{ fontSize: 14 }} />}
+              icon={<CheckCircleIcon sx={{ fontSize: '0.875rem' }} />}
               label={`${validCount} 行通过`}
               size="small"
               color={validCount > 0 ? 'success' : 'default'}
@@ -360,7 +360,7 @@ const BulkImportDialog: React.FC<BulkImportDialogProps> = ({ open, onClose }) =>
             />
             {invalidCount > 0 && (
               <Chip
-                icon={<ErrorIcon sx={{ fontSize: 14 }} />}
+                icon={<ErrorIcon sx={{ fontSize: '0.875rem' }} />}
                 label={`${invalidCount} 行失败`}
                 size="small"
                 color="error"
@@ -371,7 +371,7 @@ const BulkImportDialog: React.FC<BulkImportDialogProps> = ({ open, onClose }) =>
             <Box sx={{ flex: 1 }} />
             <Tooltip title="重新选择文件">
               <IconButton size="small" onClick={handleReset}>
-                <RefreshIcon sx={{ fontSize: 16 }} />
+                <RefreshIcon sx={{ fontSize: '1rem' }} />
               </IconButton>
             </Tooltip>
             <Tooltip title="删除无效行">
@@ -380,7 +380,7 @@ const BulkImportDialog: React.FC<BulkImportDialogProps> = ({ open, onClose }) =>
                 onClick={() => setParsedRows(parsedRows.filter((r) => r._valid))}
                 disabled={invalidCount === 0}
               >
-                <DeleteIcon sx={{ fontSize: 16 }} />
+                <DeleteIcon sx={{ fontSize: '1rem' }} />
               </IconButton>
             </Tooltip>
           </Box>
@@ -425,10 +425,10 @@ const BulkImportDialog: React.FC<BulkImportDialogProps> = ({ open, onClose }) =>
                     </TableCell>
                     <TableCell sx={{ fontSize: '0.75rem', py: 0.5 }}>
                       {row._valid ? (
-                        <CheckCircleIcon sx={{ fontSize: 16, color: 'success.main' }} />
+                        <CheckCircleIcon sx={{ fontSize: '1rem', color: 'success.main' }} />
                       ) : (
                         <Tooltip title={row._errors.join('；')}>
-                          <ErrorIcon sx={{ fontSize: 16, color: 'error.main' }} />
+                          <ErrorIcon sx={{ fontSize: '1rem', color: 'error.main' }} />
                         </Tooltip>
                       )}
                     </TableCell>
@@ -445,7 +445,7 @@ const BulkImportDialog: React.FC<BulkImportDialogProps> = ({ open, onClose }) =>
         <Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
             <Chip
-              icon={<CheckCircleIcon sx={{ fontSize: 14 }} />}
+              icon={<CheckCircleIcon sx={{ fontSize: '0.875rem' }} />}
               label={`成功 ${importResult.success} 条`}
               size="small"
               color={importResult.success > 0 ? 'success' : 'default'}
@@ -453,7 +453,7 @@ const BulkImportDialog: React.FC<BulkImportDialogProps> = ({ open, onClose }) =>
               sx={{ fontSize: '0.75rem' }}
             />
             <Chip
-              icon={<ErrorIcon sx={{ fontSize: 14 }} />}
+              icon={<ErrorIcon sx={{ fontSize: '0.875rem' }} />}
               label={`失败 ${importResult.failed} 条`}
               size="small"
               color={importResult.failed > 0 ? 'error' : 'default'}

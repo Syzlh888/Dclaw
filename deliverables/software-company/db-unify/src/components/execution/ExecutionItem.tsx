@@ -23,15 +23,15 @@ const ExecutionItem: React.FC<ExecutionItemProps> = ({ task }) => {
   const getStatusIcon = () => {
     switch (task.status) {
       case ExecutionStatus.Success:
-        return <CheckCircleIcon sx={{ fontSize: 18, color: 'success.main' }} />;
+        return <CheckCircleIcon sx={{ fontSize: '1.125rem', color: 'success.main' }} />;
       case ExecutionStatus.Failed:
-        return <ErrorIcon sx={{ fontSize: 18, color: 'error.main' }} />;
+        return <ErrorIcon sx={{ fontSize: '1.125rem', color: 'error.main' }} />;
       case ExecutionStatus.Running:
-        return <AutorenewIcon sx={{ fontSize: 18, color: 'info.main', animation: 'spin 1s linear infinite' }} />;
+        return <AutorenewIcon sx={{ fontSize: '1.125rem', color: 'info.main', animation: 'spin 1s linear infinite' }} />;
       case ExecutionStatus.Pending:
-        return <HourglassEmptyIcon sx={{ fontSize: 18, color: 'text.disabled' }} />;
+        return <HourglassEmptyIcon sx={{ fontSize: '1.125rem', color: 'text.disabled' }} />;
       case ExecutionStatus.Timeout:
-        return <TimerIcon sx={{ fontSize: 18, color: 'warning.main' }} />;
+        return <TimerIcon sx={{ fontSize: '1.125rem', color: 'warning.main' }} />;
       default:
         return null;
     }
@@ -149,7 +149,7 @@ const ExecutionItem: React.FC<ExecutionItemProps> = ({ task }) => {
           >
             <PushPinIcon
               sx={{
-                fontSize: 14,
+                fontSize: '0.875rem',
                 color: pinnedResults[task.dbConnectionId!] ? 'primary.main' : 'text.disabled',
               }}
             />

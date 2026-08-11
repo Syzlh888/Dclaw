@@ -14,11 +14,11 @@ interface ExecutionSummaryProps {
 
 /** 状态配置：颜色、图标 */
 const STATUS_CONFIG = {
-  [ExecutionStatus.Success]:  { color: '#2E7D32', icon: <CheckCircleIcon sx={{ fontSize: 16 }} />, label: '成功' },
-  [ExecutionStatus.Failed]:   { color: '#D32F2F', icon: <ErrorIcon sx={{ fontSize: 16 }} />, label: '失败' },
-  [ExecutionStatus.Running]:  { color: '#1976D2', icon: <AutorenewIcon sx={{ fontSize: 16 }} />, label: '执行中' },
-  [ExecutionStatus.Pending]:  { color: '#757575', icon: <HourglassEmptyIcon sx={{ fontSize: 16 }} />, label: '等待' },
-  [ExecutionStatus.Timeout]:  { color: '#ED6C02', icon: <TimerIcon sx={{ fontSize: 16 }} />, label: '超时' },
+  [ExecutionStatus.Success]:  { color: '#2E7D32', icon: <CheckCircleIcon sx={{ fontSize: '1rem' }} />, label: '成功' },
+  [ExecutionStatus.Failed]:   { color: '#D32F2F', icon: <ErrorIcon sx={{ fontSize: '1rem' }} />, label: '失败' },
+  [ExecutionStatus.Running]:  { color: '#1976D2', icon: <AutorenewIcon sx={{ fontSize: '1rem' }} />, label: '执行中' },
+  [ExecutionStatus.Pending]:  { color: '#757575', icon: <HourglassEmptyIcon sx={{ fontSize: '1rem' }} />, label: '等待' },
+  [ExecutionStatus.Timeout]:  { color: '#ED6C02', icon: <TimerIcon sx={{ fontSize: '1rem' }} />, label: '超时' },
 } as const;
 
 type StatusKey = keyof typeof STATUS_CONFIG;

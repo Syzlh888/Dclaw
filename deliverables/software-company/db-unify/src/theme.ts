@@ -10,7 +10,9 @@ type ThemeMode = 'light' | 'dark';
 export function createAppTheme(mode: ThemeMode, scale: number) {
   const baseFontSize = 13;
   const fontSize = Math.round(baseFontSize * scale);
-  const rem = (px: number) => `${(px / 16).toFixed(4)}rem`;
+  const htmlFontSizePx = Math.round(16 * scale);
+  // 关键修复：rem 转换的分母必须使用 htmlFontSizePx（同步缩放），否则 0.7rem 等字面量会锁死在 16px 基准上
+  const rem = (px: number) => `${(px / htmlFontSizePx).toFixed(4)}rem`;
   const iconSize = scale <= 0.85 ? 'small' : scale >= 1.1 ? 'medium' : 'small';
 
   // CJK 字体栈 — 关键修复：避免 Modal/Button 等 MUI 组件内中文显示豆腐块
@@ -52,6 +54,8 @@ export function createAppTheme(mode: ThemeMode, scale: number) {
       components: {
         MuiCssBaseline: {
           styleOverrides: {
+            // 关键修复：把 htmlFontSize 实际写到 <html> 上，让所有 rem（以及 MUI 内部 pxToRem）随 scale 一起缩放
+            html: { fontSize: `${htmlFontSizePx}px !important` },
             // 全局兜底：html/body/#root 全部声明 CJK 字体
             'html, body, #root': { fontFamily: FONT_FAMILY },
             // 关键修复：Dialog/Modal 内部全部使用带 CJK fallback 的字体
@@ -116,6 +120,8 @@ export function createAppTheme(mode: ThemeMode, scale: number) {
     components: {
       MuiCssBaseline: {
         styleOverrides: {
+          // 关键修复：把 htmlFontSize 实际写到 <html> 上，让所有 rem（以及 MUI 内部 pxToRem）随 scale 一起缩放
+          html: { fontSize: `${htmlFontSizePx}px !important` },
           'html, body, #root': { fontFamily: FONT_FAMILY },
           '.MuiDialog-root, .MuiDialog-root *': {
             fontFamily: `${FONT_FAMILY} !important`,

@@ -21,7 +21,7 @@ const MenuProps = {
       paddingBottom: '8px',
       paddingLeft: '0px',
       paddingRight: '0px',
-      fontSize: '9px',
+      fontSize: '0.5625rem',
       lineHeight: '14px',
       color: '#000000DE',
       textAlign: 'left',
@@ -29,7 +29,7 @@ const MenuProps = {
       height: 260,
     },
     '& .MuiMenuItem-root': {
-      fontSize: '9px',
+      fontSize: '0.5625rem',
       lineHeight: '14px',
       color: '#000000DE',
       textAlign: 'left',
@@ -121,7 +121,7 @@ const AggregateView: React.FC = () => {
               label={result.sourceLabel}
               size="small"
               onDelete={() => unpinResult(id)}
-              deleteIcon={<PushPinIcon sx={{ fontSize: 12 }} />}
+              deleteIcon={<PushPinIcon sx={{ fontSize: '0.75rem' }} />}
               variant="outlined"
               color="primary"
               sx={{ fontSize: '0.7rem' }}
@@ -171,7 +171,7 @@ const AggregateView: React.FC = () => {
         </Typography>
         <Button
           size="small"
-          startIcon={<DownloadIcon sx={{ fontSize: 16 }} />}
+          startIcon={<DownloadIcon sx={{ fontSize: '1rem' }} />}
           onClick={handleExportExcel}
           variant="contained"
           color="primary"
@@ -181,7 +181,7 @@ const AggregateView: React.FC = () => {
         </Button>
         <Button
           size="small"
-          startIcon={<DownloadIcon sx={{ fontSize: 16 }} />}
+          startIcon={<DownloadIcon sx={{ fontSize: '1rem' }} />}
           onClick={handleExportCsv}
           variant="outlined"
           sx={{ textTransform: 'none', fontSize: '0.8rem', py: 0.25 }}
@@ -190,7 +190,7 @@ const AggregateView: React.FC = () => {
         </Button>
         <Button
           size="small"
-          startIcon={<DownloadIcon sx={{ fontSize: 16 }} />}
+          startIcon={<DownloadIcon sx={{ fontSize: '1rem' }} />}
           onClick={handleExportJson}
           variant="outlined"
           sx={{ textTransform: 'none', fontSize: '0.8rem', py: 0.25 }}

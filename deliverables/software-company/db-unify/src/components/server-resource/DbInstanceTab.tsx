@@ -462,28 +462,28 @@ export default function DbInstanceTab({ serverId, instances, ports, serverIps = 
                           </Typography>
                           <Tooltip title="复制密码">
                             <IconButton size="small" onClick={() => handleCopyPassword(pwdKey, cred._index, cred.username || '', 'dbInstance', d.id)}>
-                              <ContentCopyIcon sx={{ fontSize: 15, color: 'primary.main' }} />
+                              <ContentCopyIcon sx={{ fontSize: '0.9375rem', color: 'primary.main' }} />
                             </IconButton>
                           </Tooltip>
                           <Tooltip title="修改密码">
                             <IconButton size="small" onClick={() => openPwdChange(d, ci, cred.username || '')}>
-                              <LockResetIcon sx={{ fontSize: 15, color: 'warning.main' }} />
+                              <LockResetIcon sx={{ fontSize: '0.9375rem', color: 'warning.main' }} />
                             </IconButton>
                           </Tooltip>
                           <Tooltip title={isRevealed ? '隐藏密码' : '查看密码（需二次验证）'}>
                             <IconButton size="small" onClick={() => requestViewPassword(pwdKey, cred._index, cred.username || '', 'dbInstance', d.id)}>
-                              {isRevealed ? <VisibilityOffIcon sx={{ fontSize: 15 }} /> : <VisibilityIcon sx={{ fontSize: 15 }} />}
+                              {isRevealed ? <VisibilityOffIcon sx={{ fontSize: '0.9375rem' }} /> : <VisibilityIcon sx={{ fontSize: '0.9375rem' }} />}
                             </IconButton>
                           </Tooltip>
                           <Tooltip title="密码历史">
                             <IconButton size="small" onClick={() => cred.username ? setCredHistoryDialog({ instance: d, credIndex: ci, username: cred.username }) : null}>
-                              <HistoryIcon sx={{ fontSize: 15 }} />
+                              <HistoryIcon sx={{ fontSize: '0.9375rem' }} />
                             </IconButton>
                           </Tooltip>
                           {credCount > 1 && (
                             <Tooltip title="删除此凭据">
                               <IconButton size="small" onClick={() => handleDeleteCredential(d, ci)} sx={{ color: 'error.main' }}>
-                                <DeleteIcon sx={{ fontSize: 15 }} />
+                                <DeleteIcon sx={{ fontSize: '0.9375rem' }} />
                               </IconButton>
                             </Tooltip>
                           )}
@@ -494,10 +494,10 @@ export default function DbInstanceTab({ serverId, instances, ports, serverIps = 
                         <TableCell rowSpan={credCount} sx={{ verticalAlign: 'middle', textAlign: 'center' }}>
                           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
                             <Tooltip title="编辑实例">
-                              <IconButton size="small" onClick={() => openEdit(d)}><EditIcon sx={{ fontSize: 16 }} /></IconButton>
+                              <IconButton size="small" onClick={() => openEdit(d)}><EditIcon sx={{ fontSize: '1rem' }} /></IconButton>
                             </Tooltip>
                             <Tooltip title="删除实例">
-                              <IconButton size="small" onClick={() => handleDelete(d)} sx={{ color: 'error.main' }}><DeleteIcon sx={{ fontSize: 16 }} /></IconButton>
+                              <IconButton size="small" onClick={() => handleDelete(d)} sx={{ color: 'error.main' }}><DeleteIcon sx={{ fontSize: '1rem' }} /></IconButton>
                             </Tooltip>
                           </Box>
                         </TableCell>
@@ -581,10 +581,10 @@ export default function DbInstanceTab({ serverId, instances, ports, serverIps = 
                         size="small"
                         onClick={() => cred.username ? setCredHistoryOpen({ index: i, username: cred.username }) : null}
                         sx={{ flexShrink: 0, height: 40, width: 40 }}
-                      ><HistoryIcon sx={{ fontSize: 16 }} /></IconButton>
+                      ><HistoryIcon sx={{ fontSize: '1rem' }} /></IconButton>
                     </Tooltip>
                     {credentials.length > 1 && (
-                      <IconButton size="small" onClick={() => removeCred(i)} sx={{ color: 'error.main', flexShrink: 0 }}><DeleteIcon sx={{ fontSize: 16 }} /></IconButton>
+                      <IconButton size="small" onClick={() => removeCred(i)} sx={{ color: 'error.main', flexShrink: 0 }}><DeleteIcon sx={{ fontSize: '1rem' }} /></IconButton>
                     )}
                   </Box>
                 </Box>

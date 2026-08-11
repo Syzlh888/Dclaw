@@ -171,23 +171,23 @@ const ConnectionPanel = forwardRef<ConnectionPanelHandle, ConnectionPanelProps>(
             {abnormalCount > 0 && (
               <Tooltip title={`清除 ${abnormalCount} 个异常连接`}>
                 <IconButton size="small" onClick={handleClearAbnormal} color="error">
-                  <DeleteSweepIcon sx={{ fontSize: 18 }} />
+                  <DeleteSweepIcon sx={{ fontSize: '1.125rem' }} />
                 </IconButton>
               </Tooltip>
             )}
             <Tooltip title="批量导入">
               <IconButton size="small" onClick={() => setBulkImportOpen(true)} color="inherit">
-                <UploadFileIcon sx={{ fontSize: 18 }} />
+                <UploadFileIcon sx={{ fontSize: '1.125rem' }} />
               </IconButton>
             </Tooltip>
             <Tooltip title="驱动管理">
               <IconButton size="small" onClick={onOpenDriverManager} color="inherit">
-                <SettingsInputComponentIcon sx={{ fontSize: 18 }} />
+                <SettingsInputComponentIcon sx={{ fontSize: '1.125rem' }} />
               </IconButton>
             </Tooltip>
             <Tooltip title="添加连接">
               <IconButton size="small" onClick={handleAdd} color="primary">
-                <AddIcon sx={{ fontSize: 18 }} />
+                <AddIcon sx={{ fontSize: '1.125rem' }} />
               </IconButton>
             </Tooltip>
           </Box>
@@ -248,10 +248,10 @@ const ConnectionPanel = forwardRef<ConnectionPanelHandle, ConnectionPanelProps>(
                 />
                 <Box sx={{ display: 'flex', gap: 0, ml: 0.5, flexShrink: 0 }}>
                   <IconButton size="small" onClick={() => handleEdit(conn.id)} sx={{ p: 0.25 }}>
-                    <EditIcon sx={{ fontSize: 14 }} />
+                    <EditIcon sx={{ fontSize: '0.875rem' }} />
                   </IconButton>
                   <IconButton size="small" onClick={() => handleDelete(conn.id)} sx={{ p: 0.25 }}>
-                    <DeleteIcon sx={{ fontSize: 14 }} />
+                    <DeleteIcon sx={{ fontSize: '0.875rem' }} />
                   </IconButton>
                 </Box>
               </ListItem>

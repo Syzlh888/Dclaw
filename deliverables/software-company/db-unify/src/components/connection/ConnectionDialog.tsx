@@ -639,7 +639,7 @@ const ConnectionDialog: React.FC<ConnectionDialogProps> = ({ open, onClose }) =>
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <SearchIcon sx={{ fontSize: 16 }} />
+                  <SearchIcon sx={{ fontSize: '1rem' }} />
                 </InputAdornment>
               ),
               sx: { fontSize: '0.8rem', height: 30 },

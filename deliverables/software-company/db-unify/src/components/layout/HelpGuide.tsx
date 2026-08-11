@@ -224,7 +224,7 @@ const HelpGuide: React.FC<HelpGuideProps> = ({ open, onClose }) => {
                   },
                 }}
               >
-                <Box sx={{ fontSize: 18, display: 'flex' }}>{s.icon}</Box>
+                <Box sx={{ fontSize: '1.125rem', display: 'flex' }}>{s.icon}</Box>
                 <Typography variant="body2" sx={{ fontWeight: isActive ? 600 : 400, fontSize: '0.8rem' }}>
                   {s.title}
                 </Typography>
@@ -237,7 +237,7 @@ const HelpGuide: React.FC<HelpGuideProps> = ({ open, onClose }) => {
         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 2.5, overflow: 'auto' }}>
           {/* 章节导航 */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2.5 }}>
-            <Box sx={{ fontSize: 22, display: 'flex', color: 'primary.main' }}>
+            <Box sx={{ fontSize: '1.375rem', display: 'flex', color: 'primary.main' }}>
               {current.icon}
             </Box>
             <Typography variant="subtitle1" fontWeight={700}>

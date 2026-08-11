@@ -73,7 +73,7 @@ const ImportDropzone: React.FC<ImportDropzoneProps> = ({
       >
         <CloudUploadIcon
           sx={{
-            fontSize: 44,
+            fontSize: '2.75rem',
             color: dragOver ? 'primary.main' : 'action.disabled',
             mb: 1.5,
           }}
@@ -92,7 +92,7 @@ const ImportDropzone: React.FC<ImportDropzoneProps> = ({
           <Button
             variant="contained"
             size="small"
-            startIcon={<CloudUploadIcon sx={{ fontSize: 16 }} />}
+            startIcon={<CloudUploadIcon sx={{ fontSize: '1rem' }} />}
             onClick={() => fileInputRef.current?.click()}
             sx={{ textTransform: 'none', fontSize: '0.8rem', py: 0.5 }}
           >
@@ -102,7 +102,7 @@ const ImportDropzone: React.FC<ImportDropzoneProps> = ({
             <Button
               variant="outlined"
               size="small"
-              startIcon={<DownloadIcon sx={{ fontSize: 16 }} />}
+              startIcon={<DownloadIcon sx={{ fontSize: '1rem' }} />}
               onClick={onDownloadTemplate}
               disabled={downloading}
               sx={{ textTransform: 'none', fontSize: '0.8rem', py: 0.5 }}

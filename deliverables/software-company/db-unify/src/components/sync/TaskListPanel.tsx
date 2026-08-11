@@ -40,7 +40,7 @@ const TaskListPanel: React.FC<Props> = ({ onCreateTask, onToggleEnabled }) => {
       <Button size="small" startIcon={<AddIcon />} onClick={onCreateTask} sx={{ color: 'primary.main' }}>新建任务</Button>
     </Box>
     {list.length === 0 && (
-      <Typography sx={{ mt: 6, textAlign: 'center', color: 'text.disabled', fontSize: 13 }}>该项目暂无同步任务</Typography>
+      <Typography sx={{ mt: 6, textAlign: 'center', color: 'text.disabled', fontSize: '0.8125rem' }}>该项目暂无同步任务</Typography>
     )}
     {list.map((task) => {
       const mark = statusMark(task.last_run_status);
@@ -63,12 +63,12 @@ const TaskListPanel: React.FC<Props> = ({ onCreateTask, onToggleEnabled }) => {
           onClick={() => selectTask(task.id)}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
-            <Typography sx={{ color: mark.color, fontSize: 18 }}>{mark.text}</Typography>
+            <Typography sx={{ color: mark.color, fontSize: '1.125rem' }}>{mark.text}</Typography>
             <Box sx={{ minWidth: 0, flex: 1 }}>
-              <Typography noWrap sx={{ color: 'text.primary', fontSize: 13.5, fontWeight: 600 }}>
+              <Typography noWrap sx={{ color: 'text.primary', fontSize: '0.8438rem', fontWeight: 600 }}>
                 {task.name}
               </Typography>
-              <Typography noWrap sx={{ color: 'text.secondary', fontSize: 11.5 }}>
+              <Typography noWrap sx={{ color: 'text.secondary', fontSize: '0.7188rem' }}>
                 {task.source_schema || '默认 schema'} → {task.target_schema || '默认 schema'} ·{' '}
                 {task.write_strategy || 'insert'}
               </Typography>
@@ -80,7 +80,7 @@ const TaskListPanel: React.FC<Props> = ({ onCreateTask, onToggleEnabled }) => {
               sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
               title={enabled ? '已启用自动调度' : '未启用自动调度'}
             >
-              <Typography sx={{ color: enabled ? 'success.main' : 'text.secondary', fontSize: 11 }}>
+              <Typography sx={{ color: enabled ? 'success.main' : 'text.secondary', fontSize: '0.6875rem' }}>
                 自动
               </Typography>
               <Switch
@@ -111,7 +111,7 @@ const TaskListPanel: React.FC<Props> = ({ onCreateTask, onToggleEnabled }) => {
               }}
               sx={{
                 minWidth: 92,
-                fontSize: 11,
+                fontSize: '0.6875rem',
                 py: 0.5,
                 bgcolor: isRunning ? 'action.disabledBackground' : 'primary.main',
                 '&:hover': { bgcolor: isRunning ? 'action.disabledBackground' : 'primary.dark' },
@@ -119,12 +119,12 @@ const TaskListPanel: React.FC<Props> = ({ onCreateTask, onToggleEnabled }) => {
             >
               {isRunning ? '运行中...' : '立即运行'}
             </Button>
-            <ArrowForwardIcon sx={{ color: 'text.disabled', fontSize: 18 }} />
+            <ArrowForwardIcon sx={{ color: 'text.disabled', fontSize: '1.125rem' }} />
           </Box>
 
           {isRunning && progress && (
             <Box sx={{ mt: 1, pl: 4 }}>
-              <Typography sx={{ color: 'primary.light', fontSize: 11 }} noWrap>
+              <Typography sx={{ color: 'primary.light', fontSize: '0.6875rem' }} noWrap>
                 {progress.currentTable} ·{' '}
                 {progress.status === 'running'
                   ? '执行中'
@@ -152,7 +152,7 @@ const TaskListPanel: React.FC<Props> = ({ onCreateTask, onToggleEnabled }) => {
             <Typography
               variant="caption"
               onClick={(e) => e.stopPropagation()}
-              sx={{ display: 'block', mt: 0.75, pl: 4, color: 'text.secondary', fontSize: 11 }}
+              sx={{ display: 'block', mt: 0.75, pl: 4, color: 'text.secondary', fontSize: '0.6875rem' }}
             >
               {nextRunText}
             </Typography>

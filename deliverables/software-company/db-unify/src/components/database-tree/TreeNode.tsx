@@ -87,24 +87,24 @@ const TreeNodeComponent: React.FC<TreeNodeComponentProps> = ({
   const getIcon = () => {
     switch (node.type) {
       case TreeNodeType.Platform:
-        return <StorageIcon sx={{ fontSize: 18, color: '#4DB8E6' }} />; // DBeaver 数据蓝
+        return <StorageIcon sx={{ fontSize: '1.125rem', color: '#4DB8E6' }} />; // DBeaver 数据蓝
       case TreeNodeType.PreDbType:
         return node.expanded ? (
-          <FolderOpenIcon sx={{ fontSize: 18, color: '#DAAA4E' }} /> // DBeaver 金色
+          <FolderOpenIcon sx={{ fontSize: '1.125rem', color: '#DAAA4E' }} /> // DBeaver 金色
         ) : (
-          <FolderIcon sx={{ fontSize: 18, color: '#DAAA4E' }} /> // DBeaver 金色
+          <FolderIcon sx={{ fontSize: '1.125rem', color: '#DAAA4E' }} /> // DBeaver 金色
         );
       case TreeNodeType.District:
         return node.expanded ? (
-          <FolderOpenIcon sx={{ fontSize: 18, color: '#6BBF5A' }} /> // DBeaver 柔和绿
+          <FolderOpenIcon sx={{ fontSize: '1.125rem', color: '#6BBF5A' }} /> // DBeaver 柔和绿
         ) : (
-          <FolderIcon sx={{ fontSize: 18, color: '#6BBF5A' }} /> // DBeaver 柔和绿
+          <FolderIcon sx={{ fontSize: '1.125rem', color: '#6BBF5A' }} /> // DBeaver 柔和绿
         );
       case TreeNodeType.Hospital:
         // 数据库连接图标：DBeaver 风格三层堆叠柱体（蓝色）
         return <ConnectionIcon size={16} />;
       default:
-        return <FolderIcon sx={{ fontSize: 18 }} />;
+        return <FolderIcon sx={{ fontSize: '1.125rem' }} />;
     }
   };
 
@@ -242,32 +242,32 @@ const TreeNodeComponent: React.FC<TreeNodeComponentProps> = ({
   const hospitalCtxItems: ContextMenuItemDef[] = [
     {
       label: '测试连接',
-      icon: <WifiTetheringIcon sx={{ fontSize: 15 }} />,
+      icon: <WifiTetheringIcon sx={{ fontSize: '0.9375rem' }} />,
       onClick: handleTestConnection,
     },
     {
       label: '编辑连接',
-      icon: <BorderColorIcon sx={{ fontSize: 15 }} />,
+      icon: <BorderColorIcon sx={{ fontSize: '0.9375rem' }} />,
       onClick: () => onEditNode?.(node.id),
     },
     {
       label: '复制连接（创建副本）',
-      icon: <ContentPasteIcon sx={{ fontSize: 15 }} />,
+      icon: <ContentPasteIcon sx={{ fontSize: '0.9375rem' }} />,
       onClick: () => onCopyNode?.(node.id),
     },
     {
       label: '复制连接信息到剪贴板',
-      icon: <ContentPasteIcon sx={{ fontSize: 15 }} />,
+      icon: <ContentPasteIcon sx={{ fontSize: '0.9375rem' }} />,
       onClick: handleCopyConnectionInfo,
     },
     {
       label: '刷新元数据',
-      icon: <SyncIcon sx={{ fontSize: 15 }} />,
+      icon: <SyncIcon sx={{ fontSize: '0.9375rem' }} />,
       onClick: handleRefreshMetadata,
     },
     {
       label: '删除连接',
-      icon: <DeleteOutlineIcon sx={{ fontSize: 15 }} />,
+      icon: <DeleteOutlineIcon sx={{ fontSize: '0.9375rem' }} />,
       onClick: () => onDeleteNode?.(node.id),
       danger: true,
       divider: true,
@@ -406,14 +406,14 @@ const TreeNodeComponent: React.FC<TreeNodeComponentProps> = ({
           >
             {isHospital ? (
               showMetadata ? (
-                <ExpandMoreIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                <ExpandMoreIcon sx={{ fontSize: '1rem', color: 'text.secondary' }} />
               ) : (
-                <ExpandLessIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                <ExpandLessIcon sx={{ fontSize: '1rem', color: 'text.secondary' }} />
               )
             ) : node.expanded ? (
-              <ExpandMoreIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+              <ExpandMoreIcon sx={{ fontSize: '1rem', color: 'text.secondary' }} />
             ) : (
-              <ExpandLessIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+              <ExpandLessIcon sx={{ fontSize: '1rem', color: 'text.secondary' }} />
             )}
           </Box>
         ) : (
@@ -455,7 +455,7 @@ const TreeNodeComponent: React.FC<TreeNodeComponentProps> = ({
                 : '异常'
             }
           >
-            <FiberManualRecordIcon sx={{ fontSize: 10, color: statusColor, ml: 0.5 }} />
+            <FiberManualRecordIcon sx={{ fontSize: '0.625rem', color: statusColor, ml: 0.5 }} />
           </Tooltip>
         )}
 
@@ -473,7 +473,7 @@ const TreeNodeComponent: React.FC<TreeNodeComponentProps> = ({
             }}
             onMouseDown={(e) => e.stopPropagation()}
           >
-            <DragIndicatorIcon sx={{ fontSize: 14, color: 'text.disabled' }} />
+            <DragIndicatorIcon sx={{ fontSize: '0.875rem', color: 'text.disabled' }} />
           </Box>
         )}
 
@@ -498,7 +498,7 @@ const TreeNodeComponent: React.FC<TreeNodeComponentProps> = ({
                   setAddMenuAnchor(e.currentTarget);
                 }}
               >
-                <AddIcon sx={{ fontSize: 14 }} />
+                <AddIcon sx={{ fontSize: '0.875rem' }} />
               </IconButton>
             </Tooltip>
           )}
@@ -512,7 +512,7 @@ const TreeNodeComponent: React.FC<TreeNodeComponentProps> = ({
                   onEditNode(node.id);
                 }}
               >
-                <EditIcon sx={{ fontSize: 14 }} />
+                <EditIcon sx={{ fontSize: '0.875rem' }} />
               </IconButton>
             </Tooltip>
           )}
@@ -526,7 +526,7 @@ const TreeNodeComponent: React.FC<TreeNodeComponentProps> = ({
                   onCopyNode(node.id);
                 }}
               >
-                <ContentCopyIcon sx={{ fontSize: 14 }} />
+                <ContentCopyIcon sx={{ fontSize: '0.875rem' }} />
               </IconButton>
             </Tooltip>
           )}
@@ -540,7 +540,7 @@ const TreeNodeComponent: React.FC<TreeNodeComponentProps> = ({
                   onDeleteNode(node.id);
                 }}
               >
-                <DeleteIcon sx={{ fontSize: 14 }} />
+                <DeleteIcon sx={{ fontSize: '0.875rem' }} />
               </IconButton>
             </Tooltip>
           )}
@@ -576,7 +576,7 @@ const TreeNodeComponent: React.FC<TreeNodeComponentProps> = ({
           sx={{ minHeight: 26, py: 0.3, fontSize: '0.72rem' }}
         >
           <ListItemIcon sx={{ minWidth: 24 }}>
-            <FolderIcon sx={{ fontSize: 15, color: '#DAAA4E' }} />
+            <FolderIcon sx={{ fontSize: '0.9375rem', color: '#DAAA4E' }} />
           </ListItemIcon>
           <ListItemText primaryTypographyProps={{ fontSize: '0.72rem' }}>新增分组</ListItemText>
         </MenuItem>

@@ -129,7 +129,7 @@ export const TreeConnectionSelect: React.FC<TreeConnectionSelectProps> = ({
             cursor: 'pointer',
             bgcolor: selected ? 'primary.dark' : 'transparent',
             color: selected ? 'common.white' : 'text.secondary',
-            fontSize: 12.5,
+            fontSize: '0.7812rem',
             borderLeft: selected ? '3px solid' : '3px solid transparent',
             borderColor: selected ? 'primary.light' : 'transparent',
             whiteSpace: 'nowrap',
@@ -143,17 +143,17 @@ export const TreeConnectionSelect: React.FC<TreeConnectionSelectProps> = ({
           }}
         >
           <StorageIcon
-            sx={{ fontSize: 12, color: selected ? 'common.white' : 'success.main' }}
+            sx={{ fontSize: '0.75rem', color: selected ? 'common.white' : 'success.main' }}
           />
           <span style={{ flex: 1 }}>{conn.name}</span>
           {showGroup && (
-            <span style={{ fontSize: 10, color: selected ? '#BBDEFB' : '#777' }}>
+            <span style={{ fontSize: '0.625rem', color: selected ? '#BBDEFB' : '#777' }}>
               [{nodeId.split('::').pop()}]
             </span>
           )}
           <span
             style={{
-              fontSize: 11,
+              fontSize: '0.6875rem',
               color: selected ? 'primary.light' : 'text.secondary',
             }}
           >
@@ -171,7 +171,7 @@ export const TreeConnectionSelect: React.FC<TreeConnectionSelectProps> = ({
           sx={{
             bgcolor: 'background.paper',
             color: depth === 0 ? 'common.white' : 'text.secondary',
-            fontSize: depth === 0 ? 12.5 : 12,
+            fontSize: depth === 0 ? '0.78125rem' : '0.75rem',
             fontWeight: depth === 0 ? 700 : 500,
             lineHeight: '26px',
             pl: 0.75 + depth * 1.2,
@@ -190,7 +190,7 @@ export const TreeConnectionSelect: React.FC<TreeConnectionSelectProps> = ({
           {hasChildren ? (
             <ChevronRightIcon
               sx={{
-                fontSize: 14,
+                fontSize: '0.875rem',
                 color: 'text.secondary',
                 transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
                 transition: 'transform 0.2s',
@@ -198,7 +198,7 @@ export const TreeConnectionSelect: React.FC<TreeConnectionSelectProps> = ({
             />
           ) : (
             <FiberManualRecordIcon
-              sx={{ fontSize: 5, color: 'text.disabled', ml: 0.4, mr: 0.4 }}
+              sx={{ fontSize: '0.3125rem', color: 'text.disabled', ml: 0.4, mr: 0.4 }}
             />
           )}
           {node.name}
@@ -294,14 +294,14 @@ export const TreeConnectionSelect: React.FC<TreeConnectionSelectProps> = ({
                     onClick={() => setSearchText('')}
                     sx={{ p: 0.25 }}
                   >
-                    <CloseIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
+                    <CloseIcon sx={{ fontSize: '0.875rem', color: 'text.secondary' }} />
                   </IconButton>
                 ) : undefined,
               }}
               sx={{
                 bgcolor: 'background.default',
                 '& .MuiOutlinedInput-root': {
-                  fontSize: 13,
+                  fontSize: '0.8125rem',
                   '& fieldset': { borderColor: 'divider' },
                 },
                 '& input': { padding: '6px 4px', color: 'text.primary' },
@@ -312,7 +312,7 @@ export const TreeConnectionSelect: React.FC<TreeConnectionSelectProps> = ({
           {/* 树形节点 */}
           {treeLoading ? (
             <Typography
-              sx={{ color: 'text.secondary', p: 2, fontSize: 12, textAlign: 'center' }}
+              sx={{ color: 'text.secondary', p: 2, fontSize: '0.75rem', textAlign: 'center' }}
             >
               树数据加载中…
             </Typography>

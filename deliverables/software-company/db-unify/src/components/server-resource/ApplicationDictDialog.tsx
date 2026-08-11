@@ -90,8 +90,8 @@ const ApplicationDictDialog: React.FC<Props> = ({ open, engineeringId, onClose }
                       <TextField size="small" value={editShortName} onChange={ev => setEditShortName(ev.target.value)}
                         onKeyDown={ev => { if (ev.key === 'Enter') handleSaveEdit(a.id); }}
                         sx={{ flex: 1 }} />
-                      <IconButton size="small" onClick={() => handleSaveEdit(a.id)}><CheckIcon sx={{ fontSize: 16 }} color="success" /></IconButton>
-                      <IconButton size="small" onClick={cancelEdit}><CloseIcon sx={{ fontSize: 16 }} /></IconButton>
+                      <IconButton size="small" onClick={() => handleSaveEdit(a.id)}><CheckIcon sx={{ fontSize: '1rem' }} color="success" /></IconButton>
+                      <IconButton size="small" onClick={cancelEdit}><CloseIcon sx={{ fontSize: '1rem' }} /></IconButton>
                     </Box>
                   ) : (
                     <>
@@ -99,8 +99,8 @@ const ApplicationDictDialog: React.FC<Props> = ({ open, engineeringId, onClose }
                         primary={a.shortName ? `${a.name}（${a.shortName}）` : a.name}
                         primaryTypographyProps={{ fontSize: '0.85rem' }}
                       />
-                      <IconButton size="small" onClick={() => startEdit(a)}><EditIcon sx={{ fontSize: 16 }} /></IconButton>
-                      <IconButton size="small" onClick={() => handleDeleteClick(a.id)}><DeleteIcon sx={{ fontSize: 16 }} /></IconButton>
+                      <IconButton size="small" onClick={() => startEdit(a)}><EditIcon sx={{ fontSize: '1rem' }} /></IconButton>
+                      <IconButton size="small" onClick={() => handleDeleteClick(a.id)}><DeleteIcon sx={{ fontSize: '1rem' }} /></IconButton>
                     </>
                   )}
                 </ListItem>

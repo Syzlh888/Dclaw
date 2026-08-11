@@ -48,7 +48,7 @@ const DangerRulesPanel: React.FC = () => {
         <Button
           size="small"
           variant="text"
-          startIcon={<AddIcon sx={{ fontSize: 14 }} />}
+          startIcon={<AddIcon sx={{ fontSize: '0.875rem' }} />}
           onClick={() => setCreating(true)}
           sx={{ color: 'primary.main', textTransform: 'none', fontSize: '0.7rem' }}
         >
@@ -156,7 +156,7 @@ const DangerRulesPanel: React.FC = () => {
             <Typography sx={{ color: 'text.disabled', fontSize: '0.6rem' }}>#{r.sort_order}</Typography>
             <Tooltip title="编辑">
               <IconButton size="small" onClick={() => setEditing(r)} sx={{ p: 0.3 }}>
-                <EditIcon sx={{ fontSize: 12 }} />
+                <EditIcon sx={{ fontSize: '0.75rem' }} />
               </IconButton>
             </Tooltip>
             <Tooltip title="删除">
@@ -167,7 +167,7 @@ const DangerRulesPanel: React.FC = () => {
                 }}
                 sx={{ p: 0.3 }}
               >
-                <DeleteIcon sx={{ fontSize: 12, color: 'error.main' }} />
+                <DeleteIcon sx={{ fontSize: '0.75rem', color: 'error.main' }} />
               </IconButton>
             </Tooltip>
           </Box>

@@ -96,7 +96,7 @@ const AppHeader: React.FC<Props> = ({ mainView, onNavigate, onToggleAI }) => {
     >
       {/* Logo */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <StorageIcon sx={{ fontSize: 28 }} />
+        <StorageIcon sx={{ fontSize: '1.75rem' }} />
         <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem', letterSpacing: 0.5 }}>
           DClaw 数据钳
         </Typography>
@@ -105,10 +105,10 @@ const AppHeader: React.FC<Props> = ({ mainView, onNavigate, onToggleAI }) => {
       {/* 三个主视图页签：SQL编辑器 / 服务器资源管理 / 数据同步 */}
       <Box sx={{ display: 'flex', gap: 0.5, ml: 2 }}>
         {([
-          { id: 'sql-editor' as const, label: 'SQL编辑器', icon: <CodeIcon sx={{ fontSize: 16 }} /> },
-          { id: 'server-resource' as const, label: '服务器资源管理', icon: <LanIcon sx={{ fontSize: 16 }} /> },
-          { id: 'data-sync' as const, label: '数据同步', icon: <SyncAltIcon sx={{ fontSize: 16 }} /> },
-          { id: 'db-proxy' as const, label: '数据库代理', icon: <StorageIcon sx={{ fontSize: 16 }} /> },
+          { id: 'sql-editor' as const, label: 'SQL编辑器', icon: <CodeIcon sx={{ fontSize: '1rem' }} /> },
+          { id: 'server-resource' as const, label: '服务器资源管理', icon: <LanIcon sx={{ fontSize: '1rem' }} /> },
+          { id: 'data-sync' as const, label: '数据同步', icon: <SyncAltIcon sx={{ fontSize: '1rem' }} /> },
+          { id: 'db-proxy' as const, label: '数据库代理', icon: <StorageIcon sx={{ fontSize: '1rem' }} /> },
         ] as const).map((tab) => {
           const active = mainView === tab.id || (mainView === 'comprehensive-query' && tab.id === 'server-resource');
           return (

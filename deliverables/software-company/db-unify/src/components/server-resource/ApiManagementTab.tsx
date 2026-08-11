@@ -117,19 +117,19 @@ export default function ApiManagementTab({ serverId, instances, appInstances, se
                 <TableCell sx={{ fontSize: '0.7rem' }}>{a.applicationName || '-'}</TableCell>
                 <TableCell>
                   {a.encrypted
-                    ? <VerifiedUserIcon sx={{ fontSize: 16, color: 'success.main' }} />
-                    : <PublicIcon sx={{ fontSize: 16, color: 'text.secondary' }} />}
+                    ? <VerifiedUserIcon sx={{ fontSize: '1rem', color: 'success.main' }} />
+                    : <PublicIcon sx={{ fontSize: '1rem', color: 'text.secondary' }} />}
                 </TableCell>
                 <TableCell sx={{ fontSize: '0.7rem' }}>{a.encrypted ? (a.encryptionMethod || '-') : '-'}</TableCell>
                 <TableCell sx={{ fontSize: '0.7rem', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {a.notes || '-'}
                 </TableCell>
                 <TableCell>
-                  <Tooltip title="编辑"><IconButton size="small" onClick={() => openEdit(a)}><EditIcon sx={{ fontSize: 16 }} /></IconButton></Tooltip>
+                  <Tooltip title="编辑"><IconButton size="small" onClick={() => openEdit(a)}><EditIcon sx={{ fontSize: '1rem' }} /></IconButton></Tooltip>
                   <Tooltip title="删除"><IconButton size="small" onClick={() => {
                     if (!confirm('确认删除该API？')) return;
                     delApi(serverId, a.id);
-                  }} sx={{ color: 'error.main' }}><DeleteIcon sx={{ fontSize: 16 }} /></IconButton></Tooltip>
+                  }} sx={{ color: 'error.main' }}><DeleteIcon sx={{ fontSize: '1rem' }} /></IconButton></Tooltip>
                 </TableCell>
               </TableRow>
             ))}

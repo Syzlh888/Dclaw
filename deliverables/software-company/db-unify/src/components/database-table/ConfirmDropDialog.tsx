@@ -59,7 +59,7 @@ const ConfirmDropDialog: React.FC<ConfirmDropDialogProps> = ({
           gap: 1,
         }}
       >
-        <WarningAmberIcon sx={{ fontSize: 18 }} />
+        <WarningAmberIcon sx={{ fontSize: '1.125rem' }} />
         {title}
       </DialogTitle>
       <DialogContent sx={{ pt: '8px !important' }}>

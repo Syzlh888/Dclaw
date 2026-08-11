@@ -374,7 +374,7 @@ const TemplatesDialog: React.FC<TemplatesDialogProps> = ({ open, onClose, onInse
                 secondaryAction={
                   <Button
                     size="small"
-                    startIcon={<ContentCopyIcon sx={{ fontSize: 14 }} />}
+                    startIcon={<ContentCopyIcon sx={{ fontSize: '0.875rem' }} />}
                     onClick={() => onInsert(currentSql)}
                     sx={{ textTransform: 'none', fontSize: '0.75rem' }}
                   >
@@ -396,7 +396,7 @@ const TemplatesDialog: React.FC<TemplatesDialogProps> = ({ open, onClose, onInse
                         <Chip
                           label={driverLabels[selectedDriver]}
                           size="small"
-                          icon={<StorageIcon sx={{ fontSize: 12 }} />}
+                          icon={<StorageIcon sx={{ fontSize: '0.75rem' }} />}
                           sx={{ fontSize: '0.65rem', height: 18 }}
                         />
                       </Box>

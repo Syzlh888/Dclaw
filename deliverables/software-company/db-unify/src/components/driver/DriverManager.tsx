@@ -209,7 +209,7 @@ const DriverManager: React.FC<DriverManagerProps> = ({ open, onClose }) => {
     if (!driver.isBuiltIn) {
       return (
         <Chip
-          icon={<ExtensionIcon sx={{ fontSize: 13 }} />}
+          icon={<ExtensionIcon sx={{ fontSize: '0.8125rem' }} />}
           label="用户定义"
           size="small"
           variant="outlined"
@@ -226,7 +226,7 @@ const DriverManager: React.FC<DriverManagerProps> = ({ open, onClose }) => {
     if (driver.downloaded) {
       return (
         <Chip
-          icon={<CheckCircleIcon sx={{ fontSize: 13 }} />}
+          icon={<CheckCircleIcon sx={{ fontSize: '0.8125rem' }} />}
           label="已下载"
           size="small"
           variant="outlined"
@@ -247,7 +247,7 @@ const DriverManager: React.FC<DriverManagerProps> = ({ open, onClose }) => {
     }
     return (
       <Chip
-        icon={<CancelIcon sx={{ fontSize: 13 }} />}
+        icon={<CancelIcon sx={{ fontSize: '0.8125rem' }} />}
         label="不可获得"
         size="small"
         variant="outlined"
@@ -289,7 +289,7 @@ const DriverManager: React.FC<DriverManagerProps> = ({ open, onClose }) => {
             borderColor: 'divider',
           }}
         >
-          <Inventory2Icon sx={{ fontSize: 20, color: 'primary.main' }} />
+          <Inventory2Icon sx={{ fontSize: '1.25rem', color: 'primary.main' }} />
           <Typography variant="subtitle1" sx={{ fontWeight: 600, fontSize: '0.95rem' }}>
             驱动管理器
           </Typography>
@@ -323,13 +323,13 @@ const DriverManager: React.FC<DriverManagerProps> = ({ open, onClose }) => {
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
-                          <SearchIcon sx={{ fontSize: 18, color: 'text.disabled' }} />
+                          <SearchIcon sx={{ fontSize: '1.125rem', color: 'text.disabled' }} />
                         </InputAdornment>
                       ),
                       endAdornment: searchText ? (
                         <InputAdornment position="end">
                           <IconButton size="small" onClick={handleSearchClear} edge="end">
-                            <ClearIcon sx={{ fontSize: 16 }} />
+                            <ClearIcon sx={{ fontSize: '1rem' }} />
                           </IconButton>
                         </InputAdornment>
                       ) : null,
@@ -436,7 +436,7 @@ const DriverManager: React.FC<DriverManagerProps> = ({ open, onClose }) => {
                                 {downloadingId === driver.id ? (
                                   <CircularProgress size={14} color="inherit" />
                                 ) : (
-                                  <CloudDownloadIcon sx={{ fontSize: 16 }} />
+                                  <CloudDownloadIcon sx={{ fontSize: '1rem' }} />
                                 )}
                               </IconButton>
                             )}
@@ -455,7 +455,7 @@ const DriverManager: React.FC<DriverManagerProps> = ({ open, onClose }) => {
                                 }}
                                 title="手动上传 JAR"
                               >
-                                <CloudUploadIcon sx={{ fontSize: 16 }} />
+                                <CloudUploadIcon sx={{ fontSize: '1rem' }} />
                               </IconButton>
                             )}
                           </ListItemButton>
@@ -482,7 +482,7 @@ const DriverManager: React.FC<DriverManagerProps> = ({ open, onClose }) => {
                   fullWidth
                   variant="outlined"
                   size="small"
-                  startIcon={<AddIcon sx={{ fontSize: 16 }} />}
+                  startIcon={<AddIcon sx={{ fontSize: '1rem' }} />}
                   onClick={handleNew}
                   sx={{
                     textTransform: 'none',
@@ -498,7 +498,7 @@ const DriverManager: React.FC<DriverManagerProps> = ({ open, onClose }) => {
                   fullWidth
                   variant="outlined"
                   size="small"
-                  startIcon={<ContentCopyIcon sx={{ fontSize: 16 }} />}
+                  startIcon={<ContentCopyIcon sx={{ fontSize: '1rem' }} />}
                   disabled
                   sx={{
                     textTransform: 'none',
@@ -514,7 +514,7 @@ const DriverManager: React.FC<DriverManagerProps> = ({ open, onClose }) => {
                   fullWidth
                   variant="outlined"
                   size="small"
-                  startIcon={<EditIcon sx={{ fontSize: 16 }} />}
+                  startIcon={<EditIcon sx={{ fontSize: '1rem' }} />}
                   onClick={handleEdit}
                   disabled={!selectedDriver || selectedDriver.isBuiltIn}
                   sx={{
@@ -531,7 +531,7 @@ const DriverManager: React.FC<DriverManagerProps> = ({ open, onClose }) => {
                   fullWidth
                   variant="outlined"
                   size="small"
-                  startIcon={<DeleteIcon sx={{ fontSize: 16 }} />}
+                  startIcon={<DeleteIcon sx={{ fontSize: '1rem' }} />}
                   onClick={handleDeleteOrUninstall}
                   disabled={
                     !selectedDriver ||
@@ -552,7 +552,7 @@ const DriverManager: React.FC<DriverManagerProps> = ({ open, onClose }) => {
                   fullWidth
                   variant="outlined"
                   size="small"
-                  startIcon={<UndoIcon sx={{ fontSize: 16 }} />}
+                  startIcon={<UndoIcon sx={{ fontSize: '1rem' }} />}
                   onClick={handleUncancel}
                   sx={{
                     textTransform: 'none',
@@ -577,7 +577,7 @@ const DriverManager: React.FC<DriverManagerProps> = ({ open, onClose }) => {
                     </Typography>
                   </Box>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                    <CancelIcon sx={{ fontSize: 12, color: 'error.main', flexShrink: 0 }} />
+                    <CancelIcon sx={{ fontSize: '0.75rem', color: 'error.main', flexShrink: 0 }} />
                     <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.secondary' }}>
                       不可获得
                     </Typography>

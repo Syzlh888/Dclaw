@@ -64,7 +64,7 @@ const ProxyStatusBar: React.FC = () => {
           <Button
             size="small"
             variant="text"
-            startIcon={<PlayArrowIcon sx={{ fontSize: 14 }} />}
+            startIcon={<PlayArrowIcon sx={{ fontSize: '0.875rem' }} />}
             onClick={startProcess}
             disabled={processLoading || !!running}
             sx={{ color: running ? 'text.disabled' : 'success.main', textTransform: 'none', fontSize: '0.75rem' }}
@@ -78,7 +78,7 @@ const ProxyStatusBar: React.FC = () => {
           <Button
             size="small"
             variant="text"
-            startIcon={<StopIcon sx={{ fontSize: 14 }} />}
+            startIcon={<StopIcon sx={{ fontSize: '0.875rem' }} />}
             onClick={stopProcess}
             disabled={processLoading || !running}
             sx={{ color: running ? 'error.main' : 'text.disabled', textTransform: 'none', fontSize: '0.75rem' }}
@@ -92,7 +92,7 @@ const ProxyStatusBar: React.FC = () => {
           <Button
             size="small"
             variant="text"
-            startIcon={processLoading ? <CircularProgress size={12} /> : <RestartAltIcon sx={{ fontSize: 14 }} />}
+            startIcon={processLoading ? <CircularProgress size={12} /> : <RestartAltIcon sx={{ fontSize: '0.875rem' }} />}
             onClick={restartProcess}
             disabled={processLoading}
             sx={{ color: 'primary.main', textTransform: 'none', fontSize: '0.75rem' }}

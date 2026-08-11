@@ -200,7 +200,7 @@ const BackupDialog: React.FC<BackupDialogProps> = ({ open, onClose }) => {
                           onClick={() => openFolderPicker('manual')}
                           edge="end"
                         >
-                          <FolderOpenIcon sx={{ fontSize: 20 }} />
+                          <FolderOpenIcon sx={{ fontSize: '1.25rem' }} />
                         </IconButton>
                       </Tooltip>
                     </InputAdornment>
@@ -276,7 +276,7 @@ const BackupDialog: React.FC<BackupDialogProps> = ({ open, onClose }) => {
                             onClick={() => openFolderPicker('auto')}
                             edge="end"
                           >
-                            <FolderOpenIcon sx={{ fontSize: 20 }} />
+                            <FolderOpenIcon sx={{ fontSize: '1.25rem' }} />
                           </IconButton>
                         </Tooltip>
                       </InputAdornment>
@@ -355,7 +355,7 @@ const BackupDialog: React.FC<BackupDialogProps> = ({ open, onClose }) => {
                             }
                           }}
                         >
-                          <DownloadIcon sx={{ fontSize: 18 }} />
+                          <DownloadIcon sx={{ fontSize: '1.125rem' }} />
                         </IconButton>
                       </Tooltip>
                       <Tooltip title="还原">
@@ -368,7 +368,7 @@ const BackupDialog: React.FC<BackupDialogProps> = ({ open, onClose }) => {
                           {restoring === f.fileName ? (
                             <CircularProgress size={18} />
                           ) : (
-                            <RestoreIcon sx={{ fontSize: 18 }} />
+                            <RestoreIcon sx={{ fontSize: '1.125rem' }} />
                           )}
                         </IconButton>
                       </Tooltip>
@@ -378,7 +378,7 @@ const BackupDialog: React.FC<BackupDialogProps> = ({ open, onClose }) => {
                           color="error"
                           onClick={() => handleDelete(f)}
                         >
-                          <DeleteIcon sx={{ fontSize: 18 }} />
+                          <DeleteIcon sx={{ fontSize: '1.125rem' }} />
                         </IconButton>
                       </Tooltip>
                     </ListItemSecondaryAction>

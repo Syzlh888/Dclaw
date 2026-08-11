@@ -219,7 +219,7 @@ const EditTableDialog: React.FC<EditTableDialogProps> = ({
         }}
       >
         <DialogTitle sx={{ color: 'text.primary', fontSize: '0.85rem', fontWeight: 600, pb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <EditNoteIcon sx={{ fontSize: 18 }} />
+          <EditNoteIcon sx={{ fontSize: '1.125rem' }} />
           编辑表：{tableName}
         </DialogTitle>
         <DialogContent sx={{ pt: '8px !important' }}>
@@ -230,7 +230,7 @@ const EditTableDialog: React.FC<EditTableDialogProps> = ({
             <Button
               size="small"
               variant="outlined"
-              startIcon={<AddIcon sx={{ fontSize: 12 }} />}
+              startIcon={<AddIcon sx={{ fontSize: '0.75rem' }} />}
               onClick={handleAddColumn}
               sx={{ fontSize: '0.62rem', py: 0, minHeight: 20, textTransform: 'none' }}
             >
@@ -290,13 +290,13 @@ const EditTableDialog: React.FC<EditTableDialogProps> = ({
                     <TableCell sx={{ borderBottom: '1px solid', borderBottomColor: 'divider', py: 0.25, px: 0.25 }}>
                       <Tooltip title="编辑列">
                         <IconButton size="small" onClick={() => handleOpenEdit(idx)} sx={{ p: 0.25 }}>
-                          <EditIcon sx={{ fontSize: 12, color: '#0ea5e9' }} />
+                          <EditIcon sx={{ fontSize: '0.75rem', color: '#0ea5e9' }} />
                         </IconButton>
                       </Tooltip>
                       {isNewColumn(idx) && (
                         <Tooltip title="删除列">
                           <IconButton size="small" onClick={() => handleDeleteClick(idx)} sx={{ p: 0.25 }}>
-                            <DeleteIcon sx={{ fontSize: 12, color: '#f87171' }} />
+                            <DeleteIcon sx={{ fontSize: '0.75rem', color: '#f87171' }} />
                           </IconButton>
                         </Tooltip>
                       )}

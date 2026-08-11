@@ -82,7 +82,7 @@ const StatsOverview: React.FC<Props> = ({ connectionId }) => {
             <Button
               size="small"
               variant="text"
-              startIcon={statsLoading ? <CircularProgress size={10} /> : <RefreshIcon sx={{ fontSize: 12 }} />}
+              startIcon={statsLoading ? <CircularProgress size={10} /> : <RefreshIcon sx={{ fontSize: '0.75rem' }} />}
               onClick={() => loadStats({ from: range.from, to: range.to, connection_id: connectionId })}
               sx={{ color: 'primary.main', textTransform: 'none', fontSize: '0.65rem', minWidth: 0, px: 0.5 }}
             >

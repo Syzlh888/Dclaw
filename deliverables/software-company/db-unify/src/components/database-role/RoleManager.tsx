@@ -353,7 +353,7 @@ const RoleManager: React.FC<RoleManagerProps> = ({ open, connectionId, onClose, 
         }}
       >
         <DialogTitle sx={{ color: 'text.primary', fontSize: '0.85rem', fontWeight: 600, pb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <SecurityIcon sx={{ fontSize: 18 }} />
+          <SecurityIcon sx={{ fontSize: '1.125rem' }} />
           角色管理
         </DialogTitle>
         <DialogContent sx={{ pt: '8px !important', display: 'flex', gap: 2, overflow: 'hidden' }}>
@@ -366,12 +366,12 @@ const RoleManager: React.FC<RoleManagerProps> = ({ open, connectionId, onClose, 
               <Box>
                 <Tooltip title="刷新">
                   <IconButton size="small" onClick={loadRoles} sx={{ p: 0.25 }}>
-                    <RefreshIcon sx={{ fontSize: 14 }} />
+                    <RefreshIcon sx={{ fontSize: '0.875rem' }} />
                   </IconButton>
                 </Tooltip>
                 <Tooltip title="新建角色">
                   <IconButton size="small" onClick={handleCreate} sx={{ p: 0.25 }}>
-                    <AddIcon sx={{ fontSize: 14 }} />
+                    <AddIcon sx={{ fontSize: '0.875rem' }} />
                   </IconButton>
                 </Tooltip>
               </Box>
@@ -401,7 +401,7 @@ const RoleManager: React.FC<RoleManagerProps> = ({ open, connectionId, onClose, 
                     '&:hover': { bgcolor: 'action.hover' },
                   }}
                 >
-                  <PersonIcon sx={{ fontSize: 13, color: 'text.secondary', mr: 0.75 }} />
+                  <PersonIcon sx={{ fontSize: '0.8125rem', color: 'text.secondary', mr: 0.75 }} />
                   <ListItemText
                     primary={
                       <Typography variant="caption" sx={{ fontSize: '0.68rem', color: 'text.primary' }}>
@@ -438,12 +438,12 @@ const RoleManager: React.FC<RoleManagerProps> = ({ open, connectionId, onClose, 
                     <Box>
                       <Tooltip title="编辑角色">
                         <IconButton size="small" onClick={handleEdit} sx={{ p: 0.25, mr: 0.5 }}>
-                          <EditIcon sx={{ fontSize: 13 }} />
+                          <EditIcon sx={{ fontSize: '0.8125rem' }} />
                         </IconButton>
                       </Tooltip>
                       <Tooltip title="删除角色">
                         <IconButton size="small" onClick={() => { setDeleteTarget(selectedRole); setDeleteOpen(true); }} sx={{ p: 0.25 }}>
-                          <DeleteIcon sx={{ fontSize: 13 }} />
+                          <DeleteIcon sx={{ fontSize: '0.8125rem' }} />
                         </IconButton>
                       </Tooltip>
                     </Box>
@@ -487,7 +487,7 @@ const RoleManager: React.FC<RoleManagerProps> = ({ open, connectionId, onClose, 
                     <Button
                       size="small"
                       variant="outlined"
-                      startIcon={<AddIcon sx={{ fontSize: 12 }} />}
+                      startIcon={<AddIcon sx={{ fontSize: '0.75rem' }} />}
                       onClick={() => {
                         setSelectedPrivs(new Set(['SELECT']));
                         setSelectedTables(new Set());
@@ -731,8 +731,8 @@ const RoleManager: React.FC<RoleManagerProps> = ({ open, connectionId, onClose, 
                       sx={{ py: 0.25, minHeight: 28, px: 1, '&:hover': { bgcolor: 'action.hover' } }}
                     >
                       {expandedSchemas.has(schema)
-                        ? <ExpandMoreIcon sx={{ fontSize: 14, color: 'text.secondary', mr: 0.5 }} />
-                        : <ChevronRightIcon sx={{ fontSize: 14, color: 'text.secondary', mr: 0.5 }} />}
+                        ? <ExpandMoreIcon sx={{ fontSize: '0.875rem', color: 'text.secondary', mr: 0.5 }} />
+                        : <ChevronRightIcon sx={{ fontSize: '0.875rem', color: 'text.secondary', mr: 0.5 }} />}
                       <Checkbox
                         size="small"
                         checked={allSelected}

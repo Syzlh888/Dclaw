@@ -317,7 +317,7 @@ export const ExportStepTarget: React.FC = () => {
             placeholder="可留空使用默认文件名"
             helperText={
               <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, color: '#888' }}>
-                <CloudDownloadIcon sx={{ fontSize: 13 }} />
+                <CloudDownloadIcon sx={{ fontSize: '0.8125rem' }} />
                 完成后文件将自动下载到浏览器默认下载目录
               </Box>
             }
@@ -423,7 +423,7 @@ export const ExportStepTarget: React.FC = () => {
           </Typography>
           <Box sx={{ maxHeight: 200, overflow: 'auto', mb: 2 }}>
             {selectedTables.length === 0 ? (
-              <Typography sx={{ color: '#888', fontSize: 12, textAlign: 'center', py: 2 }}>
+              <Typography sx={{ color: '#888', fontSize: '0.75rem', textAlign: 'center', py: 2 }}>
                 请先选择源表
               </Typography>
             ) : selectedTables.length === 1 ? (
@@ -439,9 +439,9 @@ export const ExportStepTarget: React.FC = () => {
                   onInputChange={(_, val) => updateDb({ tableName: val || '' })}
                   ListboxProps={{
                     sx: {
-                      fontSize: 12,
+                      fontSize: '0.75rem',
                       padding: 0,
-                      '& li': { fontSize: 12, padding: '4px 8px', minHeight: 24 },
+                      '& li': { fontSize: '0.75rem', padding: '4px 8px', minHeight: 24 },
                     },
                   }}
                   slotProps={{
@@ -454,7 +454,7 @@ export const ExportStepTarget: React.FC = () => {
                       placeholder={selectedTables[0]?.tableName}
                       sx={{
                         bgcolor: '#3C3F41',
-                        '& .MuiOutlinedInput-input': { fontSize: 12, padding: '6px 8px' },
+                        '& .MuiOutlinedInput-input': { fontSize: '0.75rem', padding: '6px 8px' },
                       }}
                       error={!target.tableName}
                       helperText={!target.tableName ? '目标表名必填' : ''}
@@ -467,7 +467,7 @@ export const ExportStepTarget: React.FC = () => {
                   startIcon={<AccountTreeIcon />}
                   onClick={() => openMappingDialog(selectedTables[0], 0)}
                   sx={{
-                    fontSize: 11,
+                    fontSize: '0.6875rem',
                     minWidth: 92,
                     px: 1.2,
                     py: 0.4,
@@ -490,10 +490,10 @@ export const ExportStepTarget: React.FC = () => {
                 const val = target.tableNameArr?.[idx] || t.tableName;
                 return (
                   <Box key={idx} sx={{ display: 'flex', alignItems: 'center', mb: 0.5, gap: 1 }}>
-                    <Typography sx={{ color: '#BBB', fontSize: 11, flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: 'right', pr: 0.5 }}>
+                    <Typography sx={{ color: '#BBB', fontSize: '0.6875rem', flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: 'right', pr: 0.5 }}>
                       {t.tableName}
                     </Typography>
-                    <ArrowForwardIcon sx={{ fontSize: 14, color: '#90CAF9' }} />
+                    <ArrowForwardIcon sx={{ fontSize: '0.875rem', color: '#90CAF9' }} />
                     <Autocomplete
                       freeSolo
                       size="small"
@@ -512,9 +512,9 @@ export const ExportStepTarget: React.FC = () => {
                       }}
                       ListboxProps={{
                         sx: {
-                          fontSize: 12,
+                          fontSize: '0.75rem',
                           padding: 0,
-                          '& li': { fontSize: 12, padding: '4px 8px', minHeight: 24 },
+                          '& li': { fontSize: '0.75rem', padding: '4px 8px', minHeight: 24 },
                         },
                       }}
                       slotProps={{
@@ -528,7 +528,7 @@ export const ExportStepTarget: React.FC = () => {
                         sx={{
                           bgcolor: '#3C3F41',
                           '& fieldset': { border: 'none' },
-                          '& .MuiOutlinedInput-input': { fontSize: 12, padding: '6px 8px' },
+                          '& .MuiOutlinedInput-input': { fontSize: '0.75rem', padding: '6px 8px' },
                         }}
                       />
                     )}
@@ -539,7 +539,7 @@ export const ExportStepTarget: React.FC = () => {
                     startIcon={<AccountTreeIcon />}
                     onClick={() => openMappingDialog(t, idx)}
                     sx={{
-                      fontSize: 11,
+                      fontSize: '0.6875rem',
                       minWidth: 92,
                       px: 1.2,
                       py: 0.4,

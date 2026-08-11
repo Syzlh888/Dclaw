@@ -66,7 +66,7 @@ export const ExportStepOptions: React.FC = () => {
     <Box sx={{ pt: 1 }}>
       <Typography
         variant="subtitle2"
-        sx={{ mb: 1.5, color: '#E0E0E0', fontSize: 13, fontWeight: 600, letterSpacing: 0.3 }}
+        sx={{ mb: 1.5, color: '#E0E0E0', fontSize: '0.8125rem', fontWeight: 600, letterSpacing: 0.3 }}
       >
         选项与预览
       </Typography>
@@ -95,10 +95,10 @@ export const ExportStepOptions: React.FC = () => {
           sx={{
             width: 160,
             bgcolor: '#3C3F41',
-            '& .MuiOutlinedInput-root': { fontSize: 13 },
-            '& .MuiInputLabel-root': { fontSize: 12, color: '#BBBBBB' },
+            '& .MuiOutlinedInput-root': { fontSize: '0.8125rem' },
+            '& .MuiInputLabel-root': { fontSize: '0.75rem', color: '#BBBBBB' },
           }}
-          helperText={<span style={{ fontSize: 11, color: '#888' }}>1 - 50000</span>}
+          helperText={<span style={{ fontSize: '0.6875rem', color: '#888' }}>1 - 50000</span>}
         />
         <TextField
           size="small"
@@ -113,11 +113,11 @@ export const ExportStepOptions: React.FC = () => {
           sx={{
             width: 160,
             bgcolor: '#3C3F41',
-            '& .MuiOutlinedInput-root': { fontSize: 13 },
-            '& .MuiInputLabel-root': { fontSize: 12, color: '#BBBBBB' },
+            '& .MuiOutlinedInput-root': { fontSize: '0.8125rem' },
+            '& .MuiInputLabel-root': { fontSize: '0.75rem', color: '#BBBBBB' },
           }}
           helperText={
-            <span style={{ fontSize: 11, color: options.maxRows > 0 ? '#FFB74D' : '#888' }}>
+            <span style={{ fontSize: '0.6875rem', color: options.maxRows > 0 ? '#FFB74D' : '#888' }}>
               {options.maxRows > 0 ? '超过将截断' : '0 = 不限制'}
             </span>
           }
@@ -135,7 +135,7 @@ export const ExportStepOptions: React.FC = () => {
             mt: 0.5,
             minWidth: 130,
             height: 36,
-            fontSize: 12.5,
+            fontSize: '0.7812rem',
             fontWeight: 600,
             textTransform: 'none',
             bgcolor: '#1976D2',
@@ -159,7 +159,7 @@ export const ExportStepOptions: React.FC = () => {
             }}
           />
         }
-        label={<span style={{ fontSize: 12.5, color: '#BBBBBB' }}>包含列标题行</span>}
+        label={<span style={{ fontSize: '0.7812rem', color: '#BBBBBB' }}>包含列标题行</span>}
         sx={{ mb: 2, ml: 0.5 }}
       />
 
@@ -185,7 +185,7 @@ export const ExportStepOptions: React.FC = () => {
                       sx={{
                         bgcolor: '#3C3F41',
                         color: '#FFFFFF',
-                        fontSize: 11,
+                        fontSize: '0.6875rem',
                         fontWeight: 600,
                       }}
                     >
@@ -200,7 +200,7 @@ export const ExportStepOptions: React.FC = () => {
                     {preview.columns.map((c) => (
                       <TableCell
                         key={c}
-                        sx={{ color: '#BBBBBB', fontSize: 11, fontFamily: 'monospace' }}
+                        sx={{ color: '#BBBBBB', fontSize: '0.6875rem', fontFamily: 'monospace' }}
                       >
                         {row[c] === null
                           ? 'NULL'

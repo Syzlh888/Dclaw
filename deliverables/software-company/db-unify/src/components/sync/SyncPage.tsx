@@ -291,7 +291,7 @@ const SyncContent: React.FC<{ open?: boolean; onClose?: () => void; standalone?:
         onChange={(_, val) => setValues((old) => ({ ...old, [schemaKey]: val || '' }))}
         onInputChange={(_, val) => setValues((old) => ({ ...old, [schemaKey]: val || '' }))}
         ListboxProps={{
-          sx: { fontSize: 13, padding: 0, '& li': { fontSize: 13, padding: '4px 10px', minHeight: 24 } },
+          sx: { fontSize: '0.8125rem', padding: 0, '& li': { fontSize: '0.8125rem', padding: '4px 10px', minHeight: 24 } },
         }}
         slotProps={{ paper: { sx: { bgcolor: 'background.paper', color: 'common.white' } } }}
         renderInput={(params) => (
@@ -315,7 +315,7 @@ const SyncContent: React.FC<{ open?: boolean; onClose?: () => void; standalone?:
             sx={{
               mb: 1.5,
               bgcolor: locked ? 'background.paper' : 'background.paper',
-              '& .MuiInputBase-root': { color: 'text.primary', fontSize: 13 },
+              '& .MuiInputBase-root': { color: 'text.primary', fontSize: '0.8125rem' },
               '& .MuiFormHelperText-root': { color: 'text.secondary', ml: 0, mt: 0.3 },
             }}
             InputLabelProps={{ sx: { color: 'text.secondary' } }}
@@ -346,7 +346,7 @@ const SyncContent: React.FC<{ open?: boolean; onClose?: () => void; standalone?:
         }}
         isOptionEqualToValue={(option, value) => option.name === value.name}
         noOptionsText={loading ? '加载中…' : !connId || !schema ? '请先选择连接和 Schema' : '未找到可用表'}
-        ListboxProps={{ sx: { fontSize: 13, padding: 0, '& li': { fontSize: 13, padding: '4px 10px', minHeight: 24 } } }}
+        ListboxProps={{ sx: { fontSize: '0.8125rem', padding: 0, '& li': { fontSize: '0.8125rem', padding: '4px 10px', minHeight: 24 } } }}
         slotProps={{ paper: { sx: { bgcolor: 'background.paper', color: 'common.white' } } }}
         renderInput={(params) => (
           <TextField
@@ -363,7 +363,7 @@ const SyncContent: React.FC<{ open?: boolean; onClose?: () => void; standalone?:
                 </>
               ),
             }}
-            sx={{ mb: 1.5, bgcolor: 'background.paper', '& .MuiInputBase-root': { color: 'text.primary', fontSize: 13 } }}
+            sx={{ mb: 1.5, bgcolor: 'background.paper', '& .MuiInputBase-root': { color: 'text.primary', fontSize: '0.8125rem' } }}
             InputLabelProps={{ sx: { color: 'text.secondary' } }}
           />
         )}
@@ -427,7 +427,7 @@ const SyncContent: React.FC<{ open?: boolean; onClose?: () => void; standalone?:
           <TaskListPanel onCreateTask={() => openForm('task')} onToggleEnabled={handleToggleEnabled} />
         ) : (
           <Box sx={{ height: '100%', display: 'grid', placeItems: 'center' }}>
-            <Typography sx={{ color: 'text.disabled', fontSize: 13 }}>从左侧选择同步项目开始</Typography>
+            <Typography sx={{ color: 'text.disabled', fontSize: '0.8125rem' }}>从左侧选择同步项目开始</Typography>
           </Box>
         )}
       </Box>

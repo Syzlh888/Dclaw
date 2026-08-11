@@ -41,14 +41,14 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ width, onWidthChange }) => {
       >
         <Tab
           value="tree"
-          icon={<AccountTreeIcon sx={{ fontSize: 16 }} />}
+          icon={<AccountTreeIcon sx={{ fontSize: '1rem' }} />}
           iconPosition="start"
           label="数据库"
           sx={{ minHeight: 36, py: 0, textTransform: 'none', fontSize: '0.8rem' }}
         />
         <Tab
           value="groups"
-          icon={<GroupWorkIcon sx={{ fontSize: 16 }} />}
+          icon={<GroupWorkIcon sx={{ fontSize: '1rem' }} />}
           iconPosition="start"
           label="分组"
           sx={{ minHeight: 36, py: 0, textTransform: 'none', fontSize: '0.8rem' }}

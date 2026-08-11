@@ -47,7 +47,7 @@ const SqlViewPanel: React.FC = () => {
           <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>执行的 SQL</Typography>
           <Tooltip title="复制 SQL">
             <IconButton size="small" onClick={() => handleCopySql(currentSql)} sx={{ p: 0.25 }}>
-              <ContentCopyIcon sx={{ fontSize: 13 }} />
+              <ContentCopyIcon sx={{ fontSize: '0.8125rem' }} />
             </IconButton>
           </Tooltip>
         </Box>
@@ -76,7 +76,7 @@ const SqlViewPanel: React.FC = () => {
                 {conn.schema && <Chip label={`schema: ${conn.schema}`} size="small" color="info" variant="outlined" sx={{ fontSize: '0.55rem', height: 16 }} />}
                 <Tooltip title="复制此连接的 SQL">
                   <IconButton size="small" onClick={() => handleCopySql(schemaSql)} sx={{ p: 0.25, ml: 'auto' }}>
-                    <ContentCopyIcon sx={{ fontSize: 12 }} />
+                    <ContentCopyIcon sx={{ fontSize: '0.75rem' }} />
                   </IconButton>
                 </Tooltip>
               </Box>

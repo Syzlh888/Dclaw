@@ -286,7 +286,7 @@ const ServerFormDialog: React.FC<Props> = ({ open, server, loading, presetProjec
                     {projects.map(p => <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>)}
                   </Select>
                 </FormControl>
-                <Tooltip title="维护项目字典"><IconButton size="small" onClick={() => setProjectDictOpen(true)}><SettingsIcon sx={{ fontSize: 16 }} /></IconButton></Tooltip>
+                <Tooltip title="维护项目字典"><IconButton size="small" onClick={() => setProjectDictOpen(true)}><SettingsIcon sx={{ fontSize: '1rem' }} /></IconButton></Tooltip>
               </Box>
 
               <Box sx={{ flex: 1, minWidth: 0, display: 'flex', gap: 0.5 }}>
@@ -297,7 +297,7 @@ const ServerFormDialog: React.FC<Props> = ({ open, server, loading, presetProjec
                     {engineerings.map(e => <MenuItem key={e.id} value={e.id}>{e.name}</MenuItem>)}
                   </Select>
                 </FormControl>
-                <Tooltip title="维护工程字典"><IconButton size="small" onClick={() => setEngDictOpen(true)}><SettingsIcon sx={{ fontSize: 16 }} /></IconButton></Tooltip>
+                <Tooltip title="维护工程字典"><IconButton size="small" onClick={() => setEngDictOpen(true)}><SettingsIcon sx={{ fontSize: '1rem' }} /></IconButton></Tooltip>
               </Box>
 
               <Box sx={{ flex: 1, minWidth: 0, display: 'flex', gap: 0.5 }}>
@@ -308,7 +308,7 @@ const ServerFormDialog: React.FC<Props> = ({ open, server, loading, presetProjec
                     {applications.map(a => <MenuItem key={a.id} value={a.id}>{a.name}</MenuItem>)}
                   </Select>
                 </FormControl>
-                <Tooltip title="维护应用字典"><IconButton size="small" onClick={() => setAppDictOpen(true)}><SettingsIcon sx={{ fontSize: 16 }} /></IconButton></Tooltip>
+                <Tooltip title="维护应用字典"><IconButton size="small" onClick={() => setAppDictOpen(true)}><SettingsIcon sx={{ fontSize: '1rem' }} /></IconButton></Tooltip>
               </Box>
             </Box>
 
@@ -347,7 +347,7 @@ const ServerFormDialog: React.FC<Props> = ({ open, server, loading, presetProjec
                   </FormControl>
                   <IconButton size="small" onClick={() => removeIpEntry(idx)}
                     sx={{ flexShrink: 0, alignSelf: 'center' }}>
-                    <CloseIcon sx={{ fontSize: 16 }} />
+                    <CloseIcon sx={{ fontSize: '1rem' }} />
                   </IconButton>
                 </Box>
               ))}
@@ -367,7 +367,7 @@ const ServerFormDialog: React.FC<Props> = ({ open, server, loading, presetProjec
                     {serverLocationList.map(item => <MenuItem key={item.name} value={item.name}>{item.shortName ? `${item.name}（${item.shortName}）` : item.name}</MenuItem>)}
                   </Select>
                 </FormControl>
-                <Tooltip title="维护位置字典"><IconButton size="small" onClick={() => setLocationDictOpen(true)}><SettingsIcon sx={{ fontSize: 16 }} /></IconButton></Tooltip>
+                <Tooltip title="维护位置字典"><IconButton size="small" onClick={() => setLocationDictOpen(true)}><SettingsIcon sx={{ fontSize: '1rem' }} /></IconButton></Tooltip>
               </Box>
               <FormControl size="small" fullWidth>
                 <InputLabel>服务器类型</InputLabel>
@@ -386,7 +386,7 @@ const ServerFormDialog: React.FC<Props> = ({ open, server, loading, presetProjec
                     {osList.map(item => <MenuItem key={item.name} value={item.name}>{item.shortName ? `${item.name}（${item.shortName}）` : item.name}</MenuItem>)}
                   </Select>
                 </FormControl>
-                <Tooltip title="维护操作系统字典"><IconButton size="small" onClick={() => setOsDictOpen(true)}><SettingsIcon sx={{ fontSize: 16 }} /></IconButton></Tooltip>
+                <Tooltip title="维护操作系统字典"><IconButton size="small" onClick={() => setOsDictOpen(true)}><SettingsIcon sx={{ fontSize: '1rem' }} /></IconButton></Tooltip>
               </Box>
             </Box>
 
@@ -418,13 +418,13 @@ const ServerFormDialog: React.FC<Props> = ({ open, server, loading, presetProjec
                     />
                     <Tooltip title={isRevealed ? '隐藏密码' : '查看密码'}>
                       <IconButton size="small" onClick={() => handleViewCredPassword(idx)}>
-                        {isRevealed ? <VisibilityOffIcon sx={{ fontSize: 16 }} /> : <VisibilityIcon sx={{ fontSize: 16 }} />}
+                        {isRevealed ? <VisibilityOffIcon sx={{ fontSize: '1rem' }} /> : <VisibilityIcon sx={{ fontSize: '1rem' }} />}
                       </IconButton>
                     </Tooltip>
                     {isRevealed && cred.password && cred.password !== '******' && (
                       <Tooltip title="复制密码">
                         <IconButton size="small" onClick={() => handleCopyPassword(cred.password)}>
-                          <ContentCopyIcon sx={{ fontSize: 16 }} />
+                          <ContentCopyIcon sx={{ fontSize: '1rem' }} />
                         </IconButton>
                       </Tooltip>
                     )}
@@ -436,12 +436,12 @@ const ServerFormDialog: React.FC<Props> = ({ open, server, loading, presetProjec
                     {server && (
                       <Tooltip title="修改历史">
                         <IconButton size="small" onClick={() => handleViewCredHistory(idx)}>
-                          <HistoryIcon sx={{ fontSize: 16 }} />
+                          <HistoryIcon sx={{ fontSize: '1rem' }} />
                         </IconButton>
                       </Tooltip>
                     )}
                     <IconButton size="small" onClick={() => removeCredential(idx)}>
-                      <CloseIcon sx={{ fontSize: 16 }} />
+                      <CloseIcon sx={{ fontSize: '1rem' }} />
                     </IconButton>
                   </Box>
                 );
@@ -498,7 +498,7 @@ const ServerFormDialog: React.FC<Props> = ({ open, server, loading, presetProjec
                       </Select>
                     </FormControl>
                     <IconButton size="small" onClick={() => removeAccessEntry(i)} sx={{ flexShrink: 0 }}>
-                      <CloseIcon sx={{ fontSize: 16 }} />
+                      <CloseIcon sx={{ fontSize: '1rem' }} />
                     </IconButton>
                   </Box>
                 );

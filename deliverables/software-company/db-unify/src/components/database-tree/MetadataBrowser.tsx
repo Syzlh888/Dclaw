@@ -889,8 +889,8 @@ const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseInden
           sx={{ py: 0, minHeight: 14, pl: `${baseIndent}px`, '&:hover': { bgcolor: 'action.hover' } }}
         >
           {st.tablesOpen
-            ? <ExpandMoreIcon sx={{ fontSize: 12, color: 'text.secondary', mr: 0.15 }} />
-            : <ChevronRightIcon sx={{ fontSize: 12, color: 'text.secondary', mr: 0.15 }} />}
+            ? <ExpandMoreIcon sx={{ fontSize: '0.75rem', color: 'text.secondary', mr: 0.15 }} />
+            : <ChevronRightIcon sx={{ fontSize: '0.75rem', color: 'text.secondary', mr: 0.15 }} />}
           <TableIcon size={11} style={{ marginRight: 2 }} />
           <Typography variant="caption" sx={{ fontSize: '0.75rem', fontWeight: 600, flex: 1 }}>
             表{st.data ? ` (${tables.length})` : ''}
@@ -898,7 +898,7 @@ const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseInden
           {st.data && (
             <Tooltip title="刷新">
               <IconButton size="small" onClick={(e) => { e.stopPropagation(); refreshMeta(schemaKey, schemaName); }} sx={{ p: 0.25 }}>
-                <RefreshIcon sx={{ fontSize: 12 }} />
+                <RefreshIcon sx={{ fontSize: '0.75rem' }} />
               </IconButton>
             </Tooltip>
           )}
@@ -930,8 +930,8 @@ const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseInden
           sx={{ py: 0, minHeight: 14, pl: `${baseIndent}px`, '&:hover': { bgcolor: 'action.hover' } }}
         >
           {st.viewsOpen
-            ? <ExpandMoreIcon sx={{ fontSize: 12, color: 'text.secondary', mr: 0.15 }} />
-            : <ChevronRightIcon sx={{ fontSize: 12, color: 'text.secondary', mr: 0.15 }} />}
+            ? <ExpandMoreIcon sx={{ fontSize: '0.75rem', color: 'text.secondary', mr: 0.15 }} />
+            : <ChevronRightIcon sx={{ fontSize: '0.75rem', color: 'text.secondary', mr: 0.15 }} />}
           <ViewIcon size={11} style={{ marginRight: 2 }} />
           <Typography variant="caption" sx={{ fontSize: '0.75rem', fontWeight: 600, flex: 1 }}>
             视图{st.data ? ` (${views.length})` : ''}
@@ -963,8 +963,8 @@ const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseInden
           sx={{ py: 0, minHeight: 14, pl: `${baseIndent}px`, '&:hover': { bgcolor: 'action.hover' } }}
         >
           {st.functionsOpen
-            ? <ExpandMoreIcon sx={{ fontSize: 12, color: 'text.secondary', mr: 0.15 }} />
-            : <ChevronRightIcon sx={{ fontSize: 12, color: 'text.secondary', mr: 0.15 }} />}
+            ? <ExpandMoreIcon sx={{ fontSize: '0.75rem', color: 'text.secondary', mr: 0.15 }} />
+            : <ChevronRightIcon sx={{ fontSize: '0.75rem', color: 'text.secondary', mr: 0.15 }} />}
           <FunctionIcon size={11} style={{ marginRight: 2 }} />
           <Typography variant="caption" sx={{ fontSize: '0.75rem', fontWeight: 600, flex: 1 }}>
             函数{st.functions.length > 0 ? ` (${st.functions.length})` : ''}
@@ -998,8 +998,8 @@ const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseInden
           sx={{ py: 0, minHeight: 14, pl: `${baseIndent}px`, '&:hover': { bgcolor: 'action.hover' } }}
         >
           {st.proceduresOpen
-            ? <ExpandMoreIcon sx={{ fontSize: 12, color: 'text.secondary', mr: 0.15 }} />
-            : <ChevronRightIcon sx={{ fontSize: 12, color: 'text.secondary', mr: 0.15 }} />}
+            ? <ExpandMoreIcon sx={{ fontSize: '0.75rem', color: 'text.secondary', mr: 0.15 }} />
+            : <ChevronRightIcon sx={{ fontSize: '0.75rem', color: 'text.secondary', mr: 0.15 }} />}
           <ProcedureIcon size={11} style={{ marginRight: 2 }} />
           <Typography variant="caption" sx={{ fontSize: '0.75rem', fontWeight: 600, flex: 1 }}>
             存储过程{st.procedures.length > 0 ? ` (${st.procedures.length})` : ''}
@@ -1056,7 +1056,7 @@ const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseInden
             <Box sx={{ py: 0.5, pl: `${rootIndent}px` }}>
               <Typography variant="caption" color="error" sx={{ fontSize: '0.75rem' }}>{schemasError}</Typography>
               <IconButton size="small" onClick={() => { setSchemas(null); loadSchemas(); }} sx={{ p: 0, ml: 0.5 }}>
-                <RefreshIcon sx={{ fontSize: 12 }} />
+                <RefreshIcon sx={{ fontSize: '0.75rem' }} />
               </IconButton>
             </Box>
           )}
@@ -1074,7 +1074,7 @@ const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseInden
                 </Typography>
                 <Tooltip title="刷新 Schema 列表">
                   <IconButton size="small" onClick={() => { setSchemas(null); setSchemaStates({}); loadSchemas(); }} sx={{ p: 0.25 }}>
-                    <RefreshIcon sx={{ fontSize: 12 }} />
+                    <RefreshIcon sx={{ fontSize: '0.75rem' }} />
                   </IconButton>
                 </Tooltip>
               </Box>
@@ -1094,8 +1094,8 @@ const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseInden
                       }}
                     >
                       {st.expanded
-                          ? <ExpandMoreIcon sx={{ fontSize: 11, color: 'text.secondary', mr: 0.35 }} />
-                          : <ChevronRightIcon sx={{ fontSize: 11, color: 'text.secondary', mr: 0.35 }} />}
+                          ? <ExpandMoreIcon sx={{ fontSize: '0.6875rem', color: 'text.secondary', mr: 0.35 }} />
+                          : <ChevronRightIcon sx={{ fontSize: '0.6875rem', color: 'text.secondary', mr: 0.35 }} />}
                         <SchemaIcon size={11} style={{ marginRight: 4 }} />
                         <Typography variant="caption" sx={{ fontSize: '0.75rem', fontWeight: 600, lineHeight: 1.5, m: 0 }}>
                           {schemaName}

@@ -315,13 +315,13 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ onExecute, onStop, isExec
                 onClick={(e) => { e.stopPropagation(); removeTab(tab.id); }}
                 sx={{ p: 0 }}
               >
-                <CloseIcon sx={{ fontSize: 12 }} />
+                <CloseIcon sx={{ fontSize: '0.75rem' }} />
               </IconButton>
             )}
           </Box>
         ))}
         <IconButton size="small" onClick={addTab} sx={{ borderRadius: 0 }}>
-          <AddIcon sx={{ fontSize: 16 }} />
+          <AddIcon sx={{ fontSize: '1rem' }} />
         </IconButton>
       </Box>
 
@@ -539,7 +539,7 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ onExecute, onStop, isExec
                   }}
                   sx={{ p: 0.25, ml: 0.5 }}
                 >
-                  <CloseIcon sx={{ fontSize: 12, color: '#f87171' }} />
+                  <CloseIcon sx={{ fontSize: '0.75rem', color: '#f87171' }} />
                 </IconButton>
               </Tooltip>
             </Box>

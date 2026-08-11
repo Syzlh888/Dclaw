@@ -119,8 +119,8 @@ export default function PortInfoTab({ serverId, ports, serverIps, initialIp }: P
                 <TableCell sx={{ fontSize: '0.7rem' }}>{p.serviceName}</TableCell>
                 <TableCell sx={{ fontSize: '0.7rem' }}>{p.notes || '-'}</TableCell>
                 <TableCell>
-                  <IconButton size="small" onClick={() => openEdit(p)}><EditIcon sx={{ fontSize: 16 }} /></IconButton>
-                  <IconButton size="small" onClick={() => { if (confirm('确认删除？')) del(serverId, p.id); }}><DeleteIcon sx={{ fontSize: 16, color: 'error.main' }} /></IconButton>
+                  <IconButton size="small" onClick={() => openEdit(p)}><EditIcon sx={{ fontSize: '1rem' }} /></IconButton>
+                  <IconButton size="small" onClick={() => { if (confirm('确认删除？')) del(serverId, p.id); }}><DeleteIcon sx={{ fontSize: '1rem', color: 'error.main' }} /></IconButton>
                 </TableCell>
               </TableRow>
             ))}
@@ -163,7 +163,7 @@ export default function PortInfoTab({ serverId, ports, serverIps, initialIp }: P
                 <TextField size="small" label="服务名称" value={entry.serviceName} onChange={e => updateEntry(i, 'serviceName', e.target.value)} sx={{ flex: 1.5, minWidth: 100 }} />
                 <TextField size="small" label="备注" value={entry.notes} onChange={e => updateEntry(i, 'notes', e.target.value)} sx={{ flex: 1 }} />
                 {!editItem && entries.length > 1 && (
-                  <IconButton size="small" onClick={() => removeEntry(i)} sx={{ color: 'error.main', flexShrink: 0 }}><DeleteIcon sx={{ fontSize: 18 }} /></IconButton>
+                  <IconButton size="small" onClick={() => removeEntry(i)} sx={{ color: 'error.main', flexShrink: 0 }}><DeleteIcon sx={{ fontSize: '1.125rem' }} /></IconButton>
                 )}
               </Box>
             ))}

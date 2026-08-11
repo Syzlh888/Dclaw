@@ -71,7 +71,7 @@ const ProxyPage: React.FC = () => {
                 <Button
                   size="small"
                   variant="text"
-                  startIcon={<CleaningServicesIcon sx={{ fontSize: 13 }} />}
+                  startIcon={<CleaningServicesIcon sx={{ fontSize: '0.8125rem' }} />}
                   onClick={handleCleanup}
                   sx={{ color: 'text.secondary', textTransform: 'none', fontSize: '0.65rem', mr: 0.5 }}
                 >

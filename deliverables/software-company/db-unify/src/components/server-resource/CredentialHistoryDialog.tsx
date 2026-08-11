@@ -150,12 +150,12 @@ const CredentialHistoryDialog: React.FC<Props> = ({ open, serverId, credentialIn
                           />
                           <Tooltip title={isRevealed ? '隐藏' : '显示'}>
                             <IconButton size="small" onClick={() => toggleReveal(item.id)}>
-                              {isRevealed ? <VisibilityOffIcon sx={{ fontSize: 14 }} /> : <VisibilityIcon sx={{ fontSize: 14 }} />}
+                              {isRevealed ? <VisibilityOffIcon sx={{ fontSize: '0.875rem' }} /> : <VisibilityIcon sx={{ fontSize: '0.875rem' }} />}
                             </IconButton>
                           </Tooltip>
                           <Tooltip title="复制">
                             <IconButton size="small" onClick={() => handleCopy(item.password!)}>
-                              <ContentCopyIcon sx={{ fontSize: 14 }} />
+                              <ContentCopyIcon sx={{ fontSize: '0.875rem' }} />
                             </IconButton>
                           </Tooltip>
                         </>

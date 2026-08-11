@@ -239,7 +239,7 @@ export const FieldMappingDialog: React.FC<FieldMappingDialogProps> = ({
           <Box component="span" sx={{ color: '#90CAF9', fontFamily: 'monospace' }}>
             {sourceTable.tableName || '(未命名)'}
           </Box>
-          <ArrowForwardIcon sx={{ fontSize: 16, mx: 0.5, color: '#888', verticalAlign: 'middle' }} />
+          <ArrowForwardIcon sx={{ fontSize: '1rem', mx: 0.5, color: '#888', verticalAlign: 'middle' }} />
           <Box component="span" sx={{ color: '#A5D6A7', fontFamily: 'monospace' }}>
             {targetTable.tableName || '(未命名)'}
           </Box>

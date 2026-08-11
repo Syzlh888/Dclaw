@@ -378,7 +378,7 @@ export default function AccessManagementDialog({ open, onClose }: Props) {
                           {ci === 0 && (
                             <TableCell rowSpan={credCount} sx={{ fontSize: '0.8rem', width: '8%' }}>
                               <Chip
-                                icon={e.type === 'VPN' ? <VpnKeyIcon sx={{ fontSize: 14 }} /> : <SecurityIcon sx={{ fontSize: 14 }} />}
+                                icon={e.type === 'VPN' ? <VpnKeyIcon sx={{ fontSize: '0.875rem' }} /> : <SecurityIcon sx={{ fontSize: '0.875rem' }} />}
                                 label={e.type}
                                 size="small"
                                 color={e.type === 'VPN' ? 'primary' : 'warning'}
@@ -403,28 +403,28 @@ export default function AccessManagementDialog({ open, onClose }: Props) {
                               </Typography>
                               <Tooltip title="复制密码">
                                 <IconButton size="small" onClick={() => handleCopyPassword(e.id, pwdKey, cred._index, cred.username || '')}>
-                                  <ContentCopyIcon sx={{ fontSize: 15, color: 'primary.main' }} />
+                                  <ContentCopyIcon sx={{ fontSize: '0.9375rem', color: 'primary.main' }} />
                                 </IconButton>
                               </Tooltip>
                               <Tooltip title="修改密码">
                                 <IconButton size="small" onClick={() => openPwdChange(e, ci, cred.username || '')}>
-                                  <LockResetIcon sx={{ fontSize: 15, color: 'warning.main' }} />
+                                  <LockResetIcon sx={{ fontSize: '0.9375rem', color: 'warning.main' }} />
                                 </IconButton>
                               </Tooltip>
                               <Tooltip title={isRevealed ? '隐藏密码' : '查看密码（需二次验证）'}>
                                 <IconButton size="small" onClick={() => requestViewPassword(e.id, pwdKey, cred._index, cred.username || '')}>
-                                  {isRevealed ? <VisibilityOffIcon sx={{ fontSize: 15 }} /> : <VisibilityIcon sx={{ fontSize: 15 }} />}
+                                  {isRevealed ? <VisibilityOffIcon sx={{ fontSize: '0.9375rem' }} /> : <VisibilityIcon sx={{ fontSize: '0.9375rem' }} />}
                                 </IconButton>
                               </Tooltip>
                               <Tooltip title="密码历史">
                                 <IconButton size="small" onClick={() => cred.username ? openHistory(e, ci, cred.username) : null}>
-                                  <HistoryIcon sx={{ fontSize: 15 }} />
+                                  <HistoryIcon sx={{ fontSize: '0.9375rem' }} />
                                 </IconButton>
                               </Tooltip>
                               {credCount > 1 && (
                                 <Tooltip title="删除此凭据">
                                   <IconButton size="small" onClick={() => handleDeleteCredential(e, ci)} sx={{ color: 'error.main' }}>
-                                    <DeleteIcon sx={{ fontSize: 15 }} />
+                                    <DeleteIcon sx={{ fontSize: '0.9375rem' }} />
                                   </IconButton>
                                 </Tooltip>
                               )}
@@ -438,8 +438,8 @@ export default function AccessManagementDialog({ open, onClose }: Props) {
                           {ci === 0 && (
                             <TableCell rowSpan={credCount} sx={{ verticalAlign: 'middle', textAlign: 'center', width: '6%' }}>
                               <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
-                                <Tooltip title="编辑"><IconButton size="small" onClick={() => openEdit(e)}><EditIcon sx={{ fontSize: 16 }} /></IconButton></Tooltip>
-                                <Tooltip title="删除"><IconButton size="small" onClick={() => handleDelete(e.id)} sx={{ color: 'error.main' }}><DeleteIcon sx={{ fontSize: 16 }} /></IconButton></Tooltip>
+                                <Tooltip title="编辑"><IconButton size="small" onClick={() => openEdit(e)}><EditIcon sx={{ fontSize: '1rem' }} /></IconButton></Tooltip>
+                                <Tooltip title="删除"><IconButton size="small" onClick={() => handleDelete(e.id)} sx={{ color: 'error.main' }}><DeleteIcon sx={{ fontSize: '1rem' }} /></IconButton></Tooltip>
                               </Box>
                             </TableCell>
                           )}
@@ -513,14 +513,14 @@ export default function AccessManagementDialog({ open, onClose }: Props) {
                           const creds = getEntryCreds(editItem);
                           if (creds[i]?.username) openHistory(editItem, i, creds[i].username);
                         }}>
-                          <HistoryIcon sx={{ fontSize: 16 }} />
+                          <HistoryIcon sx={{ fontSize: '1rem' }} />
                         </IconButton>
                       </Tooltip>
                     )}
                   </Box>
                   {credentials.length > 1 && (
                     <IconButton size="small" onClick={() => removeCred(i)} sx={{ color: 'error.main', flexShrink: 0, alignSelf: 'center' }}>
-                      <DeleteIcon sx={{ fontSize: 16 }} />
+                      <DeleteIcon sx={{ fontSize: '1rem' }} />
                     </IconButton>
                   )}
                 </Box>
@@ -663,12 +663,12 @@ export default function AccessManagementDialog({ open, onClose }: Props) {
                               />
                               <Tooltip title={isRevealed ? '隐藏' : '显示'}>
                                 <IconButton size="small" onClick={() => toggleHistoryReveal(h.id)}>
-                                  {isRevealed ? <VisibilityOffIcon sx={{ fontSize: 14 }} /> : <VisibilityIcon sx={{ fontSize: 14 }} />}
+                                  {isRevealed ? <VisibilityOffIcon sx={{ fontSize: '0.875rem' }} /> : <VisibilityIcon sx={{ fontSize: '0.875rem' }} />}
                                 </IconButton>
                               </Tooltip>
                               <Tooltip title="复制">
                                 <IconButton size="small" onClick={() => navigator.clipboard.writeText(h.password)}>
-                                  <ContentCopyIcon sx={{ fontSize: 14 }} />
+                                  <ContentCopyIcon sx={{ fontSize: '0.875rem' }} />
                                 </IconButton>
                               </Tooltip>
                             </Box>

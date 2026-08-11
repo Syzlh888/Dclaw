@@ -194,7 +194,7 @@ const ServerLeaf: React.FC<{
             : { '&:hover': { bgcolor: 'action.hover' } }),
         }}
       >
-        <StorageIcon sx={{ fontSize: 16, mr: 0.5, color: isHighlighted ? 'inherit' : 'text.secondary' }} />
+        <StorageIcon sx={{ fontSize: '1rem', mr: 0.5, color: isHighlighted ? 'inherit' : 'text.secondary' }} />
         <ListItemText
           disableTypography
           primary={
@@ -329,12 +329,12 @@ const AppNode: React.FC<{
       >
         {hasChildren ? (
           expanded
-            ? <ExpandMoreIcon sx={{ fontSize: 12, mr: 0.15 }} />
-            : <ChevronRightIcon sx={{ fontSize: 12, mr: 0.15 }} />
+            ? <ExpandMoreIcon sx={{ fontSize: '0.75rem', mr: 0.15 }} />
+            : <ChevronRightIcon sx={{ fontSize: '0.75rem', mr: 0.15 }} />
         ) : (
           <Box sx={{ width: 18, mr: 0.15 }} />
         )}
-        <AppsIcon sx={(theme) => ({ fontSize: 18, mr: 0.5, color: theme.palette.mode === 'light' ? '#0288d1' : '#4DB8E6' })} />
+        <AppsIcon sx={(theme) => ({ fontSize: '1.125rem', mr: 0.5, color: theme.palette.mode === 'light' ? '#0288d1' : '#4DB8E6' })} />
         <Typography variant="caption" sx={{ fontSize: '0.75rem', fontWeight: 500, flex: 1 }}>
           {app.name}
           {app.shortName ? (
@@ -348,7 +348,7 @@ const AppNode: React.FC<{
             {filteredChildren.length}
           </Typography>
         )}
-        <IconButton size="small" onClick={(e) => { e.stopPropagation(); setAddMenuAnchor(e.currentTarget); }} sx={{ p: 0.25, '&:hover': { color: 'primary.main' } }}><AddIcon sx={{ fontSize: 14 }} /></IconButton>
+        <IconButton size="small" onClick={(e) => { e.stopPropagation(); setAddMenuAnchor(e.currentTarget); }} sx={{ p: 0.25, '&:hover': { color: 'primary.main' } }}><AddIcon sx={{ fontSize: '0.875rem' }} /></IconButton>
         {/* 下拉菜单：新增同级应用 / 新增服务器 */}
         <Menu
           anchorEl={addMenuAnchor}
@@ -360,16 +360,16 @@ const AppNode: React.FC<{
           slotProps={{ paper: { sx: { minWidth: 140, borderRadius: 1 } } }}
         >
           <MenuItem onClick={() => { setAddMenuAnchor(null); onAddSiblingApp(app.engineeringId); }} sx={{ minHeight: 26, py: 0.3, fontSize: '0.72rem' }}>
-            <ListItemIcon sx={{ minWidth: 24 }}><AddIcon sx={{ fontSize: 15 }} /></ListItemIcon>
+            <ListItemIcon sx={{ minWidth: 24 }}><AddIcon sx={{ fontSize: '0.9375rem' }} /></ListItemIcon>
             <ListItemText primaryTypographyProps={{ fontSize: '0.72rem' }}>新增同级应用</ListItemText>
           </MenuItem>
           <MenuItem onClick={() => { setAddMenuAnchor(null); onAddServer(app.id); }} sx={{ minHeight: 26, py: 0.3, fontSize: '0.72rem' }}>
-            <ListItemIcon sx={{ minWidth: 24 }}><StorageIcon sx={{ fontSize: 15 }} /></ListItemIcon>
+            <ListItemIcon sx={{ minWidth: 24 }}><StorageIcon sx={{ fontSize: '0.9375rem' }} /></ListItemIcon>
             <ListItemText primaryTypographyProps={{ fontSize: '0.72rem' }}>新增服务器</ListItemText>
           </MenuItem>
         </Menu>
-        <IconButton size="small" onClick={(e) => { e.stopPropagation(); onEditApplication(app); }} sx={{ p: 0.25, '&:hover': { color: 'warning.main' } }}><EditIcon sx={{ fontSize: 14 }} /></IconButton>
-        <IconButton size="small" onClick={(e) => { e.stopPropagation(); onDeleteApplication(app.id); }} sx={{ p: 0.25, '&:hover': { color: 'error.main' } }}><DeleteIcon sx={{ fontSize: 14 }} /></IconButton>
+        <IconButton size="small" onClick={(e) => { e.stopPropagation(); onEditApplication(app); }} sx={{ p: 0.25, '&:hover': { color: 'warning.main' } }}><EditIcon sx={{ fontSize: '0.875rem' }} /></IconButton>
+        <IconButton size="small" onClick={(e) => { e.stopPropagation(); onDeleteApplication(app.id); }} sx={{ p: 0.25, '&:hover': { color: 'error.main' } }}><DeleteIcon sx={{ fontSize: '0.875rem' }} /></IconButton>
       </ListItemButton>
       {hasChildren && (
         <Collapse in={expanded} timeout="auto" unmountOnExit>
@@ -460,12 +460,12 @@ const EngNode: React.FC<{
       >
         {hasChildren ? (
           expanded
-            ? <ExpandMoreIcon sx={{ fontSize: 12, mr: 0.15 }} />
-            : <ChevronRightIcon sx={{ fontSize: 12, mr: 0.15 }} />
+            ? <ExpandMoreIcon sx={{ fontSize: '0.75rem', mr: 0.15 }} />
+            : <ChevronRightIcon sx={{ fontSize: '0.75rem', mr: 0.15 }} />
         ) : (
           <Box sx={{ width: 18, mr: 0.15 }} />
         )}
-        <CategoryIcon sx={(theme) => ({ fontSize: 18, mr: 0.5, color: theme.palette.mode === 'light' ? '#2e7d32' : '#6BBF5A' })} />
+        <CategoryIcon sx={(theme) => ({ fontSize: '1.125rem', mr: 0.5, color: theme.palette.mode === 'light' ? '#2e7d32' : '#6BBF5A' })} />
         <Typography variant="caption" sx={{ fontSize: '0.75rem', fontWeight: 500, flex: 1 }}>
           {eng.name}
           {eng.shortName ? (
@@ -479,7 +479,7 @@ const EngNode: React.FC<{
             {filteredChildren.length}
           </Typography>
         )}
-        <IconButton size="small" onClick={(e) => { e.stopPropagation(); setAddMenuAnchor(e.currentTarget); }} sx={{ p: 0.25, '&:hover': { color: 'primary.main' } }}><AddIcon sx={{ fontSize: 14 }} /></IconButton>
+        <IconButton size="small" onClick={(e) => { e.stopPropagation(); setAddMenuAnchor(e.currentTarget); }} sx={{ p: 0.25, '&:hover': { color: 'primary.main' } }}><AddIcon sx={{ fontSize: '0.875rem' }} /></IconButton>
         {/* 下拉菜单：新增应用 / 新增服务器 */}
         <Menu
           anchorEl={addMenuAnchor}
@@ -491,16 +491,16 @@ const EngNode: React.FC<{
           slotProps={{ paper: { sx: { minWidth: 140, borderRadius: 1 } } }}
         >
           <MenuItem onClick={() => { setAddMenuAnchor(null); onAddApplication(eng.id); }} sx={{ minHeight: 26, py: 0.3, fontSize: '0.72rem' }}>
-            <ListItemIcon sx={{ minWidth: 24 }}><AddIcon sx={{ fontSize: 15 }} /></ListItemIcon>
+            <ListItemIcon sx={{ minWidth: 24 }}><AddIcon sx={{ fontSize: '0.9375rem' }} /></ListItemIcon>
             <ListItemText primaryTypographyProps={{ fontSize: '0.72rem' }}>新增应用</ListItemText>
           </MenuItem>
           <MenuItem onClick={() => { setAddMenuAnchor(null); onAddServerDirect(eng.id); }} sx={{ minHeight: 26, py: 0.3, fontSize: '0.72rem' }}>
-            <ListItemIcon sx={{ minWidth: 24 }}><StorageIcon sx={{ fontSize: 15 }} /></ListItemIcon>
+            <ListItemIcon sx={{ minWidth: 24 }}><StorageIcon sx={{ fontSize: '0.9375rem' }} /></ListItemIcon>
             <ListItemText primaryTypographyProps={{ fontSize: '0.72rem' }}>新增服务器</ListItemText>
           </MenuItem>
         </Menu>
-        <IconButton size="small" onClick={(e) => { e.stopPropagation(); onEditEngineering(eng); }} sx={{ p: 0.25, '&:hover': { color: 'warning.main' } }}><EditIcon sx={{ fontSize: 14 }} /></IconButton>
-        <IconButton size="small" onClick={(e) => { e.stopPropagation(); onDeleteEngineering(eng.id); }} sx={{ p: 0.25, '&:hover': { color: 'error.main' } }}><DeleteIcon sx={{ fontSize: 14 }} /></IconButton>
+        <IconButton size="small" onClick={(e) => { e.stopPropagation(); onEditEngineering(eng); }} sx={{ p: 0.25, '&:hover': { color: 'warning.main' } }}><EditIcon sx={{ fontSize: '0.875rem' }} /></IconButton>
+        <IconButton size="small" onClick={(e) => { e.stopPropagation(); onDeleteEngineering(eng.id); }} sx={{ p: 0.25, '&:hover': { color: 'error.main' } }}><DeleteIcon sx={{ fontSize: '0.875rem' }} /></IconButton>
       </ListItemButton>
       {hasChildren && (
         <Collapse in={expanded} timeout="auto" unmountOnExit>
@@ -586,12 +586,12 @@ const ProjectNode: React.FC<{
       >
         {hasChildren ? (
           expanded
-            ? <ExpandMoreIcon sx={{ fontSize: 12, mr: 0.15 }} />
-            : <ChevronRightIcon sx={{ fontSize: 12, mr: 0.15 }} />
+            ? <ExpandMoreIcon sx={{ fontSize: '0.75rem', mr: 0.15 }} />
+            : <ChevronRightIcon sx={{ fontSize: '0.75rem', mr: 0.15 }} />
         ) : (
           <Box sx={{ width: 18, mr: 0.15 }} />
         )}
-        <FolderIcon sx={(theme) => ({ fontSize: 18, mr: 0.5, color: theme.palette.mode === 'light' ? '#ed6c02' : '#DAAA4E' })} />
+        <FolderIcon sx={(theme) => ({ fontSize: '1.125rem', mr: 0.5, color: theme.palette.mode === 'light' ? '#ed6c02' : '#DAAA4E' })} />
         <Typography variant="caption" sx={{ fontSize: '0.75rem', fontWeight: 600, flex: 1 }}>
           {project.name}
           {project.shortName ? (
@@ -605,7 +605,7 @@ const ProjectNode: React.FC<{
             {children.length}
           </Typography>
         )}
-        <IconButton size="small" onClick={(e) => { e.stopPropagation(); setAddMenuAnchor(e.currentTarget); }} sx={{ p: 0.25, '&:hover': { color: 'primary.main' } }}><AddIcon sx={{ fontSize: 14 }} /></IconButton>
+        <IconButton size="small" onClick={(e) => { e.stopPropagation(); setAddMenuAnchor(e.currentTarget); }} sx={{ p: 0.25, '&:hover': { color: 'primary.main' } }}><AddIcon sx={{ fontSize: '0.875rem' }} /></IconButton>
         {/* 下拉菜单：新增工程 / 新增服务器 */}
         <Menu
           anchorEl={addMenuAnchor}
@@ -617,16 +617,16 @@ const ProjectNode: React.FC<{
           slotProps={{ paper: { sx: { minWidth: 140, borderRadius: 1 } } }}
         >
           <MenuItem onClick={() => { setAddMenuAnchor(null); onAddEngineering(project.id); }} sx={{ minHeight: 26, py: 0.3, fontSize: '0.72rem' }}>
-            <ListItemIcon sx={{ minWidth: 24 }}><AddIcon sx={{ fontSize: 15 }} /></ListItemIcon>
+            <ListItemIcon sx={{ minWidth: 24 }}><AddIcon sx={{ fontSize: '0.9375rem' }} /></ListItemIcon>
             <ListItemText primaryTypographyProps={{ fontSize: '0.72rem' }}>新增工程</ListItemText>
           </MenuItem>
           <MenuItem onClick={() => { setAddMenuAnchor(null); onAddServerDirect(project.id); }} sx={{ minHeight: 26, py: 0.3, fontSize: '0.72rem' }}>
-            <ListItemIcon sx={{ minWidth: 24 }}><StorageIcon sx={{ fontSize: 15 }} /></ListItemIcon>
+            <ListItemIcon sx={{ minWidth: 24 }}><StorageIcon sx={{ fontSize: '0.9375rem' }} /></ListItemIcon>
             <ListItemText primaryTypographyProps={{ fontSize: '0.72rem' }}>新增服务器</ListItemText>
           </MenuItem>
         </Menu>
-        <IconButton size="small" onClick={(e) => { e.stopPropagation(); onEditProject(project); }} sx={{ p: 0.25, '&:hover': { color: 'warning.main' } }}><EditIcon sx={{ fontSize: 14 }} /></IconButton>
-        <IconButton size="small" onClick={(e) => { e.stopPropagation(); onDeleteProject(project.id); }} sx={{ p: 0.25, '&:hover': { color: 'error.main' } }}><DeleteIcon sx={{ fontSize: 14 }} /></IconButton>
+        <IconButton size="small" onClick={(e) => { e.stopPropagation(); onEditProject(project); }} sx={{ p: 0.25, '&:hover': { color: 'warning.main' } }}><EditIcon sx={{ fontSize: '0.875rem' }} /></IconButton>
+        <IconButton size="small" onClick={(e) => { e.stopPropagation(); onDeleteProject(project.id); }} sx={{ p: 0.25, '&:hover': { color: 'error.main' } }}><DeleteIcon sx={{ fontSize: '0.875rem' }} /></IconButton>
       </ListItemButton>
       {hasChildren && (
         <Collapse in={expanded} timeout="auto" unmountOnExit>
@@ -1080,7 +1080,7 @@ const ServerListPanel: React.FC<Props> = ({ onAdd, onImport, onAddProject, width
           <Button
             variant="text"
             size="small"
-            startIcon={<AddIcon sx={{ fontSize: 14 }} />}
+            startIcon={<AddIcon sx={{ fontSize: '0.875rem' }} />}
             onClick={() => {
               // 新增一级项目节点（不是新增服务器）
               setChildDialog({

@@ -107,7 +107,7 @@ const CreateViewDialog: React.FC<CreateViewDialogProps> = ({
         }}
       >
         <DialogTitle sx={{ color: 'text.primary', fontSize: '0.85rem', fontWeight: 600, pb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <VisibilityIcon sx={{ fontSize: 18 }} />
+          <VisibilityIcon sx={{ fontSize: '1.125rem' }} />
           {isEdit ? '编辑视图' : '创建视图'}
         </DialogTitle>
         <DialogContent sx={{ pt: '8px !important' }}>

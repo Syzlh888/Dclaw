@@ -49,13 +49,13 @@ const TreeSearch: React.FC = () => {
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
-              <SearchIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+              <SearchIcon sx={{ fontSize: '1.125rem', color: 'text.secondary' }} />
             </InputAdornment>
           ),
           endAdornment: value ? (
             <InputAdornment position="end">
               <IconButton size="small" onClick={handleClear}>
-                <ClearIcon sx={{ fontSize: 16 }} />
+                <ClearIcon sx={{ fontSize: '1rem' }} />
               </IconButton>
             </InputAdornment>
           ) : null,
@@ -65,7 +65,7 @@ const TreeSearch: React.FC = () => {
         size="small"
         onClick={() => setImportOpen(true)}
         variant="outlined"
-        startIcon={<UploadFileIcon sx={{ fontSize: 14 }} />}
+        startIcon={<UploadFileIcon sx={{ fontSize: '0.875rem' }} />}
         sx={{ textTransform: 'none', fontSize: '0.7rem', py: 0.5, minHeight: 32, whiteSpace: 'nowrap', flexShrink: 0 }}
         title="从 CSV/JSON 文件批量导入连接"
       >

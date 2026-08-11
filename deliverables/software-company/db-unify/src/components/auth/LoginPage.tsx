@@ -40,7 +40,7 @@ const LoginPage: React.FC = () => {
     >
       <Card sx={{ p: 4, width: 400, maxWidth: '90vw' }} elevation={3}>
         <Box sx={{ textAlign: 'center', mb: 3 }}>
-          <LockIcon sx={{ fontSize: 48, color: 'primary.main', mb: 1 }} />
+          <LockIcon sx={{ fontSize: '3rem', color: 'primary.main', mb: 1 }} />
           <Typography variant="h5" fontWeight={600}>
             DClaw 数据钳
           </Typography>

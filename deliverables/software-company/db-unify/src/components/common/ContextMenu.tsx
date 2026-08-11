@@ -141,9 +141,9 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
       color: danger ? '#f87171' : 'text.secondary',
       justifyContent: 'flex-start',
     },
-    // 统一强制图标字号 11px（紧凑）
+    // 统一强制图标字号 0.6875rem（紧凑，跟随缩放）
     '& .MuiListItemIcon-root .MuiSvgIcon-root': {
-      fontSize: '11px !important',
+      fontSize: '0.6875rem !important',
     },
     '& .MuiListItemText-primary': {
       fontSize: '0.68rem',
@@ -223,7 +223,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
                 />
                 {hasChildren && (
                   <Box sx={{ display: 'flex', alignItems: 'center', ml: 0.5 }}>
-                    <ChevronRightIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
+                    <ChevronRightIcon sx={{ fontSize: '0.875rem', color: 'text.secondary' }} />
                   </Box>
                 )}
               </MenuItem>

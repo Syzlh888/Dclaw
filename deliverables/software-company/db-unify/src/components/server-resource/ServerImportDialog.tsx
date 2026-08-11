@@ -391,7 +391,7 @@ const ServerImportDialog: React.FC<Props> = ({ open, onClose }) => {
         <Button
           onClick={reset}
           size="small"
-          startIcon={<RefreshIcon sx={{ fontSize: 16 }} />}
+          startIcon={<RefreshIcon sx={{ fontSize: '1rem' }} />}
           sx={{ textTransform: 'none' }}
         >
           重新导入
@@ -408,7 +408,7 @@ const ServerImportDialog: React.FC<Props> = ({ open, onClose }) => {
       open={open}
       onClose={handleClose}
       title="批量导入服务器资源"
-      icon={<CloudUploadIcon sx={{ fontSize: 20 }} />}
+      icon={<CloudUploadIcon sx={{ fontSize: '1.25rem' }} />}
       steps={steps}
       activeStep={activeStep}
       error={errMsg}
@@ -449,7 +449,7 @@ const ServerImportDialog: React.FC<Props> = ({ open, onClose }) => {
               文件：{fileName} · 共 {sheets.length} 个 Sheet · {totalRows} 条数据
             </Typography>
             <Chip
-              icon={<CheckCircleIcon sx={{ fontSize: 14 }} />}
+              icon={<CheckCircleIcon sx={{ fontSize: '0.875rem' }} />}
               label={`${totalRows} 条待导入`}
               size="small"
               color={totalRows > 0 ? 'success' : 'default'}
@@ -459,7 +459,7 @@ const ServerImportDialog: React.FC<Props> = ({ open, onClose }) => {
             <Box sx={{ flex: 1 }} />
             <Tooltip title="重新选择文件">
               <IconButton size="small" onClick={reset}>
-                <RefreshIcon sx={{ fontSize: 16 }} />
+                <RefreshIcon sx={{ fontSize: '1rem' }} />
               </IconButton>
             </Tooltip>
           </Box>
@@ -509,7 +509,7 @@ const ServerImportDialog: React.FC<Props> = ({ open, onClose }) => {
             <>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
                 <Chip
-                  icon={<CheckCircleIcon sx={{ fontSize: 14 }} />}
+                  icon={<CheckCircleIcon sx={{ fontSize: '0.875rem' }} />}
                   label={`成功 ${result.success} 条`}
                   size="small"
                   color={result.success > 0 ? 'success' : 'default'}
@@ -517,7 +517,7 @@ const ServerImportDialog: React.FC<Props> = ({ open, onClose }) => {
                   sx={{ fontSize: '0.75rem' }}
                 />
                 <Chip
-                  icon={<ErrorIcon sx={{ fontSize: 14 }} />}
+                  icon={<ErrorIcon sx={{ fontSize: '0.875rem' }} />}
                   label={`失败 ${result.failed} 条`}
                   size="small"
                   color={result.failed > 0 ? 'error' : 'default'}

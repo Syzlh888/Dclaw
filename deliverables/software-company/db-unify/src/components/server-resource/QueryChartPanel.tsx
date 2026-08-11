@@ -68,8 +68,8 @@ const QueryChartPanel: React.FC<Props> = ({
           <ResponsiveContainer width="100%" height={350}>
             <BarChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey={chartXField} tick={{ fontSize: 10 }} />
-              <YAxis tick={{ fontSize: 10 }} />
+              <XAxis dataKey={chartXField} tick={{ fontSize: '0.625rem' }} />
+              <YAxis tick={{ fontSize: '0.625rem' }} />
               <Tooltip />
               <Legend />
               <Bar dataKey={chartYField} fill="#1976d2" />
@@ -81,8 +81,8 @@ const QueryChartPanel: React.FC<Props> = ({
           <ResponsiveContainer width="100%" height={350}>
             <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey={chartXField} tick={{ fontSize: 10 }} />
-              <YAxis tick={{ fontSize: 10 }} />
+              <XAxis dataKey={chartXField} tick={{ fontSize: '0.625rem' }} />
+              <YAxis tick={{ fontSize: '0.625rem' }} />
               <Tooltip />
               <Legend />
               <Line type="monotone" dataKey={chartYField} stroke="#1976d2" />
