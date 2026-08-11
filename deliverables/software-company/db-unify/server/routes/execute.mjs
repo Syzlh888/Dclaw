@@ -321,6 +321,14 @@ router.post('/', async (req, res) => {
       await update('connections', task.connectionId, { status: 'error' });
     } finally {
       if (dbClient) {
+        // 如果客户端已断开，先 cancel 在飞的 query 再关连接
+        if (aborted) {
+          try {
+            // pg client 没有官方 cancel()，但 cancel query 用 client.query('SELECT pg_cancel_backend(pid)')
+            // 简化方案：直接 destroy() 强制断 socket
+            if (typeof dbClient.destroy === 'function') dbClient.destroy();
+          } catch { /* ignore */ }
+        }
         await closeConnection(dbClient, conn.driver, conn.custom_driver_id || undefined).catch(() => {});
       }
     }
