@@ -92,9 +92,9 @@ const SqlEditor: React.FC<SqlEditorProps> = ({ onExecute }) => {
         'editor.background': '#2B2B2B',                    // DBeaver 主背景
         'editor.foreground': '#BBBBBB',                    // 主文字色
         'editor.lineHighlightBackground': '#3C3F4180',     // 当前行高亮
-        'editor.selectionBackground': '#3C3F41',           // 选中背景
-        'editor.inactiveSelectionBackground': '#3C3F4166',
-        'editor.selectionHighlightBackground': '#3C3F4199',
+        'editor.selectionBackground': '#42A5F5CC',          // 选中背景：DBeaver 强调蓝 + alpha，鲜明对比
+        'editor.inactiveSelectionBackground': '#42A5F566', // 非聚焦时的选中
+        'editor.selectionHighlightBackground': '#42A5F566', // 词选中高亮
         'editorCursor.foreground': '#DAAA4E',              // 光标金色
         'editorLineNumber.foreground': '#555555',          // 行号
         'editorLineNumber.activeForeground': '#BBBBBB',    // 当前行号
@@ -405,6 +405,8 @@ const SqlEditor: React.FC<SqlEditorProps> = ({ onExecute }) => {
           options={{
             minimap: { enabled: false },
             fontSize,
+            fontFamily: '"JetBrains Mono", "Cascadia Code", "Fira Code", Consolas, "Courier New", monospace',
+            fontLigatures: false,        // 关闭连字，保持等宽，token间距均匀
             lineNumbers: 'on',
             scrollBeyondLastLine: false,
             wordWrap: 'on',
