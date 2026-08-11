@@ -294,7 +294,7 @@ const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseInden
     const willOpen = !st.functionsOpen;
     patchSt(schemaKey, { functionsOpen: willOpen, functionsLoading: true });
     if (willOpen && st.functions.length === 0) {
-      try {
+    try {
         const data = await fetchFunctions(connection.id, schemaName || schemaKey);
         patchSt(schemaKey, { functions: data, functionsLoading: false });
       } catch (err: any) {
@@ -310,7 +310,7 @@ const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseInden
     const willOpen = !st.proceduresOpen;
     patchSt(schemaKey, { proceduresOpen: willOpen, proceduresLoading: true });
     if (willOpen && st.procedures.length === 0) {
-      try {
+    try {
         const data = await fetchProcedures(connection.id, schemaName || schemaKey);
         patchSt(schemaKey, { procedures: data, proceduresLoading: false });
       } catch (err: any) {
@@ -412,9 +412,23 @@ const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseInden
         children: genSqlChildren,
       },
       {
-        label: '复制表名',
+        label: selectedTables.size > 1 ? `复制 ${selectedTables.size} 个表名` : '复制表名',
         icon: <DriveFileRenameOutlineIcon />,
-        onClick: () => handleCopyTableName({ ...table, name: qualifiedTable }, ''),
+        onClick: () => {
+          if (selectedTables.size > 1) {
+            // 多选：从 selectedTables (Set<"schema::table">) 收集所有表名，限定 schema
+            const names = Array.from(selectedTables).flatMap((key) => {
+              const idx = String(key).indexOf('::');
+              if (idx < 0) return [];
+              const s = String(key).slice(0, idx);
+              const t = String(key).slice(idx + 2);
+              return [{ name: s ? `${s}.${t}` : t }];
+            });
+            handleCopyTableName(names, '');
+          } else {
+            handleCopyTableName([{ name: qualifiedTable }], '');
+          }
+        },
         divider: true,
       },
       {
@@ -517,11 +531,14 @@ const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseInden
     ];
   };
 
-  const handleCopyTableName = async (table: any, quote = '') => {
-    const name = `${quote}${table.name}${quote}`;
+  const handleCopyTableName = async (tables: any[], quote = '') => {
+    // 多选时拼接所有表名（用逗号分隔）；单击时单个表
+    const names = tables.map((t) => `${quote}${t.name}${quote}`);
+    const text = names.join(', ');
+    if (!text) return;
     try {
-      await navigator.clipboard.writeText(name);
-      setSnackbarMsg(`已复制：${name}`);
+      await navigator.clipboard.writeText(text);
+      setSnackbarMsg(tables.length > 1 ? `已复制 ${tables.length} 个表名` : `已复制：${text}`);
       setSnackbar(true);
     } catch {
       setSnackbarMsg('复制失败');
@@ -556,7 +573,7 @@ const MetadataBrowser: React.FC<MetadataBrowserProps> = ({ connection, baseInden
     if (selectedTables.size > 1 && type === 'create') {
       const title = `生成 DDL（${selectedTables.size} 个表）`;
       setDdlDialog({ open: true, tableName: title, ddl: '', loading: true, error: '', ddlType: 'create' });
-      try {
+    try {
         const tableNames: string[] = [];
         const results: string[] = [];
         for (const tableKey of selectedTables) {
