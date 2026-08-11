@@ -304,17 +304,37 @@ router.post('/', async (req, res) => {
           timestamp: Date.now(),
         });
       } else {
-        failedCount++;
-        sendSSE('progress', {
-          taskId: task.id,
-          connectionId: task.connectionId,
-          hospitalName: task.hospitalName,
-          predbTypeName: task.predbTypeName,
-          status: 'failed',
-          duration,
-          errorMessage: formatConnectionError(err),
-          timestamp: Date.now(),
-        });
+        // 静默处理 PG/瀚高 服务端主动取消（查询超时/连接断开导致）
+        // 这不是用户手动停止，而是 statement_timeout 或 JDBC bridge 30s 超时被 PG 主动 cancel
+        const rawErr = err.message || String(err);
+        const isServerCancel = /canceling statement|aborted|query has no destination|connection.*terminat/i.test(rawErr)
+          || /Statement canceled/i.test(rawErr)
+          || /timeout expired/i.test(rawErr);
+        if (isServerCancel) {
+          timeoutCount++;
+          sendSSE('progress', {
+            taskId: task.id,
+            connectionId: task.connectionId,
+            hospitalName: task.hospitalName,
+            predbTypeName: task.predbTypeName,
+            status: 'timeout',
+            duration,
+            errorMessage: '查询执行超时（超过 30 秒），已被数据库服务端取消。请缩小查询范围或优化 SQL。',
+            timestamp: Date.now(),
+          });
+        } else {
+          failedCount++;
+          sendSSE('progress', {
+            taskId: task.id,
+            connectionId: task.connectionId,
+            hospitalName: task.hospitalName,
+            predbTypeName: task.predbTypeName,
+            status: 'failed',
+            duration,
+            errorMessage: formatConnectionError(err),
+            timestamp: Date.now(),
+          });
+        }
       }
 
       // 更新连接状态
