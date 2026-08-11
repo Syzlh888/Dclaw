@@ -25,7 +25,7 @@ const getPersistedFontSize = (): number => {
     const n = parseInt(raw || '', 10);
     if (n >= 10 && n <= 30) return n;
   } catch { /* 读取失败用默认值 */ }
-  return 14;
+  return 17;  // 默认 17px 让 SQL token 视觉间距更宽
 };
 
 export interface SqlTab {
