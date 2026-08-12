@@ -306,6 +306,63 @@ const SqlEditor: React.FC<SqlEditorProps> = ({ onExecute }) => {
       }
     });
 
+    // ==== SQL 关键字后自动补足空格（让 select/from/where 等右侧间距更明显）====
+    // 输入关键字后 Monaco 默认只留 1 个空格，这里检测"关键字+单个空格"，
+    // 自动扩展为多个空格，使关键字与后续 token 间距更大、SQL 更清晰。
+    const KEYWORD_SPACE_COUNT = 3; // 关键字后补足的空格数
+    const SQL_KEYWORD_RE = /^(select|from|where|join|inner|left|right|full|outer|cross|on|group|by|order|having|and|or|not|as|into|values|set|insert|update|delete|create|drop|alter|table|view|index|union|all|distinct|limit|offset|exists|in|like|between|is|null|case|when|then|else|end|returning|using|natural|primary|key|foreign|references|constraint|default)$/i;
+    let lastKeywordEditToken = 0;
+    const model = editor.getModel();
+    if (model) {
+      model.onDidChangeContent((ev: any) => {
+        try {
+          // 只处理单次编辑（避免批量粘贴/撤销触发）
+          if (!ev || !ev.changes || ev.changes.length !== 1) return;
+          const change = ev.changes[0];
+          const insertedText = change.text;
+          // 用户刚输入了一个空格（1 个字符且为空格）
+          if (insertedText !== ' ') return;
+          const lineNum = change.range.endLineNumber;
+          const lineContent = model.getLineContent(lineNum);
+          const endCol = change.range.endColumn; // 光标前位置
+          // 取光标前的单词（关键字）+ 判断是否是"关键字 + 单空格"
+          const beforeCursor = lineContent.slice(0, endCol - 1); // 不含刚输入的空格
+          const kwMatch = beforeCursor.match(/([A-Za-z_]+)\s*$/);
+          if (!kwMatch) return;
+          const kw = kwMatch[1];
+          if (!SQL_KEYWORD_RE.test(kw)) return;
+          // 确认刚输入的空格前面紧邻关键字（无其它空格）
+          const rest = beforeCursor.slice(0, beforeCursor.length - kw.length);
+          if (rest.length > 0 && /\S$/.test(rest)) return; // 前面还有非空格字符（非关键字开头场景）
+          // 用 executeEdits 把单个空格替换为多个（仅在光标紧跟在关键字之后时）
+          const caretPos = editor.getPosition();
+          if (!caretPos) return;
+          const spaceStartCol = endCol - 1;
+          // 若已是多个空格则跳过（防止重复补足）
+          const afterSpace = lineContent.slice(spaceStartCol - 1, spaceStartCol + 6);
+          if (/^ +[^ ]/.test(afterSpace) && afterSpace.length >= KEYWORD_SPACE_COUNT + 1) return;
+          const now = Date.now();
+          if (now - lastKeywordEditToken < 50) return; // 防抖，避免连续触发
+          lastKeywordEditToken = now;
+          // 用 executeEdits 精确替换：把刚输入的一个空格替换为 KEYWORD_SPACE_COUNT 个
+          const replaceRange = {
+            startLineNumber: lineNum,
+            startColumn: spaceStartCol,
+            endLineNumber: lineNum,
+            endColumn: endCol,
+          };
+          // 保存光标：执行编辑后恢复位置
+          const cursorColumn = endCol + (KEYWORD_SPACE_COUNT - 1);
+          editor.executeEdits('dc-sql-keyword-space', [{
+            range: replaceRange,
+            text: ' '.repeat(KEYWORD_SPACE_COUNT),
+            forceMoveMarkers: true,
+          }]);
+          editor.setPosition({ lineNumber: lineNum, column: cursorColumn });
+        } catch { /* 忽略编辑器扩展错误 */ }
+      });
+    }
+
     editor.focus();
     setZoomReady(true);
   }, [onExecute]);
