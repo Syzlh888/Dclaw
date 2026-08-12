@@ -52,7 +52,7 @@ export function detectSqlParams(sql: string): string[] {
   const safe = sql
     .replace(/'(?:''|[^'])*'/g, "''")
     .replace(/"(?:""|[^"])*"/g, '""');
-  const regex = /:(\w+)/g;
+  const regex = /(?<!:):(\w+)/g;
   const params = new Set<string>();
   let match;
   while ((match = regex.exec(safe)) !== null) {
