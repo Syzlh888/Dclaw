@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>国际主流 UI 风格 · DClaw 应用样例</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,'Segoe UI','Microsoft YaHei',sans-serif;}
+  body{background:#0b0e13;color:#ccc;padding:24px;}
+  h1{font-size:22px;margin-bottom:4px;color:#fff;}
+  .sub{font-size:12px;color:#889;margin-bottom:24px;}
+  .tabs{display:flex;gap:10px;margin-bottom:24px;flex-wrap:wrap;}
+  .tab{padding:9px 18px;border-radius:8px;cursor:pointer;font-size:13px;border:1px solid #333;background:#161a21;color:#bbb;transition:all .2s;}
+  .tab:hover{border-color:#555;}
+  .tab.active{background:#2563eb;border-color:#2563eb;color:#fff;box-shadow:0 4px 14px rgba(37,99,235,.35);}
+  .app{width:100%;max-width:1320px;height:740px;border-radius:14px;overflow:hidden;display:flex;position:relative;transition:all .4s;}
+
+  /* 通用结构 */
+  .sidebar{width:230px;flex-shrink:0;padding:14px;display:flex;flex-direction:column;}
+  .sb-search{margin-bottom:10px;font-size:12px;padding:8px 10px;border-radius:8px;border:1px solid;outline:none;}
+  .sb-title{font-size:11px;font-weight:700;margin:12px 0 8px;opacity:.55;letter-spacing:1.5px;text-transform:uppercase;}
+  .tree-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:7px;font-size:12.5px;cursor:pointer;margin-bottom:2px;transition:background .15s;}
+  .tree-item .icon{width:15px;text-align:center;font-size:11px;flex-shrink:0;}
+  .tree-item .count{font-size:10px;opacity:.5;margin-left:auto;}
+  .indent1{padding-left:28px;}
+  .indent2{padding-left:46px;}
+  .main{flex:1;display:flex;flex-direction:column;min-width:0;}
+  .toolbar{display:flex;align-items:center;gap:8px;padding:10px 14px;font-size:12.5px;flex-wrap:wrap;}
+  .btn{padding:6px 14px;border-radius:7px;font-size:12.5px;cursor:pointer;border:1px solid;font-weight:500;transition:all .15s;}
+  .btn.primary{border:none;color:#fff;}
+  .status{display:flex;align-items:center;gap:6px;font-size:11.5px;margin-left:auto;opacity:.8;}
+  .dot{width:8px;height:8px;border-radius:50%;}
+  .content{flex:1;display:flex;flex-direction:column;padding:14px;gap:14px;min-height:0;}
+  .editor{flex:1;border-radius:10px;border:1px solid;display:flex;flex-direction:column;min-height:140px;overflow:hidden;}
+  .ed-toolbar{display:flex;gap:8px;padding:8px 12px;font-size:11.5px;border-bottom:1px solid;align-items:center;}
+  .ed-code{padding:14px;font-family:'JetBrains Mono',Consolas,monospace;font-size:12.5px;line-height:2;flex:1;}
+  .ed-code .kw{color:#e8b64c;} .ed-code .str{color:#6bbf6b;} .ed-code .num{color:#5ea9e6;}
+  .results{flex:1;border-radius:10px;border:1px solid;display:flex;flex-direction:column;min-height:110px;overflow:hidden;}
+  .res-head{display:flex;padding:10px 14px;font-size:11.5px;font-weight:600;border-bottom:1px solid;}
+  .res-row{display:flex;padding:8px 14px;font-size:12px;border-bottom:1px solid rgba(0,0,0,.05);transition:background .12s;}
+  .res-row .c{flex:1;} .res-row .c:first-child{flex:0 0 90px;font-weight:600;}
+  .statusbar{display:flex;gap:18px;padding:7px 14px;font-size:10.5px;opacity:.65;border-top:1px solid;}
+
+  /* ================= 风格 A: Glassmorphism 玻璃拟态 ================= */
+  .glass-app{background:linear-gradient(135deg,#1a1f2e 0%,#2b3a55 55%,#1a2438 100%);}
+  .glass-app::before{content:'';position:absolute;top:-80px;right:10%;width:340px;height:340px;background:radial-gradient(circle,rgba(100,150,255,.25),transparent 70%);filter:blur(10px);pointer-events:none;}
+  .glass-app::after{content:'';position:absolute;bottom:-60px;left:5%;width:280px;height:280px;background:radial-gradient(circle,rgba(255,180,90,.15),transparent 70%);filter:blur(10px);pointer-events:none;}
+  .glass-app .sidebar{background:rgba(255,255,255,.06);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-right:1px solid rgba(255,255,255,.12);}
+  .glass-app .sb-search{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.18);color:#e8ecf4;border-radius:10px;}
+  .glass-app .sb-title{color:rgba(255,255,255,.5);}
+  .glass-app .tree-item:hover{background:rgba(255,255,255,.1);}
+  .glass-app .tree-item.active{background:rgba(120,180,255,.18);color:#9ecbff;box-shadow:inset 0 0 0 1px rgba(140,190,255,.25);}
+  .glass-app .tree-item .icon{color:#7cc4ff;}
+  .glass-app .tree-item.folder .icon{color:#ffcf7a;}
+  .glass-app .main{background:transparent;}
+  .glass-app .toolbar{background:rgba(255,255,255,.05);backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,.1);color:#dbe4f0;}
+  .glass-app .btn{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.18);color:#e6ecf5;backdrop-filter:blur(6px);}
+  .glass-app .btn:hover{background:rgba(255,255,255,.16);}
+  .glass-app .btn.primary{background:linear-gradient(135deg,#5b8cff,#3b6ff0);box-shadow:0 4px 18px rgba(90,140,255,.35);}
+  .glass-app .editor{background:rgba(255,255,255,.06);backdrop-filter:blur(16px);border-color:rgba(255,255,255,.12);box-shadow:0 8px 32px rgba(0,0,0,.3);}
+  .glass-app .ed-toolbar{border-color:rgba(255,255,255,.1);color:rgba(255,255,255,.6);}
+  .glass-app .ed-code{color:#e8ecf4;}
+  .glass-app .results{background:rgba(255,255,255,.05);backdrop-filter:blur(16px);border-color:rgba(255,255,255,.12);box-shadow:0 8px 32px rgba(0,0,0,.3);}
+  .glass-app .res-head{background:rgba(255,255,255,.04);color:rgba(255,255,255,.55);border-color:rgba(255,255,255,.1);}
+  .glass-app .res-row:hover{background:rgba(255,255,255,.07);}
+  .glass-app .res-row{color:#e0e7f2;border-color:rgba(255,255,255,.06);}
+  .glass-app .statusbar{border-color:rgba(255,255,255,.1);color:rgba(255,255,255,.45);}
+
+  /* ================= 风格 B: Material Design 3 材质 ================= */
+  .md-app{background:#f4f6fa;}
+  .md-app .sidebar{background:#ffffff;border-right:1px solid #e4e8f0;box-shadow:2px 0 12px rgba(0,0,0,.04);}
+  .md-app .sb-search{background:#eef1f6;border:none;color:#1a2233;border-radius:12px;}
+  .md-app .sb-title{color:#7b8494;}
+  .md-app .tree-item{border-radius:10px;}
+  .md-app .tree-item:hover{background:#f0f3f9;}
+  .md-app .tree-item.active{background:#e8f0fe;color:#1a56c4;}
+  .md-app .tree-item .icon{color:#2e7bf6;}
+  .md-app .tree-item.folder .icon{color:#e6a23c;}
+  .md-app .main{background:#f4f6fa;}
+  .md-app .toolbar{background:#ffffff;border-bottom:1px solid #e4e8f0;color:#2a3448;}
+  .md-app .btn{background:#ffffff;border:1px solid #d6dce8;color:#3a4557;box-shadow:0 1px 2px rgba(0,0,0,.05);}
+  .md-app .btn:hover{background:#f7f9fc;}
+  .md-app .btn.primary{background:#2e7bf6;box-shadow:0 3px 10px rgba(46,123,246,.3);}
+  .md-app .editor{background:#ffffff;border:1px solid #e4e8f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+  .md-app .ed-toolbar{border-color:#eef1f6;color:#7b8494;background:#fafbfd;}
+  .md-app .ed-code{color:#1a2233;}
+  .md-app .results{background:#ffffff;border:1px solid #e4e8f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+  .md-app .res-head{background:#fafbfd;color:#7b8494;border-color:#eef1f6;}
+  .md-app .res-row:hover{background:#f7f9fc;}
+  .md-app .res-row{color:#2a3448;border-color:#f0f3f9;}
+  .md-app .statusbar{border-color:#e4e8f0;color:#7b8494;background:#ffffff;}
+
+  /* ================= 风格 C: Minimal 极简 Linear ================= */
+  .min-app{background:#0f1216;}
+  .min-app .sidebar{background:#0f1216;border-right:1px solid #1c2129;}
+  .min-app .sb-search{background:#161a20;border-color:#262d36;color:#e6e9ee;border-radius:6px;}
+  .min-app .sb-title{color:#4a5566;font-weight:600;}
+  .min-app .tree-item{border-radius:5px;font-size:12.5px;}
+  .min-app .tree-item:hover{background:#161a20;}
+  .min-app .tree-item.active{background:#1a5cff;color:#fff;box-shadow:none;}
+  .min-app .tree-item.active .icon,.min-app .tree-item.active .count{color:#fff;}
+  .min-app .tree-item .icon{color:#6b7686;}
+  .min-app .tree-item.folder .icon{color:#8a94a3;}
+  .min-app .main{background:#0f1216;}
+  .min-app .toolbar{background:#0f1216;border-bottom:1px solid #1c2129;color:#aab3c0;}
+  .min-app .btn{background:transparent;border:1px solid #2a313b;color:#c8ced8;border-radius:6px;}
+  .min-app .btn:hover{border-color:#3a434f;}
+  .min-app .btn.primary{background:#1a5cff;border:none;}
+  .min-app .editor{background:#0d1013;border:1px solid #1c2129;border-radius:8px;}
+  .min-app .ed-toolbar{border-color:#1c2129;color:#5a6472;}
+  .min-app .ed-code{color:#d4dae2;}
+  .min-app .results{background:#0d1013;border:1px solid #1c2129;border-radius:8px;}
+  .min-app .res-head{background:#11151a;color:#5a6472;border-color:#1c2129;}
+  .min-app .res-row:hover{background:#14181e;}
+  .min-app .res-row{color:#c8ced8;border-color:#161b21;}
+  .min-app .statusbar{border-color:#1c2129;color:#4a5566;background:#0f1216;}
+
+  /* ================= 风格 D: Brutalism 粗野 ================= */
+  .bru-app{background:#ffffff;}
+  .bru-app .sidebar{background:#f7f7f5;border-right:3px solid #000;}
+  .bru-app .sb-search{background:#fff;border:2px solid #000;color:#000;border-radius:0;box-shadow:3px 3px 0 #000;}
+  .bru-app .sb-title{color:#000;font-weight:800;letter-spacing:2px;}
+  .bru-app .tree-item{border-radius:0;border:2px solid transparent;font-weight:600;}
+  .bru-app .tree-item:hover{background:#ffeb3b;border-color:#000;}
+  .bru-app .tree-item.active{background:#000;color:#fff;}
+  .bru-app .tree-item.active .icon,.bru-app .tree-item.active .count{color:#fff;}
+  .bru-app .tree-item .icon{color:#ff5722;}
+  .bru-app .tree-item.folder .icon{color:#009688;}
+  .bru-app .main{background:#fff;}
+  .bru-app .toolbar{background:#fff;border-bottom:3px solid #000;color:#000;}
+  .bru-app .btn{background:#fff;border:2px solid #000;border-radius:0;color:#000;font-weight:700;box-shadow:3px 3px 0 #000;}
+  .bru-app .btn:hover{transform:translate(1px,1px);box-shadow:1px 1px 0 #000;}
+  .bru-app .btn.primary{background:#ff5722;color:#fff;box-shadow:4px 4px 0 #000;}
+  .bru-app .editor{background:#fff;border:2px solid #000;border-radius:0;}
+  .bru-app .ed-toolbar{border-bottom:2px solid #000;color:#000;background:#fff;}
+  .bru-app .ed-code{color:#000;}
+  .bru-app .results{background:#fff;border:2px solid #000;border-radius:0;}
+  .bru-app .res-head{background:#e0e0e0;color:#000;border-bottom:2px solid #000;}
+  .bru-app .res-row:hover{background:#ffeb3b;}
+  .bru-app .res-row{color:#000;border-bottom:1px solid #ddd;}
+  .bru-app .statusbar{border-top:3px solid #000;color:#000;background:#f7f7f5;}
+
+  .label{position:absolute;bottom:10px;right:14px;font-size:11px;color:rgba(255,255,255,.4);background:rgba(0,0,0,.4);padding:3px 10px;border-radius:6px;}
+  .desc{max-width:1320px;margin-top:14px;padding:14px 18px;border-radius:10px;background:#161a21;border:1px solid #2a3038;font-size:12.5px;line-height:1.7;color:#b8c0cc;}
+  .desc b{color:#fff;}
+</style>
+</head>
+<body>
+<h1>国际主流 UI 设计风格 · DClaw 应用样例</h1>
+<div class="sub">4 种风格（玻璃拟态 / 材质 / 极简 / 粗野）— 同一数据库界面，点击切换对比风格手法</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="sw('glass-app',this,'Glassmorphism')">🥂 玻璃拟态 Glass</div>
+  <div class="tab" onclick="sw('md-app',this,'Material')">🎨 材质 Material 3</div>
+  <div class="tab" onclick="sw('min-app',this,'Minimal')">➖ 极简 Minimal</div>
+  <div class="tab" onclick="sw('bru-app',this,'Brutalism')">⬛ 粗野 Brutalism</div>
+</div>
+
+<div class="app glass-app" id="app">
+  <div class="sidebar">
+    <input class="sb-search" placeholder="🔍  搜索数据库..."/>
+    <div class="sb-title">平台 / 数据源</div>
+    <div class="tree-item folder"><span class="icon">▾</span>全民健康信息平台 <span class="count">4</span></div>
+    <div class="tree-item folder indent1"><span class="icon">▾</span>数据交换区县 <span class="count">6</span></div>
+    <div class="tree-item folder indent2"><span class="icon">▸</span>临沂市 <span class="count">3</span></div>
+    <div class="tree-item active indent2"><span class="icon">▾</span>市人民医院 <span class="count">✓</span></div>
+    <div class="tree-item indent1"><span class="icon">▸</span>山东省第一康复医院 <span class="count">✓</span></div>
+    <div class="tree-item folder"><span class="icon">▾</span>应用 <span class="count">2</span></div>
+    <div class="tree-item indent1"><span class="icon">▾</span>DClaw测试库_源端 <span class="count">✓</span></div>
+    <div class="tree-item indent1"><span class="icon">▾</span>DClaw测试库_目标端 <span class="count">✓</span></div>
+  </div>
+  <div class="main">
+    <div class="toolbar">
+      <span style="font-weight:700;">SQL编辑器</span>
+      <div class="btn primary">▶ 执行</div>
+      <div class="btn">⏹ 停止</div>
+      <div class="btn">🗂 打开脚本</div>
+      <div class="btn">💾 保存</div>
+      <div class="btn">⚙ 设置</div>
+      <div class="status"><span class="dot" style="background:#4ade80;"></span>市人民医院 · 在线</div>
+    </div>
+    <div class="content">
+      <div class="editor">
+        <div class="ed-toolbar"><span>query_1.sql</span><span style="margin-left:auto;opacity:.6;">只读模式</span></div>
+        <div class="ed-code">
+          <span class="kw">SELECT</span> k.org_name <span class="kw">FROM</span> EMR_OUTPATIENT_RECORD k<br/>
+          <span class="kw">WHERE</span> k.TREATMENT_DATE &gt; <span class="str">'2026-07-29'</span><br/>
+          <span class="kw">AND</span> k.TREATMENT_DATE &lt; <span class="str">'2026-08-10'</span><br/>
+          <span class="kw">GROUP BY</span> k.org_name;
+        </div>
+      </div>
+      <div class="results">
+        <div class="res-head"><div class="c">org_name</div><div class="c">count</div><div class="c">状态</div></div>
+        <div class="res-row"><div class="c">临沂市人民医院</div><div class="c">128</div><div class="c" style="color:#4ade80;">成功</div></div>
+        <div class="res-row"><div class="c">山东省第一康复医院</div><div class="c">96</div><div class="c" style="color:#4ade80;">成功</div></div>
+        <div class="res-row"><div class="c">沂水县马站人民医院</div><div class="c">72</div><div class="c" style="color:#f87171;">失败</div></div>
+      </div>
+    </div>
+    <div class="statusbar"><span>就绪</span><span>已选 1 库</span><span>耗时 245ms</span><span style="margin-left:auto;">UTF-8</span><span>PostgreSQL</span></div>
+  </div>
+  <div class="label">Glassmorphism</div>
+</div>
+
+<div class="desc" id="desc"></div>
+
+<script>
+const DESCS = {
+  'glass-app':'<b>🥂 Glassmorphism 玻璃拟态</b>（Apple / Windows 11 / Notion / Linear）— 半透明磨砂 + 背景模糊 + 柔和光晕。现代感最强，适合侧栏/弹窗/卡片，数据表格保持清晰。',
+  'md-app':'<b>🎨 Material Design 3 材质</b>（Google / Android / 大量 SaaS）— 扁平 + 大圆角 + 状态层 + 柔和阴影。数据工具的稳妥选择，MUI 天然契合。',
+  'min-app':'<b>➖ Minimal 极简</b>（Linear / Vercel / Raycast / Figma）— 黑白灰 + 单强调蓝 + 大量留白 + 靠字重分层。高端工具感。',
+  'bru-app':'<b>⬛ Brutalism 粗野</b>（极客/开发者工具）— 硬边框 + 强对比 + 硬阴影。个性鲜明但不适合密集数据。'
+};
+let cur = 'glass-app';
+function sw(cls, el, name){
+  document.getElementById('app').className = 'app ' + cls;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelector('.label').textContent = name;
+  document.getElementById('desc').innerHTML = DESCS[cls];
+}
+document.getElementById('desc').innerHTML = DESCS['glass-app'];
+</script>
+</body>
+</html>
