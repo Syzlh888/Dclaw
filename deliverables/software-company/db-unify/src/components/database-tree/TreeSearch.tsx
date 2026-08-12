@@ -3,15 +3,18 @@ import { Box, TextField, InputAdornment, IconButton, Button } from '@mui/materia
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
+import HealthAndSafetyIcon from '@mui/icons-material/HealthAndSafety';
 import { useTreeStore } from '../../stores/treeStore';
 import BulkImportDialog from '../connection/BulkImportDialog';
+import DbInspectionDialog from './DbInspectionDialog';
 
 /**
- * 数据库树顶部：搜索框 + 批量导入按钮（同一行）
+ * 数据库树顶部：搜索框 + 批量导入按钮 + 数据库巡检按钮（同一行）
  */
 const TreeSearch: React.FC = () => {
   const [value, setValue] = useState('');
   const [importOpen, setImportOpen] = useState(false);
+  const [inspectionOpen, setInspectionOpen] = useState(false);
   const search = useTreeStore((s) => s.search);
   const timerRef = useRef<ReturnType<typeof setTimeout>>();
 
@@ -71,7 +74,18 @@ const TreeSearch: React.FC = () => {
       >
         导入
       </Button>
+      <Button
+        size="small"
+        onClick={() => setInspectionOpen(true)}
+        variant="outlined"
+        startIcon={<HealthAndSafetyIcon sx={{ fontSize: 'calc(0.85rem * var(--dc-scale, 1))' }} />}
+        sx={{ textTransform: 'none', fontSize: 'calc(0.68rem * var(--dc-scale, 1))', py: 0.25, minHeight: 26, whiteSpace: 'nowrap', flexShrink: 0 }}
+        title="并发巡检所有数据库连接，列出连接不通的数据库"
+      >
+        巡检
+      </Button>
       <BulkImportDialog open={importOpen} onClose={() => setImportOpen(false)} />
+      <DbInspectionDialog open={inspectionOpen} onClose={() => setInspectionOpen(false)} />
     </Box>
   );
 };
