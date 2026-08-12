@@ -12,6 +12,8 @@ import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { fetchConnections } from '../../services/connectionApiService';
 import { apiFetch } from '../../services/apiClient';
+import { useTreeStore } from '../../stores/treeStore';
+import { TreeNodeType } from '../../types/tree';
 import type { DbConnection } from '../../types/connection';
 import { DbDriver } from '../../types/connection';
 
@@ -119,12 +121,25 @@ const DbInspectionDialog: React.FC<DbInspectionDialogProps> = ({ open, onClose }
     setInspecting(true);
     setDone(0);
     try {
-      const list = (await fetchConnections()) as DbConnection[];
-      if (!list || list.length === 0) {
+      // 只巡检「左侧菜单树」上挂载的医院连接（与菜单一致），而不是全部连接
+      const allList = (await fetchConnections()) as DbConnection[];
+      if (!allList || allList.length === 0) {
         setItems([]);
         setInspecting(false);
         return;
       }
+      // 从 treeStore 收集所有 Hospital 节点的 dbConnectionId
+      const treeNodes = useTreeStore.getState().nodes;
+      const treeConnIds = new Set<string>();
+      for (const n of Object.values(treeNodes)) {
+        if (n.type === TreeNodeType.Hospital && n.dbConnectionId) {
+          treeConnIds.add(n.dbConnectionId);
+        }
+      }
+      // 用树上的连接 ID 过滤全部连接；若树还没加载则退回全部
+      const list = treeConnIds.size > 0
+        ? allList.filter((c) => treeConnIds.has(c.id))
+        : allList;
       const initial: InspectItem[] = list.map((c) => ({
         id: c.id,
         name: c.name,
