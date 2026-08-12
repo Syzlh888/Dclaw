@@ -17,7 +17,6 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { useEditorStore } from '../../stores/editorStore';
-import { useExecutionStore } from '../../stores/executionStore';
 import type { EditorTheme } from '../../stores/editorStore';
 import { format } from 'sql-formatter';
 import { useTreeStore } from '../../stores/treeStore';
@@ -60,9 +59,6 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ onExecute, onStop, isExec
   const setEditorTheme = useEditorStore((s) => s.setEditorTheme);
   const fontSize = useEditorStore((s) => s.fontSize);
   const setFontSize = useEditorStore((s) => s.setFontSize);
-  // 超时时间（默认30秒，可调30-600秒）
-  const timeoutMs = useExecutionStore((s) => s.config.timeoutMs);
-  const updateConfig = useExecutionStore((s) => s.updateConfig);
   const treeSelectedDbIds = useTreeStore((s) => s.selectedDbIds);
   const nodes = useTreeStore((s) => s.nodes);
   const activeGroupId = useGroupStore((s) => s.activeGroupId);
@@ -360,22 +356,6 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ onExecute, onStop, isExec
         >
           停止
         </Button>
-
-        {/* SQL 执行超时（30-600秒） */}
-        <TextField
-          type="number"
-          size="small"
-          label="超时(秒)"
-          value={Math.round(timeoutMs / 1000)}
-          onChange={(e) => {
-            const sec = Math.max(30, Math.min(600, Number(e.target.value) || 30));
-            updateConfig({ timeoutMs: sec * 1000 });
-          }}
-          disabled={isExecuting}
-          inputProps={{ min: 30, max: 600, step: 10, style: { width: 70, fontSize: 'calc(0.72rem * var(--dc-scale, 1))' } }}
-          InputLabelProps={{ sx: { fontSize: 'calc(0.65rem * var(--dc-scale, 1))' } }}
-          sx={{ '& .MuiOutlinedInput-root': { height: 26 } }}
-        />
 
         {/* SQL 脚本操作 */}
         <Button

@@ -94,7 +94,7 @@ router.post('/', async (req, res) => {
 
   const {
     concurrency = 5,
-    timeoutMs = 30000,
+    timeoutMs = 86400000,  // 不限制超时（24h 等效），由用户手动点"停止"取消
     continueOnError = true,
     maxRetries = 1,
     readOnlyMode = true,

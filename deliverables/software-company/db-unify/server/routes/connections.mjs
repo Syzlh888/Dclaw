@@ -1318,7 +1318,7 @@ export async function createDbConnection(params) {
 /**
  * 在指定连接上执行 SQL 查询
  */
-export async function executeQuery(conn, driver, sql, timeoutMs = 30000, customDriverId) {
+export async function executeQuery(conn, driver, sql, timeoutMs = 86400000, customDriverId) {
   const realDriver = await resolveRealDriver(driver, customDriverId);
   const timeoutPromise = new Promise((_, reject) =>
     setTimeout(() => reject(new Error(`查询超时（${timeoutMs / 1000}s）`)), timeoutMs)
