@@ -60,6 +60,9 @@ import syncTableMappingsRouter from './routes/sync-table-mappings.mjs';
 import syncExecuteRouter from './routes/sync-execute.mjs';
 import syncSchedulerRouter from './routes/sync-scheduler.mjs';
 import proxyRouter from './routes/proxy.mjs';
+// v1.6 API 服务（对外数据接口）
+import apiServiceRouter from './routes/api-service.mjs';
+import apiPublicRouter from './routes/api-public.mjs';
 // v1.6 定时轮询调度器
 import syncScheduler from './sync/scheduler.mjs';
 
@@ -252,6 +255,13 @@ app.use('/api/sync-scheduler', authMiddleware, syncSchedulerRouter);
 
 // 数据库代理网关（阶段1：管理 API；阶段2+ 由独立进程 server/proxy/index.mjs 承载对外监听）
 app.use('/api/proxy', authMiddleware, proxyRouter);
+
+// v1.6 API 服务（管理端 CRUD，需登录 JWT）
+app.use('/api/api-service', authMiddleware, apiServiceRouter);
+
+// v1.6 API 服务（公开调用网关，独立 API Token 鉴权，不走登录 JWT）
+// 注意：必须在 SPA 回退之前，避免被 `app.get('*', ...)` 截胡
+app.use('/api/public/v1', apiPublicRouter);
 
 
 // ========= 生产环境 SPA 回退 =========

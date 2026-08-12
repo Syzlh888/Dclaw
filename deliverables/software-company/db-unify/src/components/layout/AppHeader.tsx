@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, IconButton, Tooltip, Button, Menu, MenuItem, ListItemIcon, ListItemText, Divider } from '@mui/material';
 import StorageIcon from '@mui/icons-material/Storage';
+import ApiIcon from '@mui/icons-material/Api';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
@@ -35,7 +36,7 @@ import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 
 const SCALE_STEPS = [0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.35, 1.5];
 
-type NavigableView = 'sql-editor' | 'server-resource' | 'comprehensive-query' | 'data-sync' | 'db-proxy';
+type NavigableView = 'sql-editor' | 'server-resource' | 'comprehensive-query' | 'data-sync' | 'db-proxy' | 'api-service';
 
 interface Props {
   mainView?: string;
@@ -109,6 +110,7 @@ const AppHeader: React.FC<Props> = ({ mainView, onNavigate, onToggleAI }) => {
           { id: 'server-resource' as const, label: '服务器资源管理', icon: <LanIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} /> },
           { id: 'data-sync' as const, label: '数据同步', icon: <SyncAltIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} /> },
           { id: 'db-proxy' as const, label: '数据库代理', icon: <StorageIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} /> },
+          { id: 'api-service' as const, label: 'API服务', icon: <ApiIcon sx={{ fontSize: 'calc(1rem * var(--dc-scale, 1))' }} /> },
         ] as const).map((tab) => {
           const active = mainView === tab.id || (mainView === 'comprehensive-query' && tab.id === 'server-resource');
           return (

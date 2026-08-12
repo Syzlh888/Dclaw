@@ -17,6 +17,7 @@ import LoginPage from './components/auth/LoginPage';
 import ComprehensiveQueryView from './components/server-resource/ComprehensiveQueryView';
 import SyncPage from './components/sync/SyncPage';
 import ProxyPage from './components/db-proxy/ProxyPage';
+import ApiServicePage from './components/api-service/ApiServicePage';
 import { useTreeStore } from './stores/treeStore';
 import { useConnectionStore } from './stores/connectionStore';
 import { useEditorStore } from './stores/editorStore';
@@ -79,7 +80,7 @@ const App: React.FC = () => {
 
   const [bottomTab, setBottomTab] = useState(0);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
-  const [mainView, setMainView] = useState<'sql-editor' | 'server-resource' | 'comprehensive-query' | 'data-sync' | 'db-proxy'>('sql-editor');
+  const [mainView, setMainView] = useState<'sql-editor' | 'server-resource' | 'comprehensive-query' | 'data-sync' | 'db-proxy' | 'api-service'>('sql-editor');
 
   const [notify, setNotify] = useState<{ message: string; severity: 'success' | 'info' | 'warning' | 'error' } | null>(null);
 
@@ -217,6 +218,12 @@ const App: React.FC = () => {
           <Box sx={{ flex: 1, overflow: 'hidden' }}>
             <ErrorBoundary key="dproxy" name="数据库代理">
               <ProxyPage />
+            </ErrorBoundary>
+          </Box>
+        ) : mainView === 'api-service' ? (
+          <Box sx={{ flex: 1, overflow: 'hidden' }}>
+            <ErrorBoundary key="apisvc" name="API 服务">
+              <ApiServicePage />
             </ErrorBoundary>
           </Box>
         ) : (
