@@ -26,9 +26,9 @@ process.on('uncaughtException', (err) => {
   process.exit(1);
 });
 process.on('unhandledRejection', (r) => {
-  // eslint-disable-next-line no-console
+  // 记录但不要 exit(1)：单个路由的 rejection 不应导致整个服务崩溃重启。
+  // （真正的致命错误应通过 uncaughtException 或健康检查捕获。）
   console.error('[proxy-manager] unhandledRejection:', r?.stack || r?.message || r);
-  process.exit(1);
 });
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));

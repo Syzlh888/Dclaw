@@ -173,6 +173,11 @@ export async function initDatabase() {
 export async function getAll(collection) {
   const table = resolveTable(collection);
   const r = await pgQuery(`SELECT * FROM ${quoteIdent(table)}`);
+  // 防御：异常/并发下 r 或 r.rows 可能未定义，保证总是返回数组
+  if (!r || !Array.isArray(r.rows)) {
+    console.warn(`[db] getAll('${collection}') 返回异常结构，已兜底为空数组`, r?.constructor?.name);
+    return [];
+  }
   return r.rows.map(rowToObject);
 }
 

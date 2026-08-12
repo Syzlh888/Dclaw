@@ -25,11 +25,21 @@ export function isCleanupEnabled() {
  * 获取执行历史列表（按时间倒序，最近 100 条）
  */
 router.get('/', async (_req, res) => {
-  const history = await getAll('executionHistory')
-    .sort((a, b) => new Date(b.executed_at) - new Date(a.executed_at))
-    .slice(0, 100);
+  try {
+    const raw = await getAll('executionHistory');
+    if (!Array.isArray(raw)) {
+      console.error('[history] getAll 返回非数组:', typeof raw, raw?.constructor?.name, JSON.stringify(raw)?.slice(0, 200));
+      return res.status(500).json({ error: '获取执行历史失败', detail: `getAll 返回 ${typeof raw}` });
+    }
+    const history = raw
+      .sort((a, b) => new Date(b.executed_at) - new Date(a.executed_at))
+      .slice(0, 100);
 
-  res.json({ history });
+    res.json({ history });
+  } catch (err) {
+    console.error('[history] GET / 失败:', err?.message, '| stack:', err?.stack?.split('\n')[1]);
+    res.status(500).json({ error: '获取执行历史失败', detail: err?.message });
+  }
 });
 
 /**
