@@ -98,7 +98,7 @@ app.use(express.json({ limit: '10mb' }));
 // 全局限流
 const globalLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 分钟
-  max: 200,
+  max: 500,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: '请求过于频繁，请稍后再试' },
