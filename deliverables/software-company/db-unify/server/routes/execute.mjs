@@ -319,7 +319,7 @@ router.post('/', async (req, res) => {
             predbTypeName: task.predbTypeName,
             status: 'timeout',
             duration,
-            errorMessage: '查询执行超时（超过 30 秒），已被数据库服务端取消。请缩小查询范围或优化 SQL。',
+            errorMessage: '查询执行超时（不限制时长），查询被数据库服务端取消。若查询确实超时，请缩小查询范围或优化 SQL；可点击「停止」手动取消。',
             timestamp: Date.now(),
           });
         } else {

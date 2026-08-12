@@ -529,8 +529,8 @@ async function createBridgeClient(proc, stderrBuf) {
         if (endIdx === -1) {
           timer = setTimeout(() => {
             cleanup();
-            reject(new Error('JDBC 查询超时 (30s)，请检查数据库服务器网络连通性'));
-          }, 30000);
+            reject(new Error('JDBC 查询超时 (24h)，查询未完成，请检查数据库服务器或手动停止'));
+          }, 86400000);
           return;
         }
 
@@ -563,8 +563,8 @@ async function createBridgeClient(proc, stderrBuf) {
       proc.on('close', onClose);
       timer = setTimeout(() => {
         cleanup();
-        reject(new Error('JDBC 查询超时 (30s)，请检查数据库服务器网络连通性'));
-      }, 30000);
+        reject(new Error('JDBC 查询超时 (24h)，查询未完成，请检查数据库服务器或手动停止'));
+      }, 86400000);
 
       try {
         proc.stdin.write(encoded + '\n');
